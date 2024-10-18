@@ -1,0 +1,25 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "college-login-firebase",
+                    "appId": "1:1095523962421:android:9aab1a6642f95eb6806b7c",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/services/firebase_options.dart": {
+                    "projectId": "college-login-firebase",
+                    "configurations": {
+                        "android": "1:1095523962421:android:9aab1a6642f95eb6806b7c",
+                        "ios": "1:1095523962421:ios:a8ac6a2301da66f6806b7c",
+                        "macos": "1:1095523962421:ios:a8ac6a2301da66f6806b7c",
+                        "web": "1:1095523962421:web:6a97841181303dd7806b7c",
+                        "windows": "1:1095523962421:web:20eb28e371c14402806b7c"
+                    }
+                }
+            }
+        }
+    }
+}
