@@ -1,20 +1,15 @@
 import 'package:shimmer/shimmer.dart';
-import 'package:bank_app/services/firebase_auth_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+// import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_database/firebase_database.dart';
 import '../../controllers/auth_controller.dart';
 import '../../utils/widgets.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final AuthController controller = Get.find<AuthController>();
-  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
-  final RxBool _isLoadingProfilePicture = true.obs;
   final RxBool _isUploadingProfilePicture = false.obs;
   final RxDouble _uploadProgress = 0.0.obs;
   final Rx<String?> _profilePictureUrl = Rx<String?>(null);
@@ -37,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
                   maxWidth: kIsWeb ? 500.0 : double.infinity,
                 ),
                 child: FutureBuilder<Map<String, dynamic>>(
-                  future: _getUserData(),
+                  future: null,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return _buildShimmerLoading(theme);
@@ -61,7 +56,7 @@ class ProfileScreen extends StatelessWidget {
                         _buildProfilePicture(theme),
                         SizedBox(height: 10),
                         ElevatedButton(
-                          onPressed: () => _changeProfilePicture(),
+                          onPressed: () {},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.primary,
                           ),
@@ -90,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                                 onPressed: () async {
                                   if (!controller.status) {
                                     try {
-                                      await controller.signOut();
+                                      // await controller.signOut();
                                     } catch (e) {
                                       Get.snackbar('Ошибка',
                                           'Не удалось выйти из системы: ${e.toString()}');
@@ -259,108 +254,108 @@ class ProfileScreen extends StatelessWidget {
     });
   }
 
-  Future<void> _changeProfilePicture() async {
-    final picker = ImagePicker();
+  // Future<void> _changeProfilePicture() async {
+  //   final picker = ImagePicker();
 
-    final ImageSource? source = await Get.dialog<ImageSource>(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: Container(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                'Выберите изображение',
-                style: Get.textTheme.headlineSmall,
-              ),
-              SizedBox(height: 32.0),
-              ElevatedButton(
-                onPressed: () {
-                  Get.back(result: ImageSource.camera);
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text('Сделать фото'),
-              ),
-              SizedBox(height: 8.0),
-              ElevatedButton(
-                onPressed: () {
-                  Get.back(result: ImageSource.gallery);
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text('Выбрать из галереи'),
-              ),
-              SizedBox(height: 32.0),
-              ElevatedButton(
-                onPressed: () {
-                  Get.back();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Get.theme.colorScheme.error,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text('Отмена'),
-              ),
-              SizedBox(height: 8.0),
-            ],
-          ),
-        ),
-      ),
-    );
+  //   final ImageSource? source = await Get.dialog<ImageSource>(
+  //     Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(16.0),
+  //       ),
+  //       child: Container(
+  //         padding: EdgeInsets.all(20.0),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: <Widget>[
+  //             Text(
+  //               'Выберите изображение',
+  //               style: Get.textTheme.headlineSmall,
+  //             ),
+  //             SizedBox(height: 32.0),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Get.back(result: ImageSource.camera);
+  //               },
+  //               style: ElevatedButton.styleFrom(
+  //                 shape: RoundedRectangleBorder(
+  //                   borderRadius: BorderRadius.circular(30.0),
+  //                 ),
+  //                 minimumSize: Size(double.infinity, 50),
+  //               ),
+  //               child: Text('Сделать фото'),
+  //             ),
+  //             SizedBox(height: 8.0),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Get.back(result: ImageSource.gallery);
+  //               },
+  //               style: ElevatedButton.styleFrom(
+  //                 shape: RoundedRectangleBorder(
+  //                   borderRadius: BorderRadius.circular(30.0),
+  //                 ),
+  //                 minimumSize: Size(double.infinity, 50),
+  //               ),
+  //               child: Text('Выбрать из галереи'),
+  //             ),
+  //             SizedBox(height: 32.0),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 Get.back();
+  //               },
+  //               style: ElevatedButton.styleFrom(
+  //                 backgroundColor: Get.theme.colorScheme.error,
+  //                 shape: RoundedRectangleBorder(
+  //                   borderRadius: BorderRadius.circular(30.0),
+  //                 ),
+  //                 minimumSize: Size(double.infinity, 50),
+  //               ),
+  //               child: Text('Отмена'),
+  //             ),
+  //             SizedBox(height: 8.0),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
 
-    if (source != null) {
-      final pickedFile = await picker.pickImage(source: source);
-      if (pickedFile != null) {
-        File image = File(pickedFile.path);
-        try {
-          _isUploadingProfilePicture.value = true;
-          final user = controller.user;
-          if (user == null) return;
+  //   if (source != null) {
+  //     final pickedFile = await picker.pickImage(source: source);
+  //     if (pickedFile != null) {
+  //       File image = File(pickedFile.path);
+  //       try {
+  //         _isUploadingProfilePicture.value = true;
+  //         // final user = controller.user;
+  //         // if (user == null) return;
 
-          final storagePath = _firebaseAuthService.getStoragePath();
-          final ref = FirebaseStorage.instance.ref(storagePath);
+  //         final storagePath = _firebaseAuthService.getStoragePath();
+  //         final ref = FirebaseStorage.instance.ref(storagePath);
 
-          final uploadTask = ref.putFile(image);
+  //         final uploadTask = ref.putFile(image);
 
-          uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-            _uploadProgress.value =
-                snapshot.bytesTransferred / snapshot.totalBytes;
-          });
+  //         uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+  //           _uploadProgress.value =
+  //               snapshot.bytesTransferred / snapshot.totalBytes;
+  //         });
 
-          await uploadTask;
-          final url = await ref.getDownloadURL();
+  //         await uploadTask;
+  //         final url = await ref.getDownloadURL();
 
-          String dbPath = _firebaseAuthService.getDbPath();
-          await FirebaseDatabase.instance
-              .ref('$dbPath/info')
-              .update({'profilePicture': url});
+  //         String dbPath = _firebaseAuthService.getDbPath();
+  //         await FirebaseDatabase.instance
+  //             .ref('$dbPath/info')
+  //             .update({'profilePicture': url});
 
-          _profilePictureUrl.value = url;
-          Get.snackbar('Успех', 'Фото профиля успешно обновлено');
-        } catch (e) {
-          Get.snackbar('Ошибка',
-              'При изменении фото профиля произошла ошибка: ${e.toString()}');
-        } finally {
-          _isUploadingProfilePicture.value = false;
-        }
-      }
-    }
-  }
+  //         _profilePictureUrl.value = url;
+  //         Get.snackbar('Успех', 'Фото профиля успешно обновлено');
+  //       } catch (e) {
+  //         Get.snackbar('Ошибка',
+  //             'При изменении фото профиля произошла ошибка: ${e.toString()}');
+  //       } finally {
+  //         _isUploadingProfilePicture.value = false;
+  //       }
+  //     }
+  //   }
+  // }
 
   Widget _buildInfoCard(String title, String value, ThemeData theme) {
     return Card(
@@ -385,58 +380,58 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<Map<String, dynamic>> _getUserData() async {
-    Stopwatch stopwatch = Stopwatch()..start(); // Начинаем отсчёт времени
+  // Future<Map<String, dynamic>> _getUserData() async {
+  //   Stopwatch stopwatch = Stopwatch()..start(); // Начинаем отсчёт времени
 
-    await _firebaseAuthService.initialize();
-    _isLoadingProfilePicture.value = true;
-    final user = controller.user;
-    if (user == null) {
-      _isLoadingProfilePicture.value = false;
-      return {};
-    }
+  //   await _firebaseAuthService.initialize();
+  //   _isLoadingProfilePicture.value = true;
+  //   final user = controller.user;
+  //   if (user == null) {
+  //     _isLoadingProfilePicture.value = false;
+  //     return {};
+  //   }
 
-    final dbRef = FirebaseDatabase.instance.ref();
-    String dbPath = _firebaseAuthService.getDbPath();
+  //   final dbRef = FirebaseDatabase.instance.ref();
+  //   String dbPath = _firebaseAuthService.getDbPath();
 
-    try {
-      final snapshot = await dbRef.child('$dbPath/info').get();
-      stopwatch.stop(); // Останавливаем отсчёт времени
-      final elapsedTime = stopwatch.elapsed.inMilliseconds;
-      if (snapshot.exists) {
-        Map<String, dynamic> userInfo = {};
+  //   try {
+  //     final snapshot = await dbRef.child('$dbPath/info').get();
+  //     stopwatch.stop(); // Останавливаем отсчёт времени
+  //     final elapsedTime = stopwatch.elapsed.inMilliseconds;
+  //     if (snapshot.exists) {
+  //       Map<String, dynamic> userInfo = {};
 
-        final infoData = snapshot.value as Map<Object?, Object?>;
-        print(infoData);
-        userInfo['name'] = infoData['name'] as String? ?? 'Не указано';
-        userInfo['email'] = infoData['email'] as String? ?? 'Не указано';
-        userInfo['profilePicture'] = infoData['profilePicture'] as String?;
+  //       final infoData = snapshot.value as Map<Object?, Object?>;
+  //       print(infoData);
+  //       userInfo['name'] = infoData['name'] as String? ?? 'Не указано';
+  //       userInfo['email'] = infoData['email'] as String? ?? 'Не указано';
+  //       userInfo['profilePicture'] = infoData['profilePicture'] as String?;
 
-        if (userInfo['profilePicture'] == null) {
-          final storagePath = _firebaseAuthService.getStoragePath();
-          try {
-            final url = await FirebaseStorage.instance
-                .ref(storagePath)
-                .getDownloadURL();
-            userInfo['profilePicture'] = url;
-          } catch (e) {
-            print('Error getting profile picture URL: $e');
-          }
-        }
-        if (elapsedTime < 2000) {
-          await Future.delayed(Duration(milliseconds: 2000 - elapsedTime));
-        }
+  //       if (userInfo['profilePicture'] == null) {
+  //         final storagePath = _firebaseAuthService.getStoragePath();
+  //         try {
+  //           final url = await FirebaseStorage.instance
+  //               .ref(storagePath)
+  //               .getDownloadURL();
+  //           userInfo['profilePicture'] = url;
+  //         } catch (e) {
+  //           print('Error getting profile picture URL: $e');
+  //         }
+  //       }
+  //       if (elapsedTime < 2000) {
+  //         await Future.delayed(Duration(milliseconds: 2000 - elapsedTime));
+  //       }
 
-        _profilePictureUrl.value = userInfo['profilePicture'];
-        _isLoadingProfilePicture.value = false;
-        return userInfo;
-      }
-    } catch (e) {
-      print('Error fetching user data: $e');
-    }
-    _isLoadingProfilePicture.value = false;
-    return {};
-  }
+  //       _profilePictureUrl.value = userInfo['profilePicture'];
+  //       _isLoadingProfilePicture.value = false;
+  //       return userInfo;
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching user data: $e');
+  //   }
+  //   _isLoadingProfilePicture.value = false;
+  //   return {};
+  // }
 
   void _openSettings() {
     Get.to(() => SettingsScreen());

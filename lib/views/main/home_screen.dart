@@ -52,7 +52,7 @@ class HomeScreenController extends GetxController {
   }
 
   Future<void> loadGroups() async {
-    groups = await _firebaseService.loadGroups();
+    // groups = await _firebaseService.loadGroups();
     // update();
   }
 
@@ -63,7 +63,7 @@ class HomeScreenController extends GetxController {
 
   Future<void> synchronize() async {
     try {
-      subjectData = await _firebaseService.fetchSubjectData(groupId, subjectId);
+      // subjectData = await _firebaseService.fetchSubjectData(groupId, subjectId);
       dates.value = subjectData.dates;
       if (!dates.contains('+') &&
           (role == 'teacher' || role == 'admin' && subjectId.isNotEmpty)) {
@@ -418,13 +418,13 @@ class HomeScreen extends StatelessWidget {
         date: date,
         currentScore: score,
         onSave: (String newScore) {
-          controller._firebaseService.updateGrade(
-            controller.groupId,
-            controller.subjectId,
-            student.uid,
-            newScore,
-            date,
-          );
+          // controller._firebaseService.updateGrade(
+          //   controller.groupId,
+          //   controller.subjectId,
+          //   student.uid,
+          //   newScore,
+          //   date,
+          // );
           student.updateGrade(date, newScore);
           controller.update();
         },

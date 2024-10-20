@@ -72,11 +72,11 @@ class LoginPage extends StatelessWidget {
                           onPressed: authController.status
                               ? null
                               : () {
-                                  authController.login(
-                                    authController.email.value.text.trim(),
-                                    authController.password.value.text.trim(),
-                                  );
-                                  TextInput.finishAutofillContext();
+                                  // authController.login(
+                                  //   authController.email.value.text.trim(),
+                                  //   authController.password.value.text.trim(),
+                                  // );
+                                  // TextInput.finishAutofillContext();
                                 },
                           style: Theme.of(context).elevatedButtonTheme.style,
                           child: authController.status

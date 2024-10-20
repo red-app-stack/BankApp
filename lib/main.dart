@@ -2,10 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'controllers/auth_controller.dart';
 // import 'controllers/theme_controller.dart';
-import 'services/firebase_options.dart';
 import 'utils/static_background.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
@@ -15,7 +13,6 @@ Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Get.put(AuthController());
   // final themeController = Get.put(ThemeController());
   // await themeController.onInit();

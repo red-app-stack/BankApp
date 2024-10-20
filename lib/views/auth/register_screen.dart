@@ -88,11 +88,13 @@ class RegisterPage extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: authController.status
                             ? null
-                            : () => authController.register(
-                                  authController.email.value.text,
-                                  authController.password.value.text,
-                                  authController.userRole,
-                                ),
+                            : () => {
+                              // authController.register(
+                              //     authController.email.value.text,
+                              //     authController.password.value.text,
+                              //     authController.userRole,
+                              //   )
+                                },
                         child: authController.status
                             ? SizedBox(
                                 width: 24,
