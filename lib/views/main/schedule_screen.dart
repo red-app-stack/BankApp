@@ -159,7 +159,7 @@ class ScheduleScreen extends StatelessWidget {
             );
           }
           return Container();
-        }).toList(),
+        }),
       ],
     );
     controller.tableLayout.add(headerRow);
@@ -201,7 +201,7 @@ class ScheduleScreen extends StatelessWidget {
                 style: TextStyle(
                   color: subjectInfo != null
                       ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.onBackground,
+                      : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),

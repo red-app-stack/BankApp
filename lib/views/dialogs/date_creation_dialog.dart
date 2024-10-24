@@ -32,8 +32,8 @@ class DateCreationDialogState extends State<DateCreationDialog> {
     'Оценка модуля'
   ];
   
-  FocusNode _dateFocusNode = FocusNode();
-  FocusNode _descriptionFocusNode = FocusNode();
+  final FocusNode _dateFocusNode = FocusNode();
+  final FocusNode _descriptionFocusNode = FocusNode();
 
   @override
   void initState() {

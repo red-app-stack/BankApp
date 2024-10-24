@@ -28,29 +28,25 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  animated_theme_switcher: ^2.0.10
+  bcrypt: ^1.1.3
+  collection: ^1.18.0
+  cupertino_icons: any
+  dio: any
+  encrypt: ^5.0.0
   flutter:
     sdk: flutter
-  image_picker: any
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: any
-  get: any
-  shared_preferences: any
-  # cached_network_image: ^3.4.1
-  dio: any
-  flutter_svg: any
-  flutter_native_splash: any
-  collection: ^1.18.0
-  intl: ^0.19.0
-  animated_theme_switcher: "^2.0.10"
-  shimmer: ^3.0.0
-  # flutter_launcher_icons: "^0.14.1"
   flutter_localizations:
     sdk: flutter
-  # dynamic_icon_flutter: ^0.0.7
+  flutter_native_splash: any
+  flutter_secure_storage: ^8.0.0
+  flutter_svg: any
+  get: any
+  image_picker: any
+  intl: ^0.19.0
+  shared_preferences: any
+  shimmer: ^3.0.0
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -58,6 +54,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
 
 # old, added icons from https://icon.kitchen/
 # flutter_launcher_icons:
@@ -65,7 +63,7 @@ dev_dependencies:
 #   ios: true
 #   image_path: "assets/images/icondark.png"
 #   min_sdk_android: 23 # android min sdk min:16, default 21
-#   andrid: 
+#   andrid:
 #     image_path: "assets/images/icondark.png"
 #     min_sdk_android: 23
 #   web:
@@ -80,12 +78,11 @@ dev_dependencies:
 #   macos:
 #     generate: true
 #     image_path: "assets/images/icondark.png"
-
 flutter_native_splash:
   android: true
   ios: true
   web: true
-  color: "#d8d9e2"  # AppColorsLight.surfaceDim
+  color: "#d8d9e2" # AppColorsLight.surfaceDim
   image: assets/images/logodark.png
   color_dark: "#00438a"
   # background_image_dark: "assets/dark-background.png"
@@ -93,7 +90,7 @@ flutter_native_splash:
   # branding_dark: assets/dart_dark.png
   # Define dark theme splash screen
   android_12:
-    image: assets/images/logodark.png  # Default for Android 12 splash
+    image: assets/images/logodark.png # Default for Android 12 splash
     # icon_background_color: "#d8d9e2"
     color: "#d8d9e2"
     image_dark: assets/images/logo.png
@@ -101,34 +98,29 @@ flutter_native_splash:
     # icon_background_color_dark: "#42a5f5"
     color_dark: "#00438a"
 
-# flutter_native_splash:
-#   android: true
-#   ios: true
-#   web: true
-#   color: "#42a5f5"
-#   image: assets/images/logo.png
-
-#   android_12:
-#     image: assets/images/logo.png
-#     icon_background_color: "#42a5f5"
-#     color: "#42a5f5"
-
-# flutter_native_splash:
-#   android: true
-#   ios: true
-#   web: true
-  # color: "{{lightThemeColor}}" 
+  # flutter_native_splash:
+  #   android: true
+  #   ios: true
+  #   web: true
+  #   color: "#42a5f5"
+  #   image: assets/images/logo.png
+  #   android_12:
+  #     image: assets/images/logo.png
+  #     icon_background_color: "#42a5f5"
+  #     color: "#42a5f5"
+  # flutter_native_splash:
+  #   android: true
+  #   ios: true
+  #   web: true
+  # color: "{{lightThemeColor}}"
   # image: assets/images/logolight.png
-  
   # # Define the splash screen for dark theme
   # dark:
   #   color: "{{darkThemeColor}}"
   #   image: assets/images/logodark.png
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
+  # For information on the generic Dart part of this file, see the
+  # following page: https://dart.dev/tools/pub/pubspec
+  # The following section is specific to Flutter packages.
   platforms:
     android:
       default: true
@@ -142,7 +134,7 @@ flutter_native_splash:
       default: false
 
 flutter:
-  
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -154,15 +146,10 @@ flutter:
     - assets/images/logo.png
     - assets/images/logodark.png
     - assets/images/logo.svg
-    
-
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
-
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
-
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
