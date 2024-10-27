@@ -26,102 +26,97 @@ class RegisterPage extends StatelessWidget {
                 constraints: BoxConstraints(
                   maxWidth: kIsWeb ? 500.0 : double.infinity,
                 ),
-                                child: AutofillGroup(
-
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 60),
-                    fakeHero(
-                      tag: 'title',
-                      child: Text(
-                        "Регистрация",
-                        style:
-                            Theme.of(context).textTheme.displaySmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                        textAlign: TextAlign.center,
+                child: AutofillGroup(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 60),
+                      fakeHero(
+                        tag: 'title',
+                        child: Text(
+                          "Регистрация",
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 40),
-                    fakeHero(
-                      tag: 'fullname_input',
-                      child: buildTextInput(
-                        authController.fullName.value,
-                        "Введите ФИО",
-                        iconType: 'profile',
-                        context: context,
-                        currentFocus: fullNameFocus,
-                        nextFocus: emailFocus,
+                      SizedBox(height: 40),
+                      fakeHero(
+                        tag: 'fullname_input',
+                        child: buildTextInput(
+                          authController.fullName.value,
+                          "Введите ФИО",
+                          iconType: 'profile',
+                          context: context,
+                          currentFocus: fullNameFocus,
+                          nextFocus: emailFocus,
+                        ),
                       ),
-                    ),
-                    fakeHero(
-                      tag: 'email_input',
-                      child: buildTextInput(
-                        authController.email.value,
-                        "Введите почту",
-                        iconType: 'email',
-                        context: context,
-                        keyboardType: TextInputType.emailAddress,
-                        currentFocus: emailFocus,
-                        nextFocus: passwordFocus,
+                      fakeHero(
+                        tag: 'email_input',
+                        child: buildTextInput(
+                          authController.email.value,
+                          "Введите почту",
+                          iconType: 'email',
+                          context: context,
+                          keyboardType: TextInputType.emailAddress,
+                          currentFocus: emailFocus,
+                          nextFocus: passwordFocus,
+                        ),
                       ),
-                    ),
-                    fakeHero(
-                      tag: 'password_input',
-                      child: buildTextInput(
-                        authController.password.value,
-                        "Введите пароль",
-                        iconType: 'password',
-                        isPassword: true,
-                        context: context,
-                        currentFocus: passwordFocus,
+                      fakeHero(
+                        tag: 'password_input',
+                        child: buildTextInput(
+                          authController.password.value,
+                          "Введите пароль",
+                          iconType: 'password',
+                          isPassword: true,
+                          context: context,
+                          currentFocus: passwordFocus,
+                        ),
                       ),
-                    ),
-                    fakeHero(
-                      tag: 'status_toggle',
-                      child: _buildStatusToggle(context),
-                    ),
-                    SizedBox(height: 30),
-                    fakeHero(
-                      tag: 'main_button',
-                      child: ElevatedButton(
-                        onPressed: authController.status
-                            ? null
-                            : () => {
-                              // authController.register(
-                              //     authController.email.value.text,
-                              //     authController.password.value.text,
-                              //     authController.userRole,
-                              //   )
-                                },
-                        child: authController.status
-                            ? SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : Text('Зарегистрироваться'),
+                      fakeHero(
+                        tag: 'status_toggle',
+                        child: _buildStatusToggle(context),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    fakeHero(
-                      tag: 'option',
-                      child: buildSignInText(
-                        "Уже зарегистрированы?",
-                        "Войти",
-                        context,
-                        () {
-                          Get.offNamed(Routes.login);
-                        },
+                      SizedBox(height: 30),
+                      fakeHero(
+                        tag: 'main_button',
+                        child: ElevatedButton(
+                          onPressed: authController.status
+                              ? null
+                              : () => authController.register(),
+                          child: authController.status
+                              ? SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : Text('Зарегистрироваться'),
+                        ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 20),
+                      fakeHero(
+                        tag: 'option',
+                        child: buildSignInText(
+                          "Уже зарегистрированы?",
+                          "Войти",
+                          context,
+                          () {
+                            Get.offNamed(Routes.login);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
           ),
@@ -181,26 +176,24 @@ class RegisterPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () =>
-                                authController.setRole('student'),
+                            onTap: () => authController.setRole('student'),
                             behavior: HitTestBehavior.opaque,
                             child: _buildToggleOption(
                                 context: context,
                                 title: "Студент",
-                                isSelected: authController.userRole !=
-                                    'teacher'),
+                                isSelected:
+                                    authController.userRole != 'teacher'),
                           ),
                         ),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () =>
-                                authController.setRole('teacher'),
+                            onTap: () => authController.setRole('teacher'),
                             behavior: HitTestBehavior.opaque,
                             child: _buildToggleOption(
                                 context: context,
                                 title: "Преподаватель",
-                                isSelected: authController.userRole ==
-                                    'teacher'),
+                                isSelected:
+                                    authController.userRole == 'teacher'),
                           ),
                         ),
                       ],

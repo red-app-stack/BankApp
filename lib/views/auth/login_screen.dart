@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
 import '../../controllers/auth_controller.dart';
@@ -71,11 +72,8 @@ class LoginPage extends StatelessWidget {
                           onPressed: authController.status
                               ? null
                               : () {
-                                  // authController.login(
-                                  //   authController.email.value.text.trim(),
-                                  //   authController.password.value.text.trim(),
-                                  // );
-                                  // TextInput.finishAutofillContext();
+                                  authController.login();
+                                  TextInput.finishAutofillContext();
                                 },
                           style: Theme.of(context).elevatedButtonTheme.style,
                           child: authController.status

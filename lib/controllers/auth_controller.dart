@@ -4,7 +4,6 @@ import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthController extends GetxController {
@@ -12,8 +11,8 @@ class AuthController extends GetxController {
   final dio = Dio();
   final secureStorage = const FlutterSecureStorage();
 
-  final apiBaseUrl = 'https://your-secure-bank-api.com/api/v1';
-
+  final apiBaseUrl = 'https://bankdevsec5836.serveo.net';
+//   /api/v1
   final Rx<TextEditingController> fullName = TextEditingController().obs;
   final Rx<TextEditingController> email = TextEditingController().obs;
   final Rx<TextEditingController> password = TextEditingController().obs;
@@ -35,9 +34,10 @@ class AuthController extends GetxController {
   }
 
   void setStatus(bool value) => _status.value = value;
+  void setRole(String value) => _userRole.value = value;
 
-  Future<void> login(String email, String password) async {
-    if (email.isEmpty || password.isEmpty) {
+  Future<void> login() async {
+    if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
       Get.snackbar('Error', 'Please fill all fields');
       return;
     }
@@ -45,7 +45,7 @@ class AuthController extends GetxController {
     try {
       setStatus(true);
       final response = await dio.post('/auth/login', data: {
-        'email': email,
+        'email': email.value.text.trim(),
       });
 
       if (response.statusCode == 200) {
@@ -53,7 +53,7 @@ class AuthController extends GetxController {
         final storedHashedPassword = userData[
             'password']; // Assuming this is how you get the stored password
 
-        if (BCrypt.checkpw(password, storedHashedPassword)) {
+        if (BCrypt.checkpw(password.value.text.trim(), storedHashedPassword)) {
           final token = response.data['token'];
 
           await _securelyStoreCredentials(token, userData);
@@ -70,15 +70,14 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> register(String email, String password, String fullName) async {
+  Future<void> register() async {
     try {
       setStatus(true);
 
-      final hashedPassword = await _hashPassword(password); // Hash the password
       final response = await dio.post('/auth/register', data: {
-        'email': email,
-        'password': hashedPassword,
-        'fullName': fullName,
+        'email': email.value.text.trim(),
+        'password': _hashPassword(password.value.text.trim()),
+        'fullName': fullName.value.text.trim(),
       });
 
       if (response.statusCode == 201) {
@@ -127,7 +126,7 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<String> _hashPassword(String password) async {
+  String _hashPassword(String password) {
     final hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
     return hashedPassword;
   }
