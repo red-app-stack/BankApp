@@ -114,6 +114,35 @@ class PaymentsScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
 
+                // Financial services card
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[0],
+                            label: 'Карты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[1],
+                            label: 'Депозиты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[2],
+                            label: 'Кредиты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[3],
+                            label: 'Рассрочка',
+                            theme: theme),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+
                 // Popular services card
                 Card(
                   child: Padding(
