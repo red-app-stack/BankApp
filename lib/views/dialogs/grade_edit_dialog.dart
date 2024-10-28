@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/firebase_service.dart';
-import '../../utils/widgets.dart';
+import '../shared/widgets.dart';
 
 class GradeEditDialog extends StatefulWidget {
   final Student student;

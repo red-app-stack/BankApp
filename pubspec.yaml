@@ -2,7 +2,7 @@ name: bank_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -45,9 +45,10 @@ dependencies:
   image_picker: any
   intl: ^0.19.0
   shared_preferences: any
+  curved_navigation_bar: ^1.0.6
   shimmer: ^3.0.0
 dev_dependencies:
-
+  flutter_launcher_icons: "^0.14.1"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -58,14 +59,14 @@ dev_dependencies:
     sdk: flutter
 
 # old, added icons from https://icon.kitchen/
-# flutter_launcher_icons:
-#   android: "launcher_icon"
-#   ios: true
-#   image_path: "assets/images/icondark.png"
-#   min_sdk_android: 23 # android min sdk min:16, default 21
-#   andrid:
-#     image_path: "assets/images/icondark.png"
-#     min_sdk_android: 23
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/icondark.png"
+  min_sdk_android: 23 # android min sdk min:16, default 21
+  andrid:
+    image_path: "assets/images/icondark.png"
+    min_sdk_android: 23
 #   web:
 #     generate: true
 #     image_path: "assets/images/icondark.png"
@@ -83,44 +84,21 @@ flutter_native_splash:
   ios: true
   web: true
   color: "#d8d9e2" # AppColorsLight.surfaceDim
-  image: assets/images/logodark.png
+  image: assets/images/logonew.jpg
   color_dark: "#00438a"
   # background_image_dark: "assets/dark-background.png"
-  image_dark: assets/images/logo.png
+  image_dark: assets/images/logonew.jpg
   # branding_dark: assets/dart_dark.png
   # Define dark theme splash screen
   android_12:
-    image: assets/images/logodark.png # Default for Android 12 splash
+    image: assets/images/logonew.jpg # Default for Android 12 splash
     # icon_background_color: "#d8d9e2"
     color: "#d8d9e2"
-    image_dark: assets/images/logo.png
+    image_dark: assets/images/logonew.jpg
     # background_image_dark: "#00438a"
     # icon_background_color_dark: "#42a5f5"
     color_dark: "#00438a"
 
-  # flutter_native_splash:
-  #   android: true
-  #   ios: true
-  #   web: true
-  #   color: "#42a5f5"
-  #   image: assets/images/logo.png
-  #   android_12:
-  #     image: assets/images/logo.png
-  #     icon_background_color: "#42a5f5"
-  #     color: "#42a5f5"
-  # flutter_native_splash:
-  #   android: true
-  #   ios: true
-  #   web: true
-  # color: "{{lightThemeColor}}"
-  # image: assets/images/logolight.png
-  # # Define the splash screen for dark theme
-  # dark:
-  #   color: "{{darkThemeColor}}"
-  #   image: assets/images/logodark.png
-  # For information on the generic Dart part of this file, see the
-  # following page: https://dart.dev/tools/pub/pubspec
-  # The following section is specific to Flutter packages.
   platforms:
     android:
       default: true
@@ -134,7 +112,6 @@ flutter_native_splash:
       default: false
 
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -143,9 +120,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/images/logo.png
-    - assets/images/logodark.png
-    - assets/images/logo.svg
+    - assets/icons/
+    # - assets/icons/iconoir_home.svg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

@@ -22,32 +22,6 @@
             </intent-filter>
         </activity>
 
-        <activity-alias
-            android:label="Банк"
-            android:icon="@mipmap/ic_launcher_dark"
-            android:name=".AlternateIcon"
-            android:enabled="true"
-            android:exported="true"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        
-        <activity-alias
-            android:label="Банк"
-            android:icon="@mipmap/ic_launcher"
-            android:name=".NormalIcon"
-            android:enabled="false"
-            android:exported="true"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

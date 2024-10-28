@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bcrypt/bcrypt.dart';
@@ -17,11 +18,22 @@ class AuthController extends GetxController {
   final Rx<TextEditingController> email = TextEditingController().obs;
   final Rx<TextEditingController> password = TextEditingController().obs;
 
+  final RxString _verificationCode = ''.obs;
+  String get verificationCode => _verificationCode.value;
+  final RxBool _isCodeSent = false.obs;
+  bool get isCodeSent => _isCodeSent.value;
+
+  final RxInt _countdownTimer = 30.obs; // Timer duration
+  int get countdownTimer => _countdownTimer.value;
+  Timer? _timer;
+
   final RxBool _status = false.obs;
   bool get status => _status.value;
 
   final RxString _userRole = RxString('client');
   String get userRole => _userRole.value;
+  Map<String, dynamic>? tempUserData;
+  String? tempUserToken;
 
   @override
   void onInit() {
@@ -46,19 +58,21 @@ class AuthController extends GetxController {
       setStatus(true);
       final response = await dio.post('/auth/login', data: {
         'email': email.value.text.trim(),
+        'password': password.value.text.trim(),
       });
 
       if (response.statusCode == 200) {
         final userData = response.data['user'];
-        final storedHashedPassword = userData[
-            'password']; // Assuming this is how you get the stored password
+        final storedHashedPassword = userData['password'];
 
         if (BCrypt.checkpw(password.value.text.trim(), storedHashedPassword)) {
-          final token = response.data['token'];
-
-          await _securelyStoreCredentials(token, userData);
-          Get.offAllNamed('/main');
+          _isCodeSent.value = true;
+          sendVerificationCode(email.value.text.trim());
+          Get.offNamed('/verification');
           Get.snackbar('Success', 'Login successful');
+
+          tempUserData = userData;
+          tempUserToken = response.data['token'];
         } else {
           Get.snackbar('Error', 'Invalid credentials');
         }
@@ -76,7 +90,7 @@ class AuthController extends GetxController {
 
       final response = await dio.post('/auth/register', data: {
         'email': email.value.text.trim(),
-        'password': _hashPassword(password.value.text.trim()),
+        'password': password.value.text.trim(),
         'fullName': fullName.value.text.trim(),
       });
 
@@ -127,7 +141,8 @@ class AuthController extends GetxController {
   }
 
   String _hashPassword(String password) {
-    final hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+    final hashedPassword = BCrypt.hashpw(
+        password, BCrypt.gensalt(logRounds: 10)); // Set salt rounds to 10
     return hashedPassword;
   }
 
@@ -152,11 +167,60 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> sendVerificationCode(String email) async {
+    try {
+      final response = await dio.post('/auth/send-verification-code', data: {
+        'email': email,
+      });
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        _isCodeSent.value = true;
+        startCountdown();
+        Get.snackbar('Success', 'Verification code sent to $email');
+      }
+    } on DioException catch (e) {
+      _handleApiError(e);
+    }
+  }
+
+  void startCountdown() {
+    _countdownTimer.value = 30;
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      print('ТАЙМЕР');
+      print(_countdownTimer.value);
+      if (_countdownTimer.value > 0) {
+        _countdownTimer.value--;
+      } else {
+        _timer?.cancel();
+        _isCodeSent.value = false; // Allow resending the code
+      }
+    });
+  }
+
+  Future<void> verifyCode(String code) async {
+    try {
+      final response = await dio.post('/auth/verify-code', data: {
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        if (tempUserToken != null && tempUserData != null) {
+          await _securelyStoreCredentials(tempUserToken!, tempUserData!);
+        }
+        Get.offAllNamed('/main');
+        Get.snackbar('Success', 'Code verified successfully');
+      }
+    } on DioException catch (e) {
+      _handleApiError(e);
+    }
+  }
+
   @override
   void onClose() {
     email.value.dispose();
     password.value.dispose();
     fullName.value.dispose();
+    _timer?.cancel();
     super.onClose();
   }
 }

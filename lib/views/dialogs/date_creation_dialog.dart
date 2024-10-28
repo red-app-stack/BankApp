@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../utils/widgets.dart';
+import '../shared/widgets.dart';
 
 
 class DateCreationDialog extends StatefulWidget {

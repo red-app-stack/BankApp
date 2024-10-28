@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors_light.dart';
 import 'app_colors_dark.dart';
-import '../theme_extension.dart';
+import 'theme_extension.dart';
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData.light().copyWith(

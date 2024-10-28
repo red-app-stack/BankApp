@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
 import '../../controllers/auth_controller.dart';
-import '../../utils/widgets.dart';
+import '../shared/widgets.dart';
 
 class LoginPage extends StatelessWidget {
   final AuthController authController = Get.find<AuthController>();
@@ -35,9 +35,12 @@ class LoginPage extends StatelessWidget {
                         tag: 'title',
                         child: Text(
                           "Вход",
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -69,25 +72,30 @@ class LoginPage extends StatelessWidget {
                       fakeHero(
                         tag: 'main_button',
                         child: Obx(() => ElevatedButton(
-                          onPressed: authController.status
-                              ? null
-                              : () {
-                                  authController.login();
-                                  TextInput.finishAutofillContext();
-                                },
-                          style: Theme.of(context).elevatedButtonTheme.style,
-                          child: authController.status
-                              ? SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Theme.of(context).colorScheme.onPrimary,
-                                    ),
-                                  ),
-                                )
-                              : Text('Войти'),
-                        )),
+                              onPressed: authController.status
+                                  ? null
+                                  : () {
+                                      TextInput.finishAutofillContext();
+                                      Get.offAllNamed('/main');
+                                      // authController.login();
+                                    },
+                              style:
+                                  Theme.of(context).elevatedButtonTheme.style,
+                              child: authController.status
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
+                                        ),
+                                      ),
+                                    )
+                                  : Text('Войти'),
+                            )),
                       ),
                       SizedBox(height: 20),
                       fakeHero(
