@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:flutter/services.dart'; // Import for SystemChrome
 import 'controllers/auth_controller.dart';
 import 'views/shared/static_background.dart';
 import 'utils/themes/app_theme.dart';
@@ -12,6 +13,13 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   Get.put(AuthController());
+
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  ));
+
   FlutterNativeSplash.remove();
   runApp(MyApp());
 }
@@ -35,8 +43,7 @@ class MyApp extends StatelessWidget {
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        return
-            StaticBackgroundWrapper(
+        return StaticBackgroundWrapper(
           child: child ?? Container(),
         );
       },

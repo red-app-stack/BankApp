@@ -107,7 +107,8 @@ class ProfileScreen extends StatelessWidget {
                                         ),
                                       )
                                     : Text('Выйти'),
-                              )),
+                              )
+                              ),
                         ),
                         SizedBox(height: 20),
                       ],

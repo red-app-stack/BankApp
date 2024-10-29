@@ -1,4 +1,6 @@
 //main_screen.dart // page 3
+import 'package:get/get.dart';
+
 import 'accounts_screen.dart';
 import 'transfers_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -117,7 +119,9 @@ class MainScreenState extends State<MainScreen> {
                           BlendMode.srcIn,
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed('/profile');
+                      },
                     ),
                     Expanded(
                       child: Container(

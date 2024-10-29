@@ -1,4 +1,5 @@
 import 'package:bank_app/views/auth/verification_page.dart';
+import 'package:bank_app/views/other/profile_screen.dart';
 import 'package:bank_app/views/other/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -108,6 +109,7 @@ class Routes {
   static const register = '/register';
   static const home = '/home';
   static const main = '/main';
+  static const profile = '/profile';
   static const verification = '/verification';
   static const transfers = '/transfers';
   static const phoneTransfer = '/phoneTransfer';
@@ -154,6 +156,12 @@ class AppRoutes {
     GetPage(
       name: Routes.phoneTransfer,
       page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.profile,
+      page: () => ProfileScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

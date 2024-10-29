@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../utils/themes/theme_extension.dart';
+
 class PaymentsController extends GetxController {
   final List<String> homeIconPaths = [
     'assets/icons/creditcard.svg',
@@ -41,7 +43,7 @@ class PaymentsScreen extends StatelessWidget {
               children: [
                 Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -206,54 +208,64 @@ class PaymentsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required ThemeData theme,
-    double iconSize = 24,
+    double iconSize = 30,
   }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          SvgPicture.asset(
-            svgPath,
-            width: iconSize,
-            height: iconSize,
-            colorFilter: ColorFilter.mode(
-              theme.colorScheme.primary,
-              BlendMode.srcIn,
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.bodyLarge,
-                ),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+    return Material(
+        color: Colors.transparent,
+        child: Ink(
+            child: InkWell(
+                onTap: () {},
+                borderRadius: BorderRadius.circular(12),
+                splashFactory: InkRipple.splashFactory,
+                splashColor: theme.colorScheme.primary.withOpacity(0.08),
+                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        svgPath,
+                        width: iconSize,
+                        height: iconSize,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.primary)),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme
+                                    .extension<CustomColors>()!
+                                    .primaryVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/icons/other_horiz.svg',
+                          width: iconSize,
+                          height: iconSize,
+                          colorFilter: ColorFilter.mode(
+                            theme.colorScheme.primary,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        onPressed: () {},
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/other_horiz.svg',
-              width: iconSize,
-              height: iconSize,
-              colorFilter: ColorFilter.mode(
-                theme.colorScheme.primary,
-                BlendMode.srcIn,
-              ),
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
+                ))));
   }
 
   Widget _buildShimmerLoading(ThemeData theme) {

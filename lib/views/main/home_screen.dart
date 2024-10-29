@@ -78,7 +78,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16)
+                SizedBox(height: 96),
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/icons/illustration_home.svg',
+                    width: MediaQuery.of(context).size.width * 0.85,
+                  ),
+                ),
+                SizedBox(height: 32),
               ],
             ),
           ),

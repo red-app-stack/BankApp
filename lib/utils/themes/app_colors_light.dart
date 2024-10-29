@@ -5,6 +5,7 @@ class AppColorsLight {
   static const Color onPrimary = Color(0xFFFFFFFF);
   static const Color primaryContainer = Color(0xFF0066cc);
   static const Color onPrimaryContainer = Color(0xFFFFFFFF);
+  static const Color notifications = Color(0xFFFFE066);
 
   static const Color primaryVariant = Color(0xFF00438a);
 
@@ -42,4 +43,13 @@ class AppColorsLight {
   static const Color inversePrimary = Color(0xFFaac7ff);
   static const Color inverseSurface = Color(0xFF2e3037);
   static const Color onInverseSurface = Color(0xFFeff0f9);
+
+  static var primaryCardBg = Color(0xFF1573FF);
+  static var primaryCardFg = Color(0xFF00438a);
+  static var secondaryCardBg = Color(0xFF6D88C1);
+  static var secondaryCardFg = Color(0xFF495f87);
+  static var tertiaryCardBg = Color(0xFF58A76D);
+  static var tertiaryCardFg = Color(0xFF006d34);
+  static var grayCardBg = Color(0xFF32353c);
+  static var grayCardFg = Color(0xFF727784);
 }

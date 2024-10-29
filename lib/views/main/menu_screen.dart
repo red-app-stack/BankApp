@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+import '../../utils/themes/theme_extension.dart';
+
 class MenuController extends GetxController {
   final RxDouble scrollOffset = 0.0.obs;
   final double collapsedHeight = 60.0;
@@ -198,14 +200,42 @@ class MenuScreen extends StatelessWidget {
             padding: EdgeInsets.all(16),
             child: Row(
               children: [
-                SvgPicture.asset(
-                  item.icon,
-                  width: 24,
-                  height: 24,
-                  colorFilter: ColorFilter.mode(
-                    theme.colorScheme.primary,
-                    BlendMode.srcIn,
-                  ),
+                Stack(
+                  alignment: Alignment.topRight,
+                  clipBehavior: Clip.none,
+                  children: [
+                    SvgPicture.asset(
+                      item.icon,
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(
+                        theme.colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    if (item.icon == 'assets/icons/notifications.svg')
+                      Positioned(
+                        top: -8,
+                        right: -8,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color:
+                                theme.extension<CustomColors>()!.notifications,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '12',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(width: 16),
                 Expanded(
@@ -231,21 +261,6 @@ class MenuScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (item.endElement != null) ...[
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      item.endElement!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

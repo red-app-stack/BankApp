@@ -4,19 +4,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
-class TransfersController extends GetxController {
-  final List<String> homeIconPaths = [
-    'assets/icons/creditcard.svg',
-    'assets/icons/deposit.svg',
-    'assets/icons/credit.svg',
-    'assets/icons/installment.svg',
-  ];
+import '../../utils/themes/theme_extension.dart';
 
-  final List<String> popularIconPaths = [
-    'assets/icons/phone.svg',
-    'assets/icons/internet.svg',
-    'assets/icons/transport.svg',
-    'assets/icons/valve.svg',
+class TransfersController extends GetxController {
+  final List<String> transferIconPaths = [
+    'assets/icons/ic_phone.svg',
+    'assets/icons/ic_transfer.svg',
+    'assets/icons/ic_geolocation.svg',
+    'assets/icons/ic_worldwide.svg',
+    'assets/icons/ic_convert.svg',
+    'assets/icons/ic_qr.svg',
+    'assets/icons/ic_bank.svg',
   ];
 }
 
@@ -32,11 +30,9 @@ class TransfersScreen extends StatelessWidget {
         break;
       case 'self':
         Get.toNamed('/phoneTransfer');
-
         break;
       case 'domestic':
         Get.toNamed('/phoneTransfer');
-
         break;
     }
   }
@@ -56,7 +52,7 @@ class TransfersScreen extends StatelessWidget {
               children: [
                 Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -82,33 +78,98 @@ class TransfersScreen extends StatelessWidget {
                     children: [
                       _buildCardItem(
                         context: context,
-                        icon: 'assets/icons/phone.svg',
+                        icon: controller.transferIconPaths[0],
                         title: 'По номеру телефона',
                         description:
                             'Клиентам и предпринимателям, в другие банки',
                         onTap: () => _handleTransferItemTap(context, 'phone'),
                       ),
-                      Divider(height: 1),
+                      Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.secondaryContainer),
                       _buildCardItem(
                         context: context,
-                        icon: 'assets/icons/card.svg',
+                        icon: controller.transferIconPaths[1],
                         title: 'Между своими счетами',
                         description: 'Картами, счетами, депозитами',
                         onTap: () => _handleTransferItemTap(context, 'self'),
                       ),
-                      Divider(height: 1),
+                      Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.secondaryContainer),
                       _buildCardItem(
                         context: context,
-                        icon: 'assets/icons/card.svg',
+                        icon: controller.transferIconPaths[2],
                         title: 'Внутри Казахстана',
                         description: 'На карту, на номер счёта',
-                        onTap: () =>
-                            _handleTransferItemTap(context, 'domestic'),
+                        onTap: () => _handleTransferItemTap(context, 'kz'),
+                      ),
+                      Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.secondaryContainer),
+                      _buildCardItem(
+                        context: context,
+                        icon: controller.transferIconPaths[3],
+                        title: 'Международные переводы',
+                        description: 'В любую точку мира',
+                        onTap: () => _handleTransferItemTap(context, 'world'),
+                      ),
+                      Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.secondaryContainer),
+                      _buildCardItem(
+                        context: context,
+                        icon: controller.transferIconPaths[4],
+                        title: 'Конвертация',
+                        description: 'Конвертация валют',
+                        onTap: () => _handleTransferItemTap(context, 'convert'),
+                      ),
+                      Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.secondaryContainer),
+                      _buildCardItem(
+                        context: context,
+                        icon: controller.transferIconPaths[5],
+                        title: 'Bank QR',
+                        description: 'Создайте QR для получения перевода',
+                        onTap: () => _handleTransferItemTap(context, 'qr'),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Избранное',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        SizedBox(height: 16),
+                        _buildSavedItem(
+                          svgPath: 'assets/icons/ic_bank.svg',
+                          svgPathSub: 'assets/icons/visa.svg',
+                          title: 'Bank',
+                          subtitle: '• 1488',
+                          theme: theme,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -128,47 +189,41 @@ class TransfersScreen extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      splashFactory: InkRipple.splashFactory,
+      splashColor: theme.colorScheme.primary.withOpacity(0.08),
+      highlightColor: theme.colorScheme.primary.withOpacity(0.04),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SvgPicture.asset(
-                    icon,
-                    width: 24,
-                    height: 24,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary,
-                      BlendMode.srcIn,
+            SvgPicture.asset(
+              icon,
+              width: 40,
+              height: 40,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.titleSmall,
+                  SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.extension<CustomColors>()!.primaryVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -226,59 +281,80 @@ class TransfersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoriteItem({
+  Widget _buildSavedItem({
     required String svgPath,
+    required String? svgPathSub,
     required String title,
     required String subtitle,
     required ThemeData theme,
-    double iconSize = 24,
+    double iconSize = 30,
   }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          SvgPicture.asset(
-            svgPath,
-            width: iconSize,
-            height: iconSize,
-            colorFilter: ColorFilter.mode(
-              theme.colorScheme.primary,
-              BlendMode.srcIn,
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.bodyLarge,
-                ),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+    return Material(
+        color: Colors.transparent,
+        child: Ink(
+            child: InkWell(
+                onTap: () {},
+                borderRadius: BorderRadius.circular(12),
+                splashFactory: InkRipple.splashFactory,
+                splashColor: theme.colorScheme.primary.withOpacity(0.08),
+                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        svgPath,
+                        width: iconSize,
+                        height: iconSize,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.primary)),
+                            Row(
+                              children: [
+                                svgPathSub != null
+                                    ? SvgPicture.asset(
+                                        svgPathSub,
+                                        width: 30,
+                                        height: 12,
+                                      )
+                                    : SizedBox(),
+                                SizedBox(width: 8),
+                                Text(subtitle,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme
+                                          .extension<CustomColors>()!
+                                          .primaryVariant,
+                                    ))
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/icons/other_horiz.svg',
+                          width: iconSize,
+                          height: iconSize,
+                          colorFilter: ColorFilter.mode(
+                            theme.colorScheme.primary,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        onPressed: () {},
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/other_horiz.svg',
-              width: iconSize,
-              height: iconSize,
-              colorFilter: ColorFilter.mode(
-                theme.colorScheme.primary,
-                BlendMode.srcIn,
-              ),
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
+                ))));
   }
 
   Widget _buildShimmerLoading(ThemeData theme) {

@@ -5,8 +5,10 @@ class AppColorsDark {
   static const Color onPrimary = Color(0xFF002f65);
   static const Color primaryContainer = Color(0xFF005dba);
   static const Color onPrimaryContainer = Color(0xFFFFFFFF);
+  static const Color notifications = Color(0xFFFFE066);
 
   static const Color primaryVariant = Color(0xFF00438a);
+  static const Color primaryVariantHigh = Color(0xFF6b90d6);
 
   static const Color secondary = Color(0xFFb0c7f5);
   static const Color onSecondary = Color(0xFF183055);
@@ -42,4 +44,13 @@ class AppColorsDark {
   static const Color inversePrimary = Color(0xFF005cba);
   static const Color inverseSurface = Color(0xFFe1e2eb);
   static const Color onInverseSurface = Color(0xFF2e3037);
+
+  static var primaryCardBg = Color(0xFF1573FF);
+  static var primaryCardFg = Color(0xFF00438a);
+  static var secondaryCardBg = Color(0xFF6D88C1);
+  static var secondaryCardFg = Color(0xFF495f87);
+  static var tertiaryCardBg = Color(0xFF58A76D);
+  static var tertiaryCardFg = Color(0xFF006d34);
+  static var grayCardBg = Color(0xFF32353c);
+  static var grayCardFg = Color(0xFF727784);
 }

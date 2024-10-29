@@ -26,6 +26,8 @@
 				</dict>
 			</dict>
 		</dict>
+		<key>NSContactsUsageDescription</key>
+		<string>This app requires contacts access to select phone numbers for transfers.</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
