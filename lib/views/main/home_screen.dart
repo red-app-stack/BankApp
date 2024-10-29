@@ -6,9 +6,9 @@ import 'package:shimmer/shimmer.dart';
 class HomeScreenController extends GetxController {
   final List<String> homeIconPaths = [
     'assets/icons/creditcard.svg',
-    'assets/icons/deposits.svg',
-    'assets/icons/credits.svg',
-    'assets/icons/shopping.svg',
+    'assets/icons/deposit.svg',
+    'assets/icons/credit.svg',
+    'assets/icons/installment.svg',
   ];
 
   final List<String> popularIconPaths = [
@@ -37,56 +37,6 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/user.svg',
-                        width: 32,
-                        height: 32,
-                        colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {},
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 48,
-                        margin: EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TextField(
-                          textAlignVertical: TextAlignVertical.center,
-                          textInputAction: TextInputAction.search,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.search),
-                            border: InputBorder.none,
-                            hintText: 'Поиск...',
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/support.svg',
-                        width: 32,
-                        height: 32,
-                        colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),

@@ -7,9 +7,9 @@ import 'package:shimmer/shimmer.dart';
 class PaymentsController extends GetxController {
   final List<String> homeIconPaths = [
     'assets/icons/creditcard.svg',
-    'assets/icons/deposits.svg',
-    'assets/icons/credits.svg',
-    'assets/icons/shopping.svg',
+    'assets/icons/deposit.svg',
+    'assets/icons/credit.svg',
+    'assets/icons/installment.svg',
   ];
 
   final List<String> popularIconPaths = [
@@ -29,7 +29,6 @@ class PaymentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    // final PaymentsController controller = Get.put(PaymentsController());
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -431,4 +430,5 @@ class PaymentsScreen extends StatelessWidget {
       ),
     );
   }
+
 }

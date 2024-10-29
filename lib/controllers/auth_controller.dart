@@ -113,12 +113,12 @@ class AuthController extends GetxController {
     try {
       setStatus(true);
       await dio.post('/auth/logout');
-      await _clearSecureStorage();
-      Get.offAllNamed('/login');
     } on DioException catch (e) {
       _handleApiError(e);
     } finally {
       setStatus(false);
+      await _clearSecureStorage();
+      Get.offAllNamed('/login');
     }
   }
 

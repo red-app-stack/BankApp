@@ -1,12 +1,12 @@
 //main_screen.dart // page 3
-import 'package:bank_app/views/main/accounts_screen.dart';
-import 'package:bank_app/views/main/transfers_screen.dart';
+import 'accounts_screen.dart';
+import 'transfers_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'home_screen.dart';
-import 'payments_screen.dart';
 import 'menu_screen.dart';
+import 'payments_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,7 +16,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
   late PageController _pageController;
 
   // Some placeholders for now
@@ -31,7 +31,7 @@ class MainScreenState extends State<MainScreen> {
     'assets/icons/payments.svg',
     'assets/icons/transfers.svg',
     'assets/icons/home.svg',
-    'assets/icons/accounts.svg',
+    'assets/icons/card.svg',
     'assets/icons/menu.svg',
   ];
 
@@ -98,11 +98,71 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: _screens,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/user.svg',
+                        width: 32,
+                        height: 32,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      onPressed: () {},
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        margin: EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: TextField(
+                          textAlignVertical: TextAlignVertical.center,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.search),
+                            border: InputBorder.none,
+                            hintText: 'Поиск...',
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/support.svg',
+                        width: 32,
+                        height: 32,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      onPressed: () {},
+                    ),
+                  ],
+                )),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: _screens,
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
