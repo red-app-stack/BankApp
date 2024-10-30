@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
 
 class CodeEnteringScreen extends StatefulWidget {
   const CodeEnteringScreen({super.key});
@@ -11,17 +16,21 @@ class CodeEnteringScreen extends StatefulWidget {
 class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   final FocusNode _codeFocusNode = FocusNode();
   final TextEditingController _codeController = TextEditingController();
+  final LocalAuthentication _auth = LocalAuthentication();
+
+  final int _codeLength = 4;
+  String _enteredCode = '';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Align(
                 alignment: Alignment.topLeft,
@@ -35,36 +44,37 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                       BlendMode.srcIn,
                     ),
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Get.toNamed('/phoneLogin'),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: size.height * 0.02),
               Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Stack(alignment: Alignment.center, children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                          child: Container(),
-                        ),
-                        Text(
+                      CircleAvatar(
+                        radius: 48,
+                        backgroundColor:
+                            theme.colorScheme.primary.withOpacity(0.1),
+                        child: Text(
                           'ВВ',
-                          style: theme.textTheme.displaySmall?.copyWith(
-                            color: theme.colorScheme.onSurface,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ]),
-                      SizedBox(height: 12),
+                      ),
+                      SizedBox(height: 16),
                       Text(
-                        'Владислав\nВасильевич Ш.',
-                        maxLines: 2,
+                        'Владислав \nВасильевич Ш.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.titleLarge?.copyWith(
-                          color: theme.colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -72,53 +82,74 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                 ),
               ),
               SizedBox(height: 24),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  childAspectRatio: 1,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  children: [
-                    _buildNumericButton('1'),
-                    _buildNumericButton('2'),
-                    _buildNumericButton('3'),
-                    _buildNumericButton('4'),
-                    _buildNumericButton('5'),
-                    _buildNumericButton('6'),
-                    _buildNumericButton('7'),
-                    _buildNumericButton('8'),
-                    _buildNumericButton('9'),
-                    Container(), // Empty container for spacing
-                    _buildNumericButton('0'),
-                    _buildIconButton(
-                      'assets/icons/ic_clear.svg',
-                      'Delete',
-                      () => _codeController.text = _codeController.text.substring(0, _codeController.text.length - 1),
-                    ),
-                  ],
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  "Введите код доступа",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.outline,
+                      fontSize: 12,
+                      fontFamily: 'OpenSans',
+                      fontWeight: FontWeight.w400),
+                  textAlign: TextAlign.left,
                 ),
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  // Handle code verification logic here
-                },
-                style: theme.elevatedButtonTheme.style?.copyWith(
-                  backgroundColor: WidgetStateProperty.all(
-                    theme.colorScheme.secondaryContainer,
-                  ),
-                ),
-                child: Text(
-                  'Забыли код доступа?',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontFamily: 'OpenSans',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _codeLength,
+                  (index) => Container(
+                    margin: EdgeInsets.symmetric(horizontal: 8),
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: index < _enteredCode.length
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outlineVariant,
+                        width: 1.5,
+                      ),
+                      color: index < _enteredCode.length
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 32),
+              SizedBox(height: 24),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1,
+                    mainAxisSpacing: 25,
+                    crossAxisSpacing: 25,
+                    children: [
+                      for (var i = 1; i <= 9; i++)
+                        _buildNumericButton(i.toString(), theme),
+                      _buildBiometricButton(theme),
+                      _buildNumericButton('0', theme),
+                      _buildDeleteButton(theme),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 24),
+              TextButton(
+                onPressed: () {
+                  // Handle forgotten code logic
+                },
+                child: Text(
+                  'Забыли код доступа?',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -126,42 +157,134 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     );
   }
 
-  Widget _buildNumericButton(String value) {
-    return ElevatedButton(
+  Widget _buildNumericButton(String value, ThemeData theme) {
+    return TextButton(
       onPressed: () {
-        _codeController.text += value;
+        if (_enteredCode.length < _codeLength) {
+          setState(() {
+            _enteredCode += value;
+          });
+          if (_enteredCode.length == _codeLength) {
+            Get.toNamed('/main');
+          }
+        }
       },
-      style: ElevatedButton.styleFrom(
+      style: TextButton.styleFrom(
         shape: CircleBorder(),
-        padding: EdgeInsets.all(16),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        backgroundColor: theme.colorScheme.surfaceContainer,
+        padding: EdgeInsets.all(4),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       child: Text(
         value,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              color: theme.colorScheme.outline,
+              fontWeight: FontWeight.bold,
             ),
       ),
     );
   }
 
-  Widget _buildIconButton(String assetPath, String tooltip, VoidCallback onPressed) {
-    return Tooltip(
-      message: tooltip,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: CircleBorder(),
-          padding: EdgeInsets.all(16),
-          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-        ),
-        child: SvgPicture.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          color: Theme.of(context).colorScheme.onSurface,
+  Widget _buildBiometricButton(ThemeData theme) {
+    return TextButton(
+      onPressed: () {
+        _authenticateWithBiometrics();
+      },
+      style: TextButton.styleFrom(
+        shape: CircleBorder(),
+        backgroundColor: theme.colorScheme.surfaceContainer,
+        padding: EdgeInsets.all(4),
+      ),
+      child: SvgPicture.asset(
+        'assets/icons/ic_biometry.svg',
+        width: 48,
+        height: 48,
+        colorFilter: ColorFilter.mode(
+          theme.colorScheme.primary,
+          BlendMode.srcIn,
         ),
       ),
     );
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    bool authenticated = false;
+
+    try {
+      bool canCheckBiometrics = await _auth.canCheckBiometrics;
+      if (canCheckBiometrics) {
+        authenticated = await _auth.authenticate(
+          localizedReason: 'Используйте Touch ID для входа в суперприложение',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            useErrorDialogs: true,
+            biometricOnly: true,
+            sensitiveTransaction: true,
+          ),
+          authMessages: <AuthMessages>[
+            AndroidAuthMessages(
+              signInTitle: 'Вход в суперприложение',
+              cancelButton: 'Отмена',
+              biometricHint: ' ',
+              biometricNotRecognized: 'Отпечаток не распознан',
+              biometricSuccess: 'Успешно',
+            ),
+            IOSAuthMessages(
+              cancelButton: 'Отмена',
+              goToSettingsButton: 'Настройки',
+              goToSettingsDescription: 'Настройте биометрию',
+              lockOut: 'Включите биометрию',
+            ),
+          ],
+        );
+      } else {
+        Get.snackbar(
+            'Сообщение', 'Touch ID не поддерживается на этом устройстве');
+        print("Biometric authentication is not available");
+      }
+    } catch (e) {
+      Get.snackbar('Ошибка', 'Touch ID недоступен');
+      print("Error during biometric authentication: $e");
+    }
+
+    if (authenticated) {
+      Get.toNamed('/main');
+      print("Authentication successful!");
+    } else {
+      print("Authentication failed.");
+    }
+  }
+
+  Widget _buildDeleteButton(ThemeData theme) {
+    return TextButton(
+      onPressed: () {
+        if (_enteredCode.isNotEmpty) {
+          setState(() {
+            _enteredCode = _enteredCode.substring(0, _enteredCode.length - 1);
+          });
+        }
+      },
+      style: TextButton.styleFrom(
+        shape: CircleBorder(),
+        backgroundColor: theme.colorScheme.surfaceContainer,
+        padding: EdgeInsets.all(4),
+      ),
+      child: SvgPicture.asset(
+        'assets/icons/ic_clear.svg',
+        width: 32,
+        height: 32,
+        colorFilter: ColorFilter.mode(
+          theme.colorScheme.primary,
+          BlendMode.srcIn,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _codeFocusNode.dispose();
+    _codeController.dispose();
+    super.dispose();
   }
 }

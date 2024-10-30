@@ -9,6 +9,7 @@ import '../../utils/themes/theme_extension.dart';
 import '../shared/shared_classes.dart';
 import 'settings_screen.dart';
 
+
 class ProfileScreen extends StatelessWidget {
   final AuthController controller = Get.find<AuthController>();
 

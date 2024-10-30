@@ -1,7 +1,9 @@
+import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../shared/shared_classes.dart';
+import '../../controllers/auth_controller.dart';
 
 class MenuController extends GetxController {
   final RxDouble scrollOffset = 0.0.obs;
@@ -11,6 +13,7 @@ class MenuController extends GetxController {
 
 class MenuScreen extends StatelessWidget {
   final MenuController controller = Get.put(MenuController());
+  final AuthController _authController = Get.find<AuthController>();
 
   MenuScreen({super.key});
 
@@ -89,20 +92,19 @@ class MenuScreen extends StatelessWidget {
                                   ),
                                 ),
                               ...section.items.map((item) => _buildMenuItem(
-                                    item: item,
-                                    theme: theme,
-                                    isLast: section.items.last == item,
-                                  ))
+                                  item: item,
+                                  theme: theme,
+                                  isLast: section.items.last == item,
+                                  onTap: item.icon == 'assets/icons/ic_settings.svg' ? () {
+                                    Get.toNamed('/securitySettings');
+                                  } : () {}))
                             ],
                           ),
                         ),
                         SizedBox(height: 16),
                       ],
                     )),
-                _buildServiceItem(
-                    svgPath: 'assets/icons/ic_exit.svg',
-                    label: 'Выход',
-                    theme: theme),
+                _buildServiceItem(theme: theme),
                 SizedBox(height: 16),
               ],
             ),
@@ -113,8 +115,8 @@ class MenuScreen extends StatelessWidget {
   }
 
   Widget _buildServiceItem({
-    required String svgPath,
-    String label = '',
+    String svgPath = 'assets/icons/ic_exit.svg',
+    String label = 'Выход',
     double iconSize = 40,
     required ThemeData theme,
   }) {
@@ -122,7 +124,9 @@ class MenuScreen extends StatelessWidget {
       color: Colors.transparent,
       child: Ink(
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            _authController.logout();
+          },
           borderRadius: BorderRadius.circular(12), // Soft rounded corners
           splashFactory: InkRipple.splashFactory, // Smoother ripple effect
           splashColor: theme.colorScheme.primary.withOpacity(0.08),
@@ -166,11 +170,16 @@ class MenuScreen extends StatelessWidget {
     required MenuItem item,
     required ThemeData theme,
     bool isLast = false,
+    required VoidCallback onTap,
   }) {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          splashFactory: InkRipple.splashFactory,
+          splashColor: theme.colorScheme.primary.withOpacity(0.08),
+          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Row(

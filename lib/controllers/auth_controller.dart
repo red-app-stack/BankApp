@@ -85,28 +85,27 @@ class AuthController extends GetxController {
   }
 
   Future<void> register() async {
-    try {
-      setStatus(true);
+    // try {
+    setStatus(true);
 
-      final response = await dio.post('/auth/register', data: {
-        'email': email.value.text.trim(),
-        'password': password.value.text.trim(),
-        'fullName': fullName.value.text.trim(),
-      });
+    // final response = await dio.post('/auth/register', data: {
+    //   'email': email.value.text.trim(),
+    //   'password': password.value.text.trim(),
+    //   'fullName': fullName.value.text.trim(),
+    // });
+    // if (response.statusCode == 201) {
+    //   final token = response.data['token'];
+    //   final userData = response.data['user'];
 
-      if (response.statusCode == 201) {
-        final token = response.data['token'];
-        final userData = response.data['user'];
-
-        await _securelyStoreCredentials(token, userData);
-        Get.offAllNamed('/main');
-        Get.snackbar('Success', 'Registration successful');
-      }
-    } on DioException catch (e) {
-      _handleApiError(e);
-    } finally {
-      setStatus(false);
-    }
+    // await _securelyStoreCredentials(token, userData);
+    Get.offAllNamed('/main');
+    // Get.snackbar('Success', 'Registration successful');
+    //   }
+    // } on DioException catch (e) {
+    //   _handleApiError(e);
+    // } finally {
+    setStatus(false);
+    // }
   }
 
   Future<void> logout() async {
@@ -118,7 +117,7 @@ class AuthController extends GetxController {
     } finally {
       setStatus(false);
       await _clearSecureStorage();
-      Get.offAllNamed('/login');
+      Get.offAllNamed('/phoneLogin');
     }
   }
 
@@ -131,12 +130,12 @@ class AuthController extends GetxController {
           Get.offAllNamed('/main');
         } else {
           await _clearSecureStorage();
-          Get.offAllNamed('/login');
+          Get.offAllNamed('/phoneLogin');
         }
       }
     } catch (e) {
       await _clearSecureStorage();
-      Get.offAllNamed('/login');
+      Get.offAllNamed('/phoneLogin');
     }
   }
 
@@ -159,11 +158,11 @@ class AuthController extends GetxController {
 
   void _handleApiError(DioException e) {
     if (e.response?.statusCode == 401) {
-      Get.snackbar('Error', 'Invalid credentials');
+      // Get.snackbar('Error', 'Invalid credentials');
     } else if (e.response?.statusCode == 403) {
-      Get.snackbar('Error', 'Access denied');
+      // Get.snackbar('Error', 'Access denied');
     } else {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      // Get.snackbar('Error', 'An unexpected error occurred');
     }
   }
 

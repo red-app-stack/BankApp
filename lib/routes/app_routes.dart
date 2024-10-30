@@ -1,11 +1,14 @@
 import 'package:bank_app/views/auth/code_entering_screen.dart';
+import 'package:bank_app/views/auth/email_login_screen.dart';
 import 'package:bank_app/views/auth/verification_screen.dart';
 import 'package:bank_app/views/other/profile_screen.dart';
 import 'package:bank_app/views/other/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../views/auth/password_entering_screen.dart';
 import '../views/main/transfers_screen.dart';
-import '/views/auth/login_screen.dart';
+import '../views/auth/phone_login_screen.dart';
+import '../views/other/security_settings_screen.dart';
 import '/views/auth/register_screen.dart';
 import '/views/main/home_screen.dart';
 import '../views/main/main_screen.dart';
@@ -105,30 +108,85 @@ class ScaleFadeTransition extends CustomTransition {
   }
 }
 
+class CustomSlideTransition extends CustomTransition {
+  @override
+  Widget buildTransition(
+    BuildContext context,
+    Curve? curve,
+    Alignment? alignment,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final tween = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: curve ?? Curves.easeInOut));
+
+    return SlideTransition(
+      position: animation.drive(tween),
+      child: child,
+    );
+  }
+}
+
+class CustomSlideTransitionLeft extends CustomTransition {
+  @override
+  Widget buildTransition(
+    BuildContext context,
+    Curve? curve,
+    Alignment? alignment,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final tween = Tween<Offset>(
+      begin: const Offset(-1.0, 0.0), // Slide from left to right
+      end: Offset.zero,
+    ).chain(CurveTween(curve: curve ?? Curves.easeInOut));
+
+    return SlideTransition(
+      position: animation.drive(tween),
+      child: child,
+    );
+  }
+}
+
+
 class Routes {
-  static const login = '/login';
+  static const phoneLogin = '/phoneLogin';
+  static const emailLogin = '/emailLogin';
   static const register = '/register';
   static const home = '/home';
   static const main = '/main';
   static const profile = '/profile';
   static const codeEntering = '/codeEntering';
+  static const passwordEntering = '/passwordEntering';
   static const verification = '/verification';
   static const transfers = '/transfers';
   static const phoneTransfer = '/phoneTransfer';
+
+  static const securitySettings = '/securitySettings';
 }
 
 class AppRoutes {
   static final routes = [
     GetPage(
-      name: Routes.login,
-      page: () => LoginPage(),
-      customTransition: FadeWithHeroTransition(),
+      name: Routes.phoneLogin,
+      page: () => PhoneLoginPage(),
+      customTransition: CustomSlideTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.emailLogin,
+      page: () => EmailLoginPage(),
+      customTransition: CustomSlideTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
       name: Routes.register,
       page: () => RegisterPage(),
-      customTransition: FadeWithHeroTransition(),
+      customTransition: CustomSlideTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
@@ -140,19 +198,25 @@ class AppRoutes {
     GetPage(
       name: Routes.main,
       page: () => MainScreen(),
-      customTransition: FadeWithHeroTransition(),
-      transitionDuration: Duration(milliseconds: 300),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.codeEntering,
       page: () => CodeEnteringScreen(),
-      customTransition: FadeWithHeroTransition(),
+      customTransition: CustomSlideTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.passwordEntering,
+      page: () => PasswordEnteringScreen(),
+      customTransition: CustomSlideTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
       name: Routes.verification,
       page: () => VerificationScreen(),
-      customTransition: FadeWithHeroTransition(),
+      customTransition: CustomSlideTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
@@ -166,6 +230,12 @@ class AppRoutes {
       page: () => PhoneTransferScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.securitySettings,
+      page: () => SecuritySettingsScreen(),
+      customTransition: CustomSlideTransitionLeft(),
+      transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
       name: Routes.profile,

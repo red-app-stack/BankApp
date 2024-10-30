@@ -110,7 +110,7 @@ class RegisterPage extends StatelessWidget {
                           "Войти",
                           context,
                           () {
-                            Get.offNamed(Routes.login);
+                            Get.offNamed(Routes.phoneLogin);
                           },
                         ),
                       ),

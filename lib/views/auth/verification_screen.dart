@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import '../../controllers/auth_controller.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -9,6 +11,8 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class VerificationScreenState extends State<VerificationScreen> {
+  final AuthController _authController = Get.find<AuthController>();
+
   final FocusNode _codeFocusNode = FocusNode();
   final TextEditingController _codeController = TextEditingController();
 
@@ -63,8 +67,12 @@ class VerificationScreenState extends State<VerificationScreen> {
                   child: TextField(
                     controller: _codeController,
                     focusNode: _codeFocusNode,
+                    textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
                     style: theme.textTheme.titleMedium,
+                    onSubmitted: (_) {
+                      Get.toNamed('/passwordEntering');
+                    },
                     decoration: InputDecoration(
                       hintText: 'Код подтверждения',
                       border: InputBorder.none,
@@ -79,7 +87,7 @@ class VerificationScreenState extends State<VerificationScreen> {
               Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  // Handle code verification logic here
+                  Get.toNamed('/passwordEntering');
                 },
                 style: theme.elevatedButtonTheme.style?.copyWith(
                   backgroundColor: WidgetStateProperty.all(
