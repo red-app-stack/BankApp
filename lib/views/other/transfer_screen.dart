@@ -84,7 +84,7 @@ class PhoneTransferController extends GetxController {
     if (newDigits.isNotEmpty) {
       // Handle area code
       if (newDigits.length <= 3) {
-        formatted = '(${newDigits}';
+        formatted = '($newDigits';
       }
       // Handle first part
       else if (newDigits.length <= 6) {

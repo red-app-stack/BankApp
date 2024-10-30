@@ -1,6 +1,9 @@
 //main_screen.dart // page 3
 import 'package:get/get.dart';
 
+import '../../utils/themes/theme_extension.dart';
+import '../other/profile_screen.dart';
+import '../other/support_screen.dart';
 import 'accounts_screen.dart';
 import 'transfers_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -10,6 +13,62 @@ import 'home_screen.dart';
 import 'menu_screen.dart';
 import 'payments_screen.dart';
 
+class MainScreenController extends GetxController
+    with GetSingleTickerProviderStateMixin {
+  late AnimationController overlayAnimationController;
+  late Animation<double> overlayAnimation;
+  final Rx<Widget?> overlayScreen = Rx<Widget?>(null);
+  final RxBool isProfileOpen = false.obs;
+  final RxBool isSupportOpen = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    overlayAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    overlayAnimation = CurvedAnimation(
+      parent: overlayAnimationController,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+  }
+
+  @override
+  void onClose() {
+    overlayAnimationController.dispose();
+    super.onClose();
+  }
+
+  void showOverlay(Widget screen,
+      {bool isProfile = false, bool isSupport = false}) {
+    if (hasOverlay) {
+      overlayAnimationController.reverse(from: 0.001).whenComplete(() {
+        overlayScreen.value = screen;
+        isProfileOpen.value = isProfile;
+        isSupportOpen.value = isSupport;
+        overlayAnimationController.forward(
+            from: 0.001); // Start from 30% to reduce gap
+      });
+    } else {
+      overlayScreen.value = screen;
+      isProfileOpen.value = isProfile;
+      isSupportOpen.value = isSupport;
+      overlayAnimationController.forward();
+    }
+  }
+
+  Future<void> hideOverlay() async {
+    await overlayAnimationController.reverse();
+    overlayScreen.value = null;
+    isProfileOpen.value = false;
+    isSupportOpen.value = false;
+  }
+
+  bool get hasOverlay => overlayScreen.value != null;
+}
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -17,11 +76,92 @@ class MainScreen extends StatefulWidget {
   MainScreenState createState() => MainScreenState();
 }
 
+class ZoomFadeTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+
+  const ZoomFadeTransition({
+    required this.child,
+    required this.animation,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final zoomCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+    );
+
+    final fadeCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+    );
+
+    return FadeTransition(
+      opacity: fadeCurve,
+      child: ScaleTransition(
+        alignment: Alignment.center,
+        scale: Tween<double>(
+          begin: 0.85,
+          end: 1.0,
+        ).animate(zoomCurve),
+        child: child,
+      ),
+    );
+  }
+}
+
+class SlideOverlayTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+  final bool fromRight;
+
+  const SlideOverlayTransition({
+    required this.child,
+    required this.animation,
+    this.fromRight = true,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: Offset(fromRight ? 1.0 : -1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          )),
+          child: FadeTransition(
+            opacity: Tween<double>(
+              begin: 0.0,
+              end: 1.0,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+            )),
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
 class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2;
-  late PageController _pageController;
 
-  // Some placeholders for now
+  late PageController _pageController;
+  final MainScreenController _controller = Get.put(MainScreenController());
+
+  // Your existing screen list
   final List<Widget> _screens = [
     PaymentsScreen(),
     TransfersScreen(),
@@ -55,7 +195,37 @@ class MainScreenState extends State<MainScreen> {
     return Duration(milliseconds: duration.clamp(200, 1000));
   }
 
+  void _handleProfileTap() {
+    if (_controller.isProfileOpen.value) {
+      _controller.hideOverlay();
+    } else {
+      _controller.showOverlay(
+        ProfileScreen(
+          onBack: () => _controller.hideOverlay(),
+        ),
+        isProfile: true,
+      );
+    }
+  }
+
+  void _handleSupportTap() {
+    if (_controller.isSupportOpen.value) {
+      _controller.hideOverlay();
+    } else {
+      _controller.showOverlay(
+        SupportScreen(
+          onBack: () => _controller.hideOverlay(),
+        ),
+        isSupport: true,
+      );
+    }
+  }
+
   void _onItemTapped(int index) {
+    if (_controller.hasOverlay) {
+      _controller.hideOverlay();
+    }
+
     if (index == _selectedIndex) return;
 
     final duration = _calculateAnimationDuration(_selectedIndex, index);
@@ -68,6 +238,127 @@ class MainScreenState extends State<MainScreen> {
       index,
       duration: duration,
       curve: Curves.easeInOut,
+    );
+  }
+
+  Widget _buildTopBarIcons(ThemeData theme) {
+    return Row(
+      children: [
+        Obx(() => IconButton(
+              icon: Stack(
+                alignment: Alignment.topRight,
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      _controller.isProfileOpen.value
+                          ? 'assets/icons/ic_back.svg'
+                          : 'assets/icons/user.svg',
+                      key: ValueKey<bool>(_controller.isProfileOpen.value),
+                      width: 32,
+                      height: 32,
+                      colorFilter: ColorFilter.mode(
+                        theme.colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  if (!_controller.isProfileOpen.value && 1 > 0)
+                    Positioned(
+                      top: 3,
+                      right: 3,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: theme.extension<CustomColors>()!.notifications,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              onPressed: _handleProfileTap,
+            )),
+        Expanded(
+          child: Container(
+            height: 48,
+            margin: EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TextField(
+              textAlignVertical: TextAlignVertical.center,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                border: InputBorder.none,
+                hintText: 'Поиск...',
+                contentPadding: EdgeInsets.symmetric(horizontal: 12),
+              ),
+            ),
+          ),
+        ),
+        Obx(() => IconButton(
+              icon: Stack(
+                alignment: Alignment.topRight,
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      _controller.isSupportOpen.value
+                          ? 'assets/icons/ic_back.svg'
+                          : 'assets/icons/support.svg',
+                      key: ValueKey<bool>(_controller.isSupportOpen.value),
+                      width: 32,
+                      height: 32,
+                      colorFilter: ColorFilter.mode(
+                        theme.colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  if (!_controller.isSupportOpen.value && 1 < 0)
+                    Positioned(
+                      top: 3,
+                      right: 3,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: theme.extension<CustomColors>()!.notifications,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              onPressed: _handleSupportTap,
+            )),
+      ],
     );
   }
 
@@ -106,63 +397,28 @@ class MainScreenState extends State<MainScreen> {
         child: Column(
           children: [
             Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/user.svg',
-                        width: 32,
-                        height: 32,
-                        colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {
-                        Get.toNamed('/profile');
-                      },
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 48,
-                        margin: EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TextField(
-                          textAlignVertical: TextAlignVertical.center,
-                          textInputAction: TextInputAction.search,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.search),
-                            border: InputBorder.none,
-                            hintText: 'Поиск...',
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/support.svg',
-                        width: 32,
-                        height: 32,
-                        colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ],
-                )),
+              padding: const EdgeInsets.all(16.0),
+              child: _buildTopBarIcons(theme),
+            ),
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: _screens,
+              child: Stack(
+                children: [
+                  PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: _screens,
+                  ),
+                  Obx(() {
+                    final overlay = _controller.overlayScreen.value;
+                    if (overlay == null) return const SizedBox.shrink();
+
+                    return SlideOverlayTransition(
+                      animation: _controller.overlayAnimation,
+                      fromRight: _controller.isSupportOpen.value,
+                      child: overlay,
+                    );
+                  }),
+                ],
               ),
             ),
           ],

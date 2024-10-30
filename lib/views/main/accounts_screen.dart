@@ -56,7 +56,7 @@ class AccountsController extends GetxController {
 
   final List<BankCard> bankCards = [
     BankCard(
-      name: 'Александр Петров',
+      name: 'Владислав Шапка',
       type: 'VISA Мультивалютная',
       number: '4829 •••• •••• 3078',
       tengeBalance: '458 932.00 ₸',
@@ -65,7 +65,7 @@ class AccountsController extends GetxController {
       color: 'primary',
     ),
     BankCard(
-      name: 'Александр Петров',
+      name: 'Владислав Шапка',
       type: 'VISA Мультивалютная',
       number: '9686 •••• •••• 2197',
       tengeBalance: '285 109.00 ₸',
@@ -74,7 +74,7 @@ class AccountsController extends GetxController {
       color: 'tertiary',
     ),
     BankCard(
-      name: 'Александр Петров',
+      name: 'Владислав Шапка',
       type: 'VISA Мультивалютная',
       number: '4386 •••• •••• 8921',
       tengeBalance: '152 846.00 ₸',
@@ -83,7 +83,7 @@ class AccountsController extends GetxController {
       color: 'secondary',
     ),
     BankCard(
-      name: 'Александр Петров',
+      name: 'Владислав Шапка',
       type: 'VISA Мультивалютная',
       number: '5829 •••• •••• 8764',
       tengeBalance: '2 846.00 ₸',
@@ -638,7 +638,12 @@ class AccountsScreen extends StatelessWidget {
             ],
           ),
         ),
-        Divider(height: 1),
+        Divider(
+          height: 1,
+          indent: 16,
+          endIndent: 16,
+          color: theme.colorScheme.secondaryContainer,
+        ),
       ],
     );
   }

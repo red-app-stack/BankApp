@@ -2,7 +2,6 @@ import 'package:bank_app/utils/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 
 class ThemeController extends GetxController {
   Rx<ThemeMode> themeMode = ThemeMode.system.obs;
@@ -43,20 +42,14 @@ class ThemeController extends GetxController {
 
   void toggleThisTheme(ThemeMode newThemeMode, BuildContext context) {
     _setTheme(newThemeMode);
-    ThemeSwitcher.of(context).changeTheme(
-      theme: newThemeMode == ThemeMode.dark
-          ? AppTheme.darkTheme
-          : AppTheme.lightTheme,
-    );
   }
 
   void toggleTheme(BuildContext context) {
-    final currentBrightness =
-        ThemeModelInheritedNotifier.of(context).theme.brightness;
+
     ThemeMode newThemeMode;
 
     if (themeMode.value == ThemeMode.system) {
-      newThemeMode = currentBrightness == Brightness.light
+      newThemeMode = WidgetsBinding.instance.window.platformBrightness == Brightness.light
           ? ThemeMode.dark
           : ThemeMode.light;
     } else {
@@ -66,24 +59,13 @@ class ThemeController extends GetxController {
 
     _setTheme(newThemeMode);
 
-    ThemeSwitcher.of(context).changeTheme(
-      theme: newThemeMode == ThemeMode.dark
-          ? AppTheme.darkTheme
-          : AppTheme.lightTheme,
-    );
   }
 
   void setSystemTheme(BuildContext context) {
-    final currentBrightness =
-        ThemeModelInheritedNotifier.of(context).theme.brightness;
     _setTheme(ThemeMode.system);
     themeMode.value = ThemeMode.system;
     sp!.setBool('system', true);
-    ThemeSwitcher.of(context).changeTheme(
-      theme: currentBrightness == Brightness.dark
-          ? AppTheme.darkTheme
-          : AppTheme.lightTheme,
-    );
+
   }
 
   void _setTheme(ThemeMode mode) {

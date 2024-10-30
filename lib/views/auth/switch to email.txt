@@ -1,0 +1,21 @@
+            ElevatedButton(
+              onPressed: toggleLoginMethod,
+              style: theme.elevatedButtonTheme.style?.copyWith(
+                  backgroundColor: WidgetStateProperty.all(
+                theme.colorScheme.secondaryContainer,
+              )),
+              child: AnimatedSwitcher(
+                duration: Duration(milliseconds: 200),
+                child: Text(
+                  !isEmailMode
+                      ? "Войти с помощью почты"
+                      : "Войдите с помощью телефона",
+                  key: ValueKey<bool>(isEmailMode),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontFamily: 'OpenSans',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
