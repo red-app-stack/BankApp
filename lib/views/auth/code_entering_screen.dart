@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
@@ -20,6 +19,12 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   final int _codeLength = 4;
   String _enteredCode = '';
+
+  @override
+  void initState() {
+    _authenticateWithBiometrics();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +170,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
             _enteredCode += value;
           });
           if (_enteredCode.length == _codeLength) {
-            Get.toNamed('/main');
+            Get.offAllNamed('/main');
           }
         }
       },
@@ -248,7 +253,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     }
 
     if (authenticated) {
-      Get.toNamed('/main');
+      Get.offAllNamed('/main');
       print("Authentication successful!");
     } else {
       print("Authentication failed.");

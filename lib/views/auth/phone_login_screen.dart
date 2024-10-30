@@ -11,173 +11,219 @@ class PhoneLoginPage extends StatefulWidget {
 }
 
 class PhoneLoginPageState extends State<PhoneLoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isPhoneValid = true;
   final FocusNode phoneFocus = FocusNode();
   final TextEditingController phoneController = TextEditingController();
-  String? _previousPhoneValue;
+  final RxString phoneNumber = ''.obs;
+  final RxString formattedPhoneNumber = ''.obs;
+  String previousNumber = '';
+  int _previousPhoneValue = 0;
 
   void updatePhoneNumber(String value) {
+    // Get current cursor position
     int cursorPosition = phoneController.selection.start;
-    String oldDigits = _previousPhoneValue?.replaceAll(RegExp(r'\D'), '') ?? '';
-    String newDigits = value.replaceAll(RegExp(r'\D'), '');
-    bool isDeleting = newDigits.length < oldDigits.length;
-    String formatted = '';
 
+    // Store the current digits for comparison
+    String oldDigits =
+        _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
+    String newDigits = value.replaceAll(RegExp(r'\D'), '');
+    // Detect if we're deleting
+    bool isDeleting = newDigits.length < oldDigits.length;
+
+    // Format the new digits
+    String formatted = '';
     if (newDigits.isNotEmpty) {
+      // Handle area code
       if (newDigits.length <= 3) {
         formatted = '($newDigits';
-      } else if (newDigits.length <= 6) {
+      }
+      // Handle first part
+      else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
-      } else if (newDigits.length <= 8) {
+      }
+      // Handle second part
+      else if (newDigits.length <= 8) {
         formatted =
             '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6)}';
-      } else {
+      }
+      // Handle last part
+      else {
         formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, 10)}';
+            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, min(10, newDigits.length))}';
       }
     }
 
-    int newCursorPosition = isDeleting
-        ? max(0, min(cursorPosition - 1, formatted.length))
-        : formatted.length;
+    // Calculate new cursor position
+    int newCursorPosition;
+    if (isDeleting) {
+      // When deleting, keep cursor at the same position unless we've deleted a format character
+      newCursorPosition = max(0, min(cursorPosition - 1, formatted.length));
+    } else {
+      // When adding, place cursor after the last digit
+      newCursorPosition = formatted.length;
+    }
 
+    // Update the text field
     phoneController.value = TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
 
-    _previousPhoneValue = formatted;
+    // Store the new value for next comparison
+    _previousPhoneValue = int.tryParse(formatted) ?? 0;
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Scaffold(
-        body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                icon: SvgPicture.asset(
-                  'assets/icons/ic_back.svg',
-                  width: 32,
-                  height: 32,
-                  colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary, BlendMode.srcIn),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/ic_back.svg',
+                    width: 32,
+                    height: 32,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-                onPressed: () => Navigator.of(context).pop(),
               ),
-            ),
-            SizedBox(height: 24),
-            Align(
+              const SizedBox(height: 24),
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    "Введите Ваш личный номер телефона",
-                    style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.outline,
-                        fontSize: 12,
-                        fontFamily: 'OpenSans',
-                        fontWeight: FontWeight.w400),
-                    textAlign: TextAlign.left,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Введите Ваш личный номер телефона",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.outline,
+                            fontSize: 14,
+                            fontFamily: 'OpenSans',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: phoneController,
+                          focusNode: phoneFocus,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Номер телефона',
+                            labelStyle: TextStyle(
+                              color: _formKey.currentState?.validate() == false
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.outline,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            floatingLabelStyle: TextStyle(
+                              color: !_isPhoneValid
+                                  ? theme.colorScheme.error
+                                  : phoneFocus.hasFocus
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.outline,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    '🇰🇿',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '+7',
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                          onChanged: (value) {
+                            updatePhoneNumber(value);
+                            setState(() {});
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              setState(() {
+                                _isPhoneValid = false;
+                              });
+                              return 'Пожалуйста, введите номер телефона';
+                            }
+                            String digitsOnly =
+                                value.replaceAll(RegExp(r'\D'), '');
+                            if (digitsOnly.length != 10) {
+                              setState(() {
+                                _isPhoneValid = false;
+                              });
+                              return 'Введите корректный номер телефона';
+                            }
+                            setState(() {
+                              _isPhoneValid = true;
+                            });
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                )),
-            SizedBox(height: 16),
-            _buildPhoneInput(theme),
-            Spacer(),
-            SvgPicture.asset(
-              'assets/icons/illustration_login.svg',
-            ),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () => Get.toNamed('/emailLogin'),
-              style: theme.elevatedButtonTheme.style?.copyWith(
+                ),
+              ),
+              const Spacer(),
+              SvgPicture.asset(
+                'assets/icons/illustration_login.svg',
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Get.toNamed('/emailLogin');
+                  }
+                },
+                style: theme.elevatedButtonTheme.style?.copyWith(
                   backgroundColor: WidgetStateProperty.all(
-                theme.colorScheme.secondaryContainer,
-              )),
-              child: Text(
-                "Далее",
-                style: theme.textTheme.bodyLarge?.copyWith(
+                    theme.colorScheme.secondaryContainer,
+                  ),
+                ),
+                child: Text(
+                  "Далее",
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurface,
                     fontFamily: 'OpenSans',
                     fontSize: 14,
-                    fontWeight: FontWeight.w700),
-              ),
-            ),
-            SizedBox(height: 32),
-          ],
-        ),
-      ),
-    ));
-  }
-
-  Widget _buildPhoneInput(ThemeData theme) {
-    return Card(
-      color: theme.colorScheme.surfaceContainer,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '🇰🇿',
-                    style: TextStyle(fontSize: 24),
+                    fontWeight: FontWeight.w700,
                   ),
-                  SizedBox(width: 4),
-                  Text(
-                    '+7',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ],
+                ),
               ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  TextField(
-                    controller: phoneController,
-                    textInputAction: TextInputAction.next,
-                    keyboardType: TextInputType.number,
-                    style: theme.textTheme.titleMedium,
-                    onSubmitted: (_) {
-                      Get.toNamed('/emailLogin');
-                    },
-                    decoration: InputDecoration(
-                      hintText: '(000) 000-00-00',
-                      border: InputBorder.none,
-                    ),
-                    onChanged: updatePhoneNumber,
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Visibility(
-                      visible: phoneController.text.isNotEmpty,
-                      child: Text(
-                        'Доверенный номер',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.outline,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

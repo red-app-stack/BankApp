@@ -395,8 +395,10 @@ class AccountsScreen extends StatelessWidget {
                         children: [
                           card.tengeBalance != null
                               ? Text(
-                                  card.tengeBalance!,
+                                  card.tengeBalance ??
+                                      '0.00 ₸', // Adds the Tenge symbol
                                   style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontFamily: 'Roboto',
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
                                   ),
@@ -404,7 +406,7 @@ class AccountsScreen extends StatelessWidget {
                               : Container(),
                           card.usdBalance != null
                               ? Text(
-                                  card.usdBalance!,
+                                  card.usdBalance ?? '0.00 \$',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
@@ -413,7 +415,7 @@ class AccountsScreen extends StatelessWidget {
                               : Container(),
                           card.euroBalance != null
                               ? Text(
-                                  card.euroBalance!,
+                                  card.euroBalance ?? '0.00 €',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,

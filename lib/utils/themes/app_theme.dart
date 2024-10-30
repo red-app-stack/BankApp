@@ -61,45 +61,57 @@ class AppTheme {
     ),
     textTheme: TextTheme(
       displayLarge: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       displayMedium: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       displaySmall: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       headlineLarge: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       headlineMedium: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       headlineSmall: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsLight.onSurface,
       ),
       bodyLarge: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
       bodyMedium: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
       bodySmall: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
       titleLarge: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
       titleMedium: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
       titleSmall: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsLight.onSurface,
       ),
     ),
@@ -155,6 +167,7 @@ class AppTheme {
         ),
         textStyle: WidgetStateProperty.all(
           TextStyle(
+            fontFamily: 'OpenSans',
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
           ),
@@ -167,6 +180,7 @@ class AppTheme {
         foregroundColor:
             WidgetStateProperty.all(AppColorsLight.onPrimary), // Text color
         textStyle: WidgetStateProperty.all(TextStyle(
+          fontFamily: 'OpenSans',
           fontSize: 16.0,
           fontWeight: FontWeight.normal,
         )),
@@ -179,6 +193,7 @@ class AppTheme {
         foregroundColor:
             WidgetStateProperty.all(AppColorsLight.primary), // Text color
         textStyle: WidgetStateProperty.all(TextStyle(
+          fontFamily: 'OpenSans',
           fontSize: 16.0,
           fontWeight: FontWeight.normal,
         )),
@@ -240,45 +255,57 @@ class AppTheme {
     ),
     textTheme: TextTheme(
       displayLarge: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       displayMedium: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       displaySmall: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       headlineLarge: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       headlineMedium: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       headlineSmall: TextStyle(
+        fontFamily: 'OpenSans',
         fontWeight: FontWeight.bold,
         color: AppColorsDark.onSurface,
       ),
       bodyLarge: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
       bodyMedium: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
       bodySmall: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
       titleLarge: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
       titleMedium: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
       titleSmall: TextStyle(
+        fontFamily: 'OpenSans',
         color: AppColorsDark.onSurface,
       ),
     ),
@@ -334,6 +361,7 @@ class AppTheme {
         ),
         textStyle: WidgetStateProperty.all(
           TextStyle(
+            fontFamily: 'OpenSans',
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
           ),
@@ -346,6 +374,7 @@ class AppTheme {
         foregroundColor:
             WidgetStateProperty.all(AppColorsDark.onPrimary), // Text color
         textStyle: WidgetStateProperty.all(TextStyle(
+          fontFamily: 'OpenSans',
           fontSize: 16.0,
           fontWeight: FontWeight.normal,
         )),
@@ -358,6 +387,7 @@ class AppTheme {
         foregroundColor:
             WidgetStateProperty.all(AppColorsDark.primary), // Text color
         textStyle: WidgetStateProperty.all(TextStyle(
+          fontFamily: 'OpenSans',
           fontSize: 16.0,
           fontWeight: FontWeight.normal,
         )),

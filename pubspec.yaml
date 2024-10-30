@@ -50,6 +50,8 @@ dependencies:
   local_auth: ^2.3.0
   flutter_native_contact_picker: ^0.0.9
   permission_handler: ^11.3.1
+  local_auth_darwin: ^1.4.1
+  local_auth_android: ^1.0.46
 dev_dependencies:
   flutter_launcher_icons: "^0.14.1"
   # The "flutter_lints" package below contains a set of recommended lints to

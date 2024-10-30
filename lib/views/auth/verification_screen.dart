@@ -12,6 +12,8 @@ class VerificationScreen extends StatefulWidget {
 
 class VerificationScreenState extends State<VerificationScreen> {
   final AuthController _authController = Get.find<AuthController>();
+  final _formKey = GlobalKey<FormState>();
+  bool _isCodeValid = true;
 
   final FocusNode _codeFocusNode = FocusNode();
   final TextEditingController _codeController = TextEditingController();
@@ -25,7 +27,6 @@ class VerificationScreenState extends State<VerificationScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Align(
                 alignment: Alignment.topLeft,
@@ -47,39 +48,95 @@ class VerificationScreenState extends State<VerificationScreen> {
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'Введите код подтверждения',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.outline,
-                      fontSize: 12,
-                      fontFamily: 'OpenSans',
-                      fontWeight: FontWeight.w400,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Введите код подтверждения',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.outline,
+                            fontSize: 14,
+                            fontFamily: 'OpenSans',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _codeController,
+                          focusNode: _codeFocusNode,
+                          textInputAction: TextInputAction.done,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Код подтверждения',
+                            labelStyle: TextStyle(
+                              color: _formKey.currentState?.validate() == false
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.outline,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            floatingLabelStyle: TextStyle(
+                              color: !_isCodeValid
+                                  ? theme.colorScheme.error
+                                  : _codeFocusNode.hasFocus
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.outline,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            hintStyle: theme.textTheme.bodyMedium,
+                            prefixIcon: Icon(
+                              Icons.security_outlined,
+                              color: !_isCodeValid
+                                  ? theme.colorScheme.error
+                                  : _codeFocusNode.hasFocus
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.outline,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                          onFieldSubmitted: (_) {
+                            if (_formKey.currentState!.validate()) {
+                              Get.toNamed('/passwordEntering');
+                            }
+                            setState(() {});
+                          },
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              setState(() {
+                                _isCodeValid = false;
+                              });
+                              return 'Пожалуйста, введите код подтверждения';
+                            }
+                            if (value.length != 6) {
+                              setState(() {
+                                _isCodeValid = false;
+                              });
+                              return 'Код должен содержать 6 цифр';
+                            }
+                            setState(() {
+                              _isCodeValid = true;
+                            });
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
-                    textAlign: TextAlign.left,
                   ),
                 ),
               ),
               SizedBox(height: 16),
-              Card(
-                color: theme.colorScheme.surfaceContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextField(
-                    controller: _codeController,
-                    focusNode: _codeFocusNode,
-                    textInputAction: TextInputAction.next,
-                    keyboardType: TextInputType.number,
-                    style: theme.textTheme.titleMedium,
-                    onSubmitted: (_) {
-                      Get.toNamed('/passwordEntering');
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Код подтверждения',
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ),
               Spacer(),
               SvgPicture.asset(
                 'assets/icons/illustration_login.svg',
