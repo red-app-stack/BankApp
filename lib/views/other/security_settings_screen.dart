@@ -48,6 +48,8 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -75,12 +77,13 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                         style: theme.textTheme.titleLarge,
                         textAlign: TextAlign.center,
                       ),
-                    )
+                    ),
+                    const SizedBox(width: 32),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: size.height * 0.02),
             Expanded(
               child: Column(
                 children: [
@@ -107,10 +110,10 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 16),
+                          SizedBox(height: size.height * 0.02),
                         ],
                       )),
-                  Spacer(),
+                  const Spacer(),
                   Padding(
                     padding: EdgeInsets.all(16),
                     child: Text(
@@ -120,7 +123,7 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 32),
+                  SizedBox(height: size.height * 0.03),
                 ],
               ),
             ),

@@ -4,6 +4,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
   final Color? backgroundGradientStart;
   final Color? backgroundGradientEnd;
   final Color? primaryVariant;
+  final Color? background;
   final Color? notifications;
   final Color? primaryCardBg;
   final Color? primaryCardFg;
@@ -18,6 +19,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
     required this.backgroundGradientStart,
     required this.backgroundGradientEnd,
     required this.primaryVariant,
+    required this.background,
     required this.notifications,
     required this.primaryCardBg,
     required this.primaryCardFg,
@@ -37,6 +39,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
           backgroundGradientStart ?? backgroundGradientStart,
       backgroundGradientEnd: backgroundGradientEnd ?? backgroundGradientEnd,
       primaryVariant: primaryVariant ?? primaryVariant,
+      background: background ?? background,
       notifications: notifications ?? notifications,
       primaryCardBg: primaryCardBg ?? primaryCardBg,
       primaryCardFg: primaryCardFg ?? primaryCardFg,
@@ -58,6 +61,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
       backgroundGradientEnd:
           Color.lerp(backgroundGradientEnd, other.backgroundGradientEnd, t),
       primaryVariant: Color.lerp(primaryVariant, other.primaryVariant, t),
+      background: Color.lerp(background, other.background, t),
       notifications: Color.lerp(notifications, other.notifications, t),
       primaryCardBg: Color.lerp(primaryCardBg, other.primaryCardBg, t),
       primaryCardFg: Color.lerp(primaryCardFg, other.primaryCardFg, t),

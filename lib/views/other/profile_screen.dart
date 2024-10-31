@@ -7,8 +7,6 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../utils/themes/theme_extension.dart';
 import '../shared/shared_classes.dart';
-import 'settings_screen.dart';
-
 
 class ProfileScreen extends StatelessWidget {
   final AuthController controller = Get.find<AuthController>();
@@ -45,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
             icon: 'assets/icons/ic_notifications.svg', title: 'Уведомления'),
         MenuItem(
             icon: 'assets/icons/ic_language.svg', title: 'Язык приложения'),
-        // Replace with an actual phone number
+        // Скоро заменю на настоящий.
         MenuItem(
             icon: 'assets/icons/ic_smartphone.svg',
             title: '+7 (707) 2****05',
@@ -69,6 +67,8 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -92,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -112,7 +112,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                         ]),
-                        SizedBox(height: 12),
+                        SizedBox(height: size.height * 0.02),
                         Text(
                           'Владислав\nВасильевич Ш.',
                           maxLines: 2,
@@ -125,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 ...sections.map((section) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -149,10 +149,10 @@ class ProfileScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                       ],
                     )),
-              
+                SizedBox(height: size.height * 0.03),
               ],
             )),
           ),
@@ -324,9 +324,5 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _openSettings() {
-    Get.to(() => SettingsScreen());
   }
 }

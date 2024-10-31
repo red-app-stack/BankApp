@@ -13,10 +13,8 @@ class StaticBackgroundWrapper extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context)
-                .extension<CustomColors>()!
-                .backgroundGradientStart!,
-            Theme.of(context).extension<CustomColors>()!.backgroundGradientEnd!,
+            Theme.of(context).extension<CustomColors>()!.background!,
+            Theme.of(context).extension<CustomColors>()!.background!,
           ],
         ),
       ),

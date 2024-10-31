@@ -32,6 +32,7 @@ class PaymentsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     // final PaymentsController controller = Get.put(PaymentsController());
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -62,7 +63,7 @@ class PaymentsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
 
                 // Popular services card
                 Card(
@@ -83,7 +84,7 @@ class PaymentsScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -109,7 +110,7 @@ class PaymentsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
 
                 // Favorites card
                 Card(
@@ -122,7 +123,7 @@ class PaymentsScreen extends StatelessWidget {
                           'Избранное',
                           style: theme.textTheme.titleMedium,
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                         _buildFavoriteItem(
                           svgPath: controller.popularIconPaths[0],
                           title: 'Мобильная связь',
@@ -266,100 +267,5 @@ class PaymentsScreen extends StatelessWidget {
                     ],
                   ),
                 ))));
-  }
-
-  Widget _buildShimmerLoading(ThemeData theme) {
-    return Shimmer.fromColors(
-      baseColor: theme.colorScheme.surfaceContainer,
-      highlightColor: theme.colorScheme.surfaceBright,
-      period: Duration(seconds: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 20),
-          // Заголовок "Профиль"
-          Container(
-            width: 200,
-            height: theme.textTheme.headlineMedium!.fontSize,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          SizedBox(height: 28),
-          // Фото профиля
-          CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.white,
-          ),
-          SizedBox(height: 10),
-          // Кнопка "Изменить фото профиля"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Информационные карточки
-          for (int i = 0; i < 4; i++) ...[
-            Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: EdgeInsets.symmetric(vertical: 10),
-            ),
-          ],
-          SizedBox(height: 20),
-          // Кнопка "Настройки"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Кнопка "Выйти"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(String title, String value, ThemeData theme) {
-    return Card(
-      color: theme.colorScheme.surfaceContainer,
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: EdgeInsets.all(15),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.bodyLarge!.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            Text(value, style: theme.textTheme.bodyLarge),
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -33,7 +33,7 @@ class AccountsController extends GetxController {
     super.onInit();
     pageController = PageController(
       viewportFraction: 0.85,
-      initialPage: bankCards.length * 500, // Start from middle of large number
+      initialPage: bankCards.length * 500,
     );
   }
 
@@ -133,6 +133,7 @@ class AccountsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -157,9 +158,7 @@ class AccountsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
-
-                // My Cards Section
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,8 +171,7 @@ class AccountsScreen extends StatelessWidget {
                               'Карты',
                               style: theme.textTheme.titleMedium,
                             ),
-                            Spacer(),
-                            // Optional: Add page indicator
+                            const Spacer(),
                             Obx(() => Row(
                                   children: List.generate(
                                     controller.bankCards.length,
@@ -218,7 +216,7 @@ class AccountsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 12),
+                      SizedBox(height: size.height * 0.02),
                       Divider(
                           height: 1,
                           indent: 16,
@@ -233,9 +231,7 @@ class AccountsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
-
-                // Open Credit Section
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,14 +249,10 @@ class AccountsScreen extends StatelessWidget {
                           title: 'Оформить кредит наличными',
                           description: 'Онлайн до 7 000 000 тенге',
                           onTap: () {}),
-                      // ...controller.promoItems.map((item) => _buildPromoItem(
-                      //       context: context,
-                      //       item: item,
-                      //     )),
                     ],
                   ),
                 ),
-                // Open Deposit Section
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,21 +270,22 @@ class AccountsScreen extends StatelessWidget {
                           title: 'Открыть депозит',
                           description: 'На выгодных условиях',
                           onTap: () {}),
-                      // ...controller.promoItems.map((item) => _buildPromoItem(
-                      //       context: context,
-                      //       item: item,
-                      //     )),
                     ],
                   ),
                 ),
-                SizedBox(height: 32),
+                SizedBox(
+                  height: size.height * 0.02,
+                ),
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/illustration_accounts.svg',
                     width: MediaQuery.of(context).size.width * 0.85,
+                    height: MediaQuery.of(context).size.height * 0.4,
                   ),
                 ),
-                SizedBox(height: 32),
+                SizedBox(
+                  height: size.height * 0.02,
+                ),
               ],
             ),
           ),
@@ -320,16 +313,14 @@ class AccountsScreen extends StatelessWidget {
             : card.color == 'tertiary'
                 ? theme.extension<CustomColors>()!.tertiaryCardFg!
                 : theme.extension<CustomColors>()!.grayCardFg!;
-    // final Color colorFg =
     return Container(
       decoration: BoxDecoration(
         color: colorBg,
         borderRadius: BorderRadius.circular(16),
       ),
-      clipBehavior: Clip.antiAlias, // Add this line to handle clipping
+      clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Background circles
           Positioned(
             top: -60,
             right: -90,
@@ -354,8 +345,6 @@ class AccountsScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Card content
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -367,7 +356,7 @@ class AccountsScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Text(
                   card.type,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -382,21 +371,19 @@ class AccountsScreen extends StatelessWidget {
                     fontFamily: 'Monospace',
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Balances
                     Expanded(
                       child: Wrap(
-                        spacing: 10, // Horizontal spacing between items
-                        runSpacing: 8, // Vertical spacing between wrapped lines
+                        spacing: 10,
+                        runSpacing: 8,
                         crossAxisAlignment: WrapCrossAlignment.end,
                         children: [
                           card.tengeBalance != null
                               ? Text(
-                                  card.tengeBalance ??
-                                      '0.00 ₸', // Adds the Tenge symbol
+                                  card.tengeBalance ?? '0.00 ₸',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     fontFamily: 'Roboto',
                                     color: Colors.white,
@@ -499,154 +486,6 @@ class AccountsScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  //   return Padding(
-  //     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  //     child: Column(
-  //       children: [
-  //         Row(
-  //           children: [
-  //             Container(
-  //               padding: EdgeInsets.all(8),
-  //               decoration: BoxDecoration(
-  //                 color: theme.colorScheme.surfaceContainerHighest,
-  //                 borderRadius: BorderRadius.circular(8),
-  //               ),
-  //               child: SvgPicture.asset(
-  //                 icon,
-  //                 width: 24,
-  //                 height: 24,
-  //                 colorFilter: ColorFilter.mode(
-  //                   theme.colorScheme.primary,
-  //                   BlendMode.srcIn,
-  //                 ),
-  //               ),
-  //             ),
-  //             SizedBox(width: 12),
-  //             Expanded(
-  //               child: Text(
-  //                 title,
-  //                 style: theme.textTheme.titleSmall,
-  //               ),
-  //             ),
-  //             Text(
-  //               balance,
-  //               style: theme.textTheme.titleMedium?.copyWith(
-  //                 fontWeight: FontWeight.bold,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         SizedBox(height: 8),
-  //         Row(
-  //           children: [
-  //             Text(
-  //               cardNumber,
-  //               style: theme.textTheme.bodyMedium?.copyWith(
-  //                 color: theme.colorScheme.onSurfaceVariant,
-  //               ),
-  //             ),
-  //             Expanded(
-  //               child: Text(
-  //                 altBalances.join(' • '),
-  //                 style: theme.textTheme.bodyMedium?.copyWith(
-  //                   color: theme.colorScheme.onSurfaceVariant,
-  //                 ),
-  //                 textAlign: TextAlign.right,
-  //                 overflow: TextOverflow.ellipsis,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         SizedBox(height: 12),
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //           children: actionIcons
-  //               .map((iconPath) => SvgPicture.asset(
-  //                     iconPath,
-  //                     width: 24,
-  //                     height: 24,
-  //                     colorFilter: ColorFilter.mode(
-  //                       theme.colorScheme.primary,
-  //                       BlendMode.srcIn,
-  //                     ),
-  //                   ))
-  //               .toList(),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  Widget _buildPromoItem({
-    required BuildContext context,
-    required CardPromoItem item,
-  }) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        SvgPicture.asset(
-          item.banner,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
-        Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          item.info,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  FilledButton(
-                    onPressed: () {},
-                    child: Text('Открыть'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Узнать подробнее',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Divider(
-          height: 1,
-          indent: 16,
-          endIndent: 16,
-          color: theme.colorScheme.secondaryContainer,
-        ),
-      ],
     );
   }
 }

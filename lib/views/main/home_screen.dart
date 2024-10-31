@@ -28,6 +28,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -51,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -78,14 +79,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 96),
+                SizedBox(height: size.height * 0.1),
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/illustration_home.svg',
-                    width: MediaQuery.of(context).size.width * 0.85,
+                    height: size.height * 0.5,
                   ),
                 ),
-                SizedBox(height: 32),
+                SizedBox(height: size.height * 0.2),
               ],
             ),
           ),
@@ -140,60 +141,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildShimmerLoading({required ThemeData theme}) {
-    return Shimmer.fromColors(
-      baseColor: theme.colorScheme.surfaceContainer,
-      highlightColor: theme.colorScheme.surfaceBright,
-      period: const Duration(seconds: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            margin: const EdgeInsets.all(8),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 48,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Card(
-            margin: const EdgeInsets.all(8),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 400),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

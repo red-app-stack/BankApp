@@ -53,4 +53,6 @@ class AppColorsDark {
   static var tertiaryCardFg = Color(0xFF006d34);
   static var grayCardBg = Color(0xFF32353c);
   static var grayCardFg = Color(0xFF727784);
+
+  static var background = Color(0xFF0066cc);
 }

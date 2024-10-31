@@ -1,17 +1,17 @@
-//main_screen.dart // page 3
+//main_screen.dart // page 0
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-
 import '../../utils/themes/theme_extension.dart';
 import '../other/profile_screen.dart';
 import '../other/support_screen.dart';
 import 'accounts_screen.dart';
-import 'transfers_screen.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'home_screen.dart';
 import 'menu_screen.dart';
 import 'payments_screen.dart';
+import 'transfers_screen.dart';
 
 class MainScreenController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -175,6 +175,14 @@ class MainScreenState extends State<MainScreen> {
     'assets/icons/home.svg',
     'assets/icons/card.svg',
     'assets/icons/menu.svg',
+  ];
+
+  final List<String> _labels = [
+    'Платежи',
+    'Переводы',
+    'Главная',
+    'Счета',
+    'Меню',
   ];
 
   @override
@@ -362,31 +370,34 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildIcon(int index) {
+  CurvedNavigationBarItem _buildIcon(int index) {
     final bool isSelected = index == _selectedIndex;
     final String iconPath = _iconPaths[index];
+    final String label = _labels[index];
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: isSelected ? 40 : 30,
-      height: isSelected ? 40 : 30,
-      child: AnimatedOpacity(
-        opacity: isSelected ? 1.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: SvgPicture.asset(
-          iconPath,
-          colorFilter: isSelected
-              ? ColorFilter.mode(
-                  Theme.of(context).colorScheme.onPrimary,
-                  BlendMode.srcIn,
-                )
-              : ColorFilter.mode(
-                  Theme.of(context).colorScheme.onSurfaceVariant,
-                  BlendMode.srcIn,
-                ),
+    return CurvedNavigationBarItem(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: isSelected ? 40 : 30,
+          height: isSelected ? 40 : 30,
+          child: AnimatedOpacity(
+            opacity: isSelected ? 1.0 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: SvgPicture.asset(
+              iconPath,
+              colorFilter: isSelected
+                  ? ColorFilter.mode(
+                      Theme.of(context).colorScheme.onPrimary,
+                      BlendMode.srcIn,
+                    )
+                  : ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                      BlendMode.srcIn,
+                    ),
+            ),
+          ),
         ),
-      ),
-    );
+        label: label);
   }
 
   @override

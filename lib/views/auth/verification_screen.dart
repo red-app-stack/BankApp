@@ -21,6 +21,7 @@ class VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SafeArea(
@@ -43,7 +44,9 @@ class VerificationScreenState extends State<VerificationScreen> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(
+                height: size.height * 0.02,
+              ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -62,7 +65,9 @@ class VerificationScreenState extends State<VerificationScreen> {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: size.height * 0.02,
+                        ),
                         TextFormField(
                           controller: _codeController,
                           focusNode: _codeFocusNode,
@@ -136,12 +141,14 @@ class VerificationScreenState extends State<VerificationScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Spacer(),
-              SvgPicture.asset(
-                'assets/icons/illustration_login.svg',
+              const Spacer(),
+              SizedBox(
+                height: size.height * 0.3,
+                child: SvgPicture.asset(
+                  'assets/icons/illustration_login.svg',
+                ),
               ),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: () {
                   Get.toNamed('/passwordEntering');
@@ -161,7 +168,9 @@ class VerificationScreenState extends State<VerificationScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 32),
+              SizedBox(
+                height: size.height * 0.02,
+              ),
             ],
           ),
         ),

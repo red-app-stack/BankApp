@@ -69,7 +69,9 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: size.height * 0.02,
+                        ),
                         TextFormField(
                           controller: _authController.fullName.value,
                           focusNode: _fullNameFocusNode,
@@ -137,7 +139,9 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: size.height * 0.02,
+                        ),
                         TextFormField(
                           controller: _authController.password.value,
                           textInputAction: TextInputAction.done,
@@ -219,7 +223,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                   ),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Obx(
                 () => ElevatedButton(
                   onPressed: _authController.status
@@ -255,7 +259,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                 ),
               ),
               SizedBox(
-                height: 32,
+                height: size.height * 0.02,
               ),
             ],
           ),

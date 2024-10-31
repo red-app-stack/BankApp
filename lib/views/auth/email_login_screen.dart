@@ -20,6 +20,8 @@ class EmailLoginPageState extends State<EmailLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     ThemeData theme = Theme.of(context);
     return Scaffold(
       body: SafeArea(
@@ -42,7 +44,9 @@ class EmailLoginPageState extends State<EmailLoginPage> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(
+                height: size.height * 0.02,
+              ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -61,7 +65,9 @@ class EmailLoginPageState extends State<EmailLoginPage> {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: size.height * 0.02,
+                        ),
                         TextFormField(
                           controller: emailController,
                           focusNode: emailFocus,
@@ -135,11 +141,15 @@ class EmailLoginPageState extends State<EmailLoginPage> {
                   ),
                 ),
               ),
-              Spacer(),
-              SvgPicture.asset(
-                'assets/icons/illustration_login.svg',
+              const Spacer(),
+              SizedBox(
+                height: size.height * 0.3,
+                child: SvgPicture.asset(
+                  'assets/icons/illustration_login.svg',
+                  fit: BoxFit.contain,
+                ),
               ),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -161,7 +171,9 @@ class EmailLoginPageState extends State<EmailLoginPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 32),
+              SizedBox(
+                height: size.height * 0.02,
+              ),
             ],
           ),
         ),

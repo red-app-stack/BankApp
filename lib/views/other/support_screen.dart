@@ -18,6 +18,8 @@ class SupportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -29,7 +31,7 @@ class SupportScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Center(
                       child: Column(children: [
-                    SizedBox(height: 140),
+                    SizedBox(height: size.height * 0.15),
                     Text('Бот\nконсультант',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -38,9 +40,10 @@ class SupportScreen extends StatelessWidget {
                             fontSize: 40,
                             fontWeight: FontWeight.w800,
                             height: 1.1)),
-                    SizedBox(height: 16),
+                    SizedBox(height: size.height * 0.02),
                     SvgPicture.asset(
                       'assets/icons/ic_chatbot.svg',
+                      height: size.height * 0.3,
                       colorFilter: ColorFilter.mode(
                         theme.colorScheme.secondaryContainer,
                         BlendMode.srcIn,

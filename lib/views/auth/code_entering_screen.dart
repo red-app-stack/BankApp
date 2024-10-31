@@ -22,7 +22,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-    _authenticateWithBiometrics();
+    Future.delayed(const Duration(seconds: 2), () {
+      _authenticateWithBiometrics();
+    });
     super.initState();
   }
 
@@ -74,7 +76,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: size.height * 0.02),
                       Text(
                         'Владислав \nВасильевич Ш.',
                         textAlign: TextAlign.center,
@@ -86,7 +88,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: size.height * 0.02),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
@@ -99,7 +101,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                   textAlign: TextAlign.left,
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: size.height * 0.02),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
@@ -123,7 +125,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: size.height * 0.02),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48),
@@ -142,7 +144,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: size.height * 0.02),
               TextButton(
                 onPressed: () {
                   // Handle forgotten code logic

@@ -1,12 +1,13 @@
 //transfer by phone
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import '../shared/animated_dropdown.dart';
 
 class CardModel {
   final String icon;
@@ -196,6 +197,7 @@ class PhoneTransferScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -206,18 +208,12 @@ class PhoneTransferScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 32),
-              // Card Selection
               _buildCardSelector(theme),
-              SizedBox(height: 16),
-
-              // Phone Number Input
+              SizedBox(height: size.height * 0.02),
               _buildPhoneInput(theme),
-              SizedBox(height: 16),
-
-              // Amount Input
+              SizedBox(height: size.height * 0.02),
               _buildAmountInput(theme),
-
-              SizedBox(height: 16),
+              SizedBox(height: size.height * 0.02),
               Obx(() {
                 final amount = controller.amount.value.isEmpty
                     ? 0
@@ -233,7 +229,13 @@ class PhoneTransferScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                   ),
-                  child: Text('Перевести $formattedAmount ₸'),
+                  child: Text('Перевести $formattedAmount ₸',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontFamily: 'Roboto',
+                      )),
                 );
               })
             ],
@@ -244,100 +246,16 @@ class PhoneTransferScreen extends StatelessWidget {
   }
 
   Widget _buildCardSelector(ThemeData theme) {
-    return Obx(() => Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InkWell(
-                onTap: () => controller.isCardDropdownExpanded.toggle(),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Откуда',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Spacer(),
-                      Icon(
-                        controller.isCardDropdownExpanded.value
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (controller.isCardDropdownExpanded.value)
-                ...controller.cards.map((card) => _buildCardItem(card, theme)),
-              if (!controller.isCardDropdownExpanded.value &&
-                  controller.selectedCard.value != null)
-                _buildCardItem(controller.selectedCard.value!, theme,
-                    isSelectable: false),
-            ],
-          ),
+    return Obx(() => AnimatedCardDropdown(
+          cards: controller.cards,
+          selectedCard: controller.selectedCard.value,
+          isExpanded: controller.isCardDropdownExpanded.value,
+          onCardSelected: (card) {
+            controller.selectedCard.value = card;
+            controller.isCardDropdownExpanded.value = false;
+          },
+          onToggle: () => controller.isCardDropdownExpanded.toggle(),
         ));
-  }
-
-  Widget _buildCardItem(CardModel card, ThemeData theme,
-      {bool isSelectable = true}) {
-    return InkWell(
-      onTap: isSelectable
-          ? () {
-              controller.selectedCard.value = card;
-              controller.isCardDropdownExpanded.value = false;
-            }
-          : null,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SvgPicture.asset(
-                card.icon,
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  theme.colorScheme.primary,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    card.title,
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    card.cardNumber,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              card.balance,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildPhoneInput(ThemeData theme) {
@@ -442,14 +360,16 @@ class PhoneTransferScreen extends StatelessWidget {
                       keyboardType: TextInputType.number,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
                       ),
                       decoration: InputDecoration(
                         hintText: '0',
                         border: InputBorder.none,
                         isDense: true,
-                        suffixText: '₸',
+                        suffixText: ' ₸',
                         suffixStyle: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
                         ),
                         contentPadding: EdgeInsets.zero,
                       ),

@@ -41,6 +41,7 @@ class TransfersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -71,7 +72,7 @@ class TransfersScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +148,7 @@ class TransfersScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -158,7 +159,7 @@ class TransfersScreen extends StatelessWidget {
                           'Избранное',
                           style: theme.textTheme.titleMedium,
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                         _buildSavedItem(
                           svgPath: 'assets/icons/ic_bank.svg',
                           svgPathSub: 'assets/icons/visa.svg',
@@ -226,56 +227,6 @@ class TransfersScreen extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServiceItem({
-    required String svgPath,
-    String label = '',
-    double iconSize = 32,
-    required ThemeData theme,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(12), // Soft rounded corners
-          splashFactory: InkRipple.splashFactory, // Smoother ripple effect
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SvgPicture.asset(
-                      svgPath,
-                      width: iconSize,
-                      height: iconSize,
-                      colorFilter: ColorFilter.mode(
-                        theme.colorScheme.primary,
-                        BlendMode.srcIn,
-                      ),
-                    )),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Get.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ) ??
-                      Get.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -355,100 +306,5 @@ class TransfersScreen extends StatelessWidget {
                     ],
                   ),
                 ))));
-  }
-
-  Widget _buildShimmerLoading(ThemeData theme) {
-    return Shimmer.fromColors(
-      baseColor: theme.colorScheme.surfaceContainer,
-      highlightColor: theme.colorScheme.surfaceBright,
-      period: Duration(seconds: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 20),
-          // Заголовок "Профиль"
-          Container(
-            width: 200,
-            height: theme.textTheme.headlineMedium!.fontSize,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          SizedBox(height: 28),
-          // Фото профиля
-          CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.white,
-          ),
-          SizedBox(height: 10),
-          // Кнопка "Изменить фото профиля"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Информационные карточки
-          for (int i = 0; i < 4; i++) ...[
-            Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: EdgeInsets.symmetric(vertical: 10),
-            ),
-          ],
-          SizedBox(height: 20),
-          // Кнопка "Настройки"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Кнопка "Выйти"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(String title, String value, ThemeData theme) {
-    return Card(
-      color: theme.colorScheme.surfaceContainer,
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: EdgeInsets.all(15),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.bodyLarge!.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            Text(value, style: theme.textTheme.bodyLarge),
-          ],
-        ),
-      ),
-    );
   }
 }

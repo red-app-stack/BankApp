@@ -46,6 +46,7 @@ class MenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -75,7 +76,7 @@ class MenuScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
                 ...sections.map((section) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -95,17 +96,20 @@ class MenuScreen extends StatelessWidget {
                                   item: item,
                                   theme: theme,
                                   isLast: section.items.last == item,
-                                  onTap: item.icon == 'assets/icons/ic_settings.svg' ? () {
-                                    Get.toNamed('/securitySettings');
-                                  } : () {}))
+                                  onTap: item.icon ==
+                                          'assets/icons/ic_settings.svg'
+                                      ? () {
+                                          Get.toNamed('/securitySettings');
+                                        }
+                                      : () {}))
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                       ],
                     )),
                 _buildServiceItem(theme: theme),
-                SizedBox(height: 16),
+                SizedBox(height: size.height * 0.02),
               ],
             ),
           ),
@@ -127,8 +131,8 @@ class MenuScreen extends StatelessWidget {
           onTap: () {
             _authController.logout();
           },
-          borderRadius: BorderRadius.circular(12), // Soft rounded corners
-          splashFactory: InkRipple.splashFactory, // Smoother ripple effect
+          borderRadius: BorderRadius.circular(12),
+          splashFactory: InkRipple.splashFactory,
           splashColor: theme.colorScheme.primary.withOpacity(0.08),
           highlightColor: theme.colorScheme.primary.withOpacity(0.04),
           child: Padding(
@@ -193,28 +197,6 @@ class MenuScreen extends StatelessWidget {
                       width: 40,
                       height: 40,
                     ),
-                    // if (item.icon == 'assets/icons/notifications.svg')
-                    //   Positioned(
-                    //     top: -8,
-                    //     right: -8,
-                    //     child: Container(
-                    //       width: 16,
-                    //       height: 16,
-                    //       decoration: BoxDecoration(
-                    //         color:
-                    //             theme.extension<CustomColors>()!.notifications,
-                    //         shape: BoxShape.circle,
-                    //       ),
-                    //       child: Center(
-                    //         child: Text(
-                    //           '12',
-                    //           style: theme.textTheme.bodySmall?.copyWith(
-                    //             color: theme.colorScheme.onPrimary,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
                   ],
                 ),
                 SizedBox(width: 16),
