@@ -218,27 +218,29 @@ class AuthController extends GetxController {
   }
 
   Future<void> register() async {
-    // try {
-    setStatus(true);
+    try {
+      setStatus(true);
 
-    // final response = await dio.post('/auth/register', data: {
-    //   'email': email.value.text.trim(),
-    //   'password': password.value.text.trim(),
-    //   'fullName': fullName.value.text.trim(),
-    // });
-    // if (response.statusCode == 201) {
-    //   final token = response.data['token'];
-    //   final userData = response.data['user'];
+      final response = await dio.post('/auth/register', data: {
+        'email': email.value.text.trim(),
+        'password': password.value.text.trim(),
+        'fullName': fullName.value.text.trim(),
+        'phoneNumber': phone.value.text.trim(),
+      });
+      if (response.statusCode == 201) {
+        final token = response.data['token'];
+        final userData = response.data['user'];
 
-    // await _securelyStoreCredentials(token, userData);
-    Get.offAllNamed('/main');
-    // Get.snackbar('Success', 'Registration successful');
-    //   }
-    // } on DioException catch (e) {
-    //   _handleApiError(e);
-    // } finally {
-    setStatus(false);
-    // }
+        await _securelyStoreCredentials(token, userData);
+        Get.offAllNamed('/main');
+        Get.snackbar('Успех', 'Успешная регистрация');
+      }
+    } on DioException catch (e) {
+      _handleApiError(e);
+      Get.snackbar('Ошибка', 'Неудачная регистрация');
+    } finally {
+      setStatus(false);
+    }
   }
 
   Future<void> logout() async {
