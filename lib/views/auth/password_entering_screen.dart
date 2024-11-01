@@ -17,15 +17,32 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
   bool _isNameValid = true;
   bool _isPasswordValid = true;
   final _formKey = GlobalKey<FormState>();
+  int _attempts = 0;
+  late Worker _passwordValidityWorker;
 
   final FocusNode _fullNameFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+    // Update the worker to trigger form validation when password correctness changes
+    _passwordValidityWorker =
+        ever(_authController.isPasswordCorrect, (isCorrect) {
+      if (_formKey.currentState != null) {
+        setState(() {
+          _isPasswordValid = isCorrect ?? true;
+          _formKey.currentState!.validate();
+        });
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _fullNameFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _authController.dispose();
+    _passwordValidityWorker.dispose();
     super.dispose();
   }
 
@@ -70,7 +87,9 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                         fakeHero(
                             tag: 'text_info',
                             child: Text(
-                              "Введите Ваше полное ФИО",
+                              !_authController.isLoggingIn
+                                  ? "Введите Ваше полное ФИО"
+                                  : 'Здравствуйте! Введите пароль',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: theme.colorScheme.outline,
                                 fontSize: 14,
@@ -89,7 +108,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                               enabled: !_authController.isLoggingIn,
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
-                                labelText: _authController.isLoggingIn
+                                labelText: !_authController.isLoggingIn
                                     ? 'Введите ФИО'
                                     : 'ФИО',
                                 labelStyle: TextStyle(
@@ -163,7 +182,11 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                         fakeHero(
                           tag: 'text_info2',
                           child: Text(
-                            'Введите надежный пароль',
+                            !_authController.isLoggingIn
+                                ? 'Введите надежный пароль'
+                                : _attempts <= -1
+                                    ? "Введите новый пароль"
+                                    : "Введите Ваш пароль",
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: theme.colorScheme.outline,
                               fontSize: 14,
@@ -230,7 +253,11 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                               setState(() {});
                             },
                             onChanged: (value) {
-                              setState(() {});
+                              _authController.isPasswordCorrect.value = null;
+                              setState(() {
+                                _isPasswordValid =
+                                    true; // Reset validation state
+                              });
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -239,6 +266,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                                 });
                                 return 'Пожалуйста, введите пароль';
                               }
+
                               if (value.length < 8) {
                                 setState(() {
                                   _isPasswordValid = false;
@@ -256,6 +284,15 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                                 });
                                 return 'Пароль должен содержать заглавные и строчные буквы, цифры и спец. символы';
                               }
+                              if (_authController.isLoggingIn &&
+                                  _authController.isPasswordCorrect.value ==
+                                      false) {
+                                setState(() {
+                                  _isPasswordValid = false;
+                                });
+                                return 'Неверный пароль';
+                              }
+
                               setState(() {
                                 _isPasswordValid = true;
                               });
@@ -265,7 +302,32 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                         ),
                         fakeHero(
                           tag: 'sub_button',
-                          child: Container(),
+                          child: _attempts >= 3
+                              ? Align(
+                                  alignment: Alignment.center,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _attempts = -99;
+                                      });
+                                    },
+                                    style:
+                                        theme.textButtonTheme.style?.copyWith(
+                                      foregroundColor:
+                                          WidgetStateProperty.all<Color>(
+                                              theme.colorScheme.primary),
+                                    ),
+                                    child: Text(
+                                      'Восстановить пароль',
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Container(),
                         ),
                       ],
                     ),
@@ -294,7 +356,14 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                       ? null
                       : () {
                           if (_formKey.currentState!.validate()) {
-                            _authController.register();
+                            if (!_authController.isLoggingIn) {
+                              _authController.register();
+                            } else {
+                              setState(() {
+                                _attempts++;
+                              });
+                              _authController.login();
+                            }
                           }
                         },
                   style: theme.elevatedButtonTheme.style?.copyWith(
@@ -307,6 +376,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                           width: 14,
                           height: 14,
                           child: CircularProgressIndicator(
+                            strokeWidth: 2,
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),

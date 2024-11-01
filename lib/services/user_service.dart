@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
+import 'dio_helper.dart';
+
 class UserService extends GetxController {
   final Dio dio;
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
@@ -21,60 +23,52 @@ class UserService extends GetxController {
       final token = await secureStorage.read(key: 'auth_token');
 
       if (token == null) {
-        return null;
+        return null; // No token means user is not logged in
       }
 
-      final response = await dio.get(
-        '/auth/profile',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+      final response = await DioRetryHelper.retryRequest(() => dio.get(
+            '/auth/profile',
+            options: Options(
+              headers: {
+                'Authorization': 'Bearer $token',
+              },
+            ),
+          ));
 
       if (response.statusCode == 200) {
         final userData = response.data;
         final userModel = UserModel.fromJson(userData);
-
-        await storeUserLocally(userModel);
-
-        return userModel;
+        await storeUserLocally(userModel); // Store user data locally
+        return userModel; // Return the user model
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        await logout();
+        await logout(); // Logout if token is invalid
       }
       print('Error fetching user profile: ${e.message}');
     }
-    return null;
+    return null; // Return null if fetching fails
   }
 
-  // Securely store user data locally
   Future<void> storeUserLocally(UserModel user) async {
     try {
-      // Store user data as encrypted JSON
       await secureStorage.write(
           key: 'user_data', value: user.toJson().toString());
 
-      // Update current user in memory
       _currentUser.value = user;
     } catch (e) {
       print('Error storing user data: $e');
     }
   }
 
-  // Retrieve locally stored user data
   Future<UserModel?> retrieveLocalUser() async {
     try {
       final userDataString = await secureStorage.read(key: 'user_data');
 
       if (userDataString != null) {
-        // Parse stored JSON back to UserModel
         final userModel = UserModel.fromJson(
             Map<String, dynamic>.from(jsonDecode(userDataString)));
 
-        // Update current user in memory
         _currentUser.value = userModel;
         return userModel;
       }
@@ -84,22 +78,23 @@ class UserService extends GetxController {
     return null;
   }
 
-  // Logout and clear all stored data
   Future<void> logout() async {
     try {
-      // Optional: Call server logout endpoint
-      await dio.post('/auth/logout');
+      final token = await secureStorage.read(key: 'auth_token');
+      if (token != null) {
+        await DioRetryHelper.retryRequest(() => dio.post(
+              '/auth/logout',
+              options: Options(
+                headers: {'Authorization': 'Bearer $token'},
+              ),
+            ));
+      }
     } catch (e) {
       print('Logout error: $e');
     } finally {
-      // Clear all local storage
       await secureStorage.deleteAll();
-
-      // Clear current user
       _currentUser.value = null;
-
-      // Navigate to login screen
-      Get.offAllNamed('/login');
+      Get.offAllNamed('/phoneLogin');
     }
   }
 
@@ -111,19 +106,33 @@ class UserService extends GetxController {
       if (token == null) return false;
 
       // Verify token with backend
-      final response = await dio.get(
-        '/auth/verify',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+      final response = await DioRetryHelper.retryRequest(() => dio.get(
+            '/auth/verify',
+            options: Options(
+              headers: {
+                'Authorization': 'Bearer $token',
+              },
+            ),
+          ));
 
       return response.statusCode == 200;
     } catch (e) {
       return false;
     }
+  }
+
+  String getInitials(String fullName) {
+    List<String> names = fullName.trim().split(RegExp(r'\s+'));
+
+    // Ensure we have at least two parts
+    if (names.length < 2) return '';
+
+    String firstNameInitial =
+        names[0].isNotEmpty ? names[0][0].toUpperCase() : '';
+    String lastNameInitial =
+        names[1].isNotEmpty ? names[1][0].toUpperCase() : '';
+
+    return firstNameInitial + lastNameInitial;
   }
 }
 
@@ -132,7 +141,7 @@ class UserModel {
   final int id;
   final String email;
   final String fullName;
-  final String? phoneNumber;
+  final String phoneNumber;
   final String role;
   final bool isVerified;
   final DateTime createdAt;
@@ -141,7 +150,7 @@ class UserModel {
     required this.id,
     required this.email,
     required this.fullName,
-    this.phoneNumber,
+    required this.phoneNumber,
     required this.role,
     required this.isVerified,
     required this.createdAt,
@@ -149,13 +158,15 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
-      email: json['email'],
-      fullName: json['fullName'],
-      phoneNumber: json['phoneNumber'],
-      role: json['role'],
-      isVerified: json['isVerified'],
-      createdAt: DateTime.parse(json['createdAt']),
+      id: json['id'] ?? 0,
+      email: json['email'] ?? '',
+      fullName: json['full_name'] ?? '',
+      phoneNumber: json['phone_umber'] ?? '',
+      role: json['role'] ?? 'client',
+      isVerified: json['is_verified'] ?? false,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
     );
   }
 
@@ -171,19 +182,3 @@ class UserModel {
     };
   }
 }
-
-// Extension on login/register to store credentials
-// extension AuthExtension on AuthController {
-//   Future<void> _securelyStoreCredentials(
-//       String token, Map<String, dynamic> userData) async {
-//     final secureStorage = const FlutterSecureStorage();
-
-//     // Store authentication token
-//     await secureStorage.write(key: 'auth_token', value: token);
-
-//     // Create and store user model
-//     final userModel = UserModel.fromJson(userData);
-//     final userService = Get.find<UserService>();
-//     await userService.storeUserLocally(userModel);
-//   }
-// }

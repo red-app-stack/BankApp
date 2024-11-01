@@ -5,6 +5,9 @@ import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
 
+import '../../controllers/auth_controller.dart';
+import '../../services/user_service.dart';
+
 class CodeEnteringScreen extends StatefulWidget {
   const CodeEnteringScreen({super.key});
 
@@ -13,12 +16,16 @@ class CodeEnteringScreen extends StatefulWidget {
 }
 
 class CodeEnteringScreenState extends State<CodeEnteringScreen> {
+  final AuthController _authController = Get.find<AuthController>();
+  final UserService _userService = Get.find<UserService>();
+
   final FocusNode _codeFocusNode = FocusNode();
-  final TextEditingController _codeController = TextEditingController();
   final LocalAuthentication _auth = LocalAuthentication();
 
   final int _codeLength = 4;
   String _enteredCode = '';
+  int creationStage = 0;
+  String createdCode = '';
 
   @override
   void initState() {
@@ -118,44 +125,48 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Widget _buildUserCard(ThemeData theme, Size size) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 48,
-              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-              child: Text(
-                'ВВ',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                child: Text(
+                  _userService
+                      .getInitials(_userService.currentUser?.fullName ?? ''),
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: size.height * 0.02),
-            Text(
-              'Фамилия Имя',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+              SizedBox(height: size.height * 0.02),
+              Text(
+                _userService.currentUser?.fullName ?? '...',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+            ],
+          ),
+        ));
   }
 
   Widget _buildAccessCodeLabel(ThemeData theme) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),
       child: Text(
-        "Введите код доступа",
+        _authController.isCreatingCode
+            ? creationStage == 0
+                ? "Придумайте код доступа"
+                : "Повторите код доступа"
+            : "Введите код доступа",
         style: theme.textTheme.titleMedium?.copyWith(
           color: theme.colorScheme.outline,
           fontSize: 12,
@@ -258,9 +269,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           setState(() {
             _enteredCode += value;
           });
-          if (_enteredCode.length == _codeLength) {
-            Get.offAllNamed('/main');
-          }
+          _handleCodeEntry();
         }
       },
       style: TextButton.styleFrom(
@@ -280,9 +289,37 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   }
 
   Widget _buildBiometricButton(ThemeData theme) {
+    return !_authController.isCreatingCode
+        ? TextButton(
+            onPressed: () {
+              _authenticateWithBiometrics();
+            },
+            style: TextButton.styleFrom(
+              shape: CircleBorder(),
+              backgroundColor: theme.colorScheme.surfaceContainer,
+              padding: EdgeInsets.all(4),
+            ),
+            child: SvgPicture.asset(
+              'assets/icons/ic_biometry.svg',
+              width: 48,
+              height: 48,
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary,
+                BlendMode.srcIn,
+              ),
+            ),
+          )
+        : SizedBox();
+  }
+
+  Widget _buildDeleteButton(ThemeData theme) {
     return TextButton(
       onPressed: () {
-        _authenticateWithBiometrics();
+        if (_enteredCode.isNotEmpty) {
+          setState(() {
+            _enteredCode = _enteredCode.substring(0, _enteredCode.length - 1);
+          });
+        }
       },
       style: TextButton.styleFrom(
         shape: CircleBorder(),
@@ -290,9 +327,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
         padding: EdgeInsets.all(4),
       ),
       child: SvgPicture.asset(
-        'assets/icons/ic_biometry.svg',
-        width: 48,
-        height: 48,
+        'assets/icons/ic_clear.svg',
+        width: 32,
+        height: 32,
         colorFilter: ColorFilter.mode(
           theme.colorScheme.primary,
           BlendMode.srcIn,
@@ -303,7 +340,6 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Future<void> _authenticateWithBiometrics() async {
     bool authenticated = false;
-
     try {
       bool canCheckBiometrics = await _auth.canCheckBiometrics;
       if (canCheckBiometrics) {
@@ -349,36 +385,34 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     }
   }
 
-  Widget _buildDeleteButton(ThemeData theme) {
-    return TextButton(
-      onPressed: () {
-        if (_enteredCode.isNotEmpty) {
-          setState(() {
-            _enteredCode = _enteredCode.substring(0, _enteredCode.length - 1);
-          });
+  void _handleCodeEntry() async {
+    if (_enteredCode.length == _codeLength) {
+      if (_authController.isCreatingCode) {
+        if (creationStage == 0) {
+          creationStage = 1;
+          createdCode = _enteredCode;
+          setState(() => _enteredCode = '');
+        } else {
+          await _authController.storeAccessCode(_enteredCode);
+          Get.offAllNamed('/main');
         }
-      },
-      style: TextButton.styleFrom(
-        shape: CircleBorder(),
-        backgroundColor: theme.colorScheme.surfaceContainer,
-        padding: EdgeInsets.all(4),
-      ),
-      child: SvgPicture.asset(
-        'assets/icons/ic_clear.svg',
-        width: 32,
-        height: 32,
-        colorFilter: ColorFilter.mode(
-          theme.colorScheme.primary,
-          BlendMode.srcIn,
-        ),
-      ),
-    );
+      } else {
+        // Validate existing code
+        final isValid = await _authController.validateAccessCode(_enteredCode);
+        if (isValid) {
+          Get.offAllNamed('/main');
+        } else {
+          setState(() => _enteredCode = '');
+          Get.snackbar('Ошибка', 'Неверный код доступа');
+        }
+      }
+    }
   }
 
   @override
   void dispose() {
     _codeFocusNode.dispose();
-    _codeController.dispose();
+    _authController.code.value.dispose();
     super.dispose();
   }
 }

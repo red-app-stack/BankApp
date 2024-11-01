@@ -15,6 +15,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
     with SingleTickerProviderStateMixin {
   final AuthController _authController = Get.find<AuthController>();
   final _formKey = GlobalKey<FormState>();
+  bool _isEmailMismatch = false;
 
   late final AnimationController _secondFieldController;
   late final Animation<double> _secondFieldAnimation;
@@ -49,6 +50,10 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
   }
 
   void sendVerificationCode() async {
+    setState(() {
+      _isEmailMismatch = false;
+    });
+
     if (_formKey.currentState!.validate()) {
       if (_authController.obfuscatedEmail != null) {
         if (await _authController
@@ -57,7 +62,10 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
               .sendVerificationCode(_authController.email.value.text);
           _secondFieldController.forward();
         } else {
-          Get.snackbar('Ошибка', 'Введенный email не совпадает с существующим');
+          setState(() {
+            _isEmailMismatch = true;
+          });
+          _formKey.currentState!.validate();
         }
       } else {
         _authController.sendVerificationCode(_authController.email.value.text);
@@ -155,22 +163,13 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                     if (!GetUtils.isEmail(value)) {
                                       return 'Введите корректный email адрес';
                                     }
+                                    if (_isEmailMismatch) {
+                                      return 'Введенный email не совпадает с существующим';
+                                    }
                                     return null;
                                   },
-                                  onFieldSubmitted: (_) async {
-                                    if (_authController.obfuscatedEmail !=
-                                        null) {
-                                      if (await _authController
-                                          .checkPartialEmail(_authController
-                                              .email.value.text)) {
-                                        sendVerificationCode();
-                                      } else {
-                                        Get.snackbar('Ошибка',
-                                            'Введенный email не совпадает с сохраненным');
-                                      }
-                                    } else {
-                                      sendVerificationCode();
-                                    }
+                                  onFieldSubmitted: (_) {
+                                    sendVerificationCode();
                                   },
                                 )),
                             Obx(() {

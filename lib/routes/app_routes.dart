@@ -76,7 +76,7 @@ class ScaleFadeTransition extends CustomTransition {
       parent: animation,
       curve: const Interval(
         0.0,
-        0.9, 
+        0.9,
         curve: Curves.easeOutCubic,
       ),
     );
@@ -197,7 +197,7 @@ class AppRoutes {
     GetPage(
       name: Routes.codeEntering,
       page: () => CodeEnteringScreen(),
-      customTransition: FadeWithHeroTransition(),
+      customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
