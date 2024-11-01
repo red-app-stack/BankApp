@@ -1,10 +1,5 @@
 <p align="center">
-  <a href="https://github.com/your_username/bank_app"><img src="https://your_image_link.com/logo.png" alt="Логотип Банка" width="200"/></a>
-</p>
-
-<p align="center">        
-      <a href="https://t.me/bank_support"><img src="https://your_image_link.com/shields/support_channel.svg" alt="Поддержка"></a>
-      <a href="https://t.me/bank_community"><img src="https://your_image_link.com/shields/community.svg" alt="Сообщество"></a>
+  <a href="https://github.com/your_username/bank_app"><img src="https://github.com/red-app-stack/bank_app/blob/main/assets/images/play_store_512_2.png" alt="Логотип Банка" width="200"/></a>
 </p>
 
 <h2 align="center"><b>Суперприложение для Банка</b></h2>
