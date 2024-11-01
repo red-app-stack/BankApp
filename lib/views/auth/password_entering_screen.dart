@@ -86,9 +86,12 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                             child: TextFormField(
                               controller: _authController.fullName.value,
                               focusNode: _fullNameFocusNode,
+                              enabled: !_authController.isLoggingIn,
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
-                                labelText: 'Введите ФИО',
+                                labelText: _authController.isLoggingIn
+                                    ? 'Введите ФИО'
+                                    : 'ФИО',
                                 labelStyle: TextStyle(
                                   color: _formKey.currentState?.validate() ==
                                           false

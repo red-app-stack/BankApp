@@ -37,12 +37,9 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
         formatted = '($newDigits';
       } else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
-      } else if (newDigits.length <= 8) {
-        formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6)}';
       } else {
         formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, min(10, newDigits.length))}';
+            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, min(10, newDigits.length))}';
       }
     }
 
@@ -206,16 +203,17 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                         ))),
               ),
               SizedBox(height: size.height * 0.02),
-              ElevatedButton(
+              Obx(() => ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
+                    if (_formKey.currentState!.validate() &&
+                        !authController.status) {
                       print(authController.phone.value.text.trim());
                       authController.verifyServerConnection();
+                      authController.checkUserPhone();
                       authController.email.value.text = '';
                       authController.password.value.text = '';
                       authController.verification.value.text = '';
                       authController.setCodeSent(false);
-                      Get.toNamed('/emailLogin');
                     }
                   },
                   style: theme.elevatedButtonTheme.style?.copyWith(
@@ -225,16 +223,26 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                   ),
                   child: fakeHero(
                     tag: 'main_button',
-                    child: Text(
-                      "Далее",
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface,
-                        fontFamily: 'OpenSans',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  )),
+                    child: authController.status
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            "Далее",
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontFamily: 'OpenSans',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ))),
               SizedBox(
                 height: size.height * 0.02,
               ),

@@ -1,4 +1,3 @@
-import 'package:bank_app/services/interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -48,10 +48,21 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
     return null;
   }
 
-  void sendVerificationCode() {
+  void sendVerificationCode() async {
     if (_formKey.currentState!.validate()) {
-      _authController.sendVerificationCode(_authController.email.value.text);
-      _secondFieldController.forward();
+      if (_authController.obfuscatedEmail != null) {
+        if (await _authController
+            .checkPartialEmail(_authController.email.value.text)) {
+          _authController
+              .sendVerificationCode(_authController.email.value.text);
+          _secondFieldController.forward();
+        } else {
+          Get.snackbar('Ошибка', 'Введенный email не совпадает с существующим');
+        }
+      } else {
+        _authController.sendVerificationCode(_authController.email.value.text);
+        _secondFieldController.forward();
+      }
     }
   }
 
@@ -106,7 +117,9 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                             fakeHero(
                                 tag: 'text_info',
                                 child: Text(
-                                  "Введите Ваш личный адрес электронной почты",
+                                  _authController.obfuscatedEmail == null
+                                      ? "Введите Ваш личный адрес электронной почты"
+                                      : 'Аккаунт с данным телефоном уже зарегистрирован. Введите почту чтобы продолжить.',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: theme.colorScheme.outline,
                                     fontSize: 14,
@@ -120,11 +133,16 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                 child: TextFormField(
                                   controller: _authController.email.value,
                                   focusNode: emailFocus,
-                                  enabled: !_authController.isCodeSent || _authController.allowResend,
+                                  enabled: !_authController.isCodeSent ||
+                                      _authController.allowResend,
                                   textInputAction: TextInputAction.send,
                                   keyboardType: TextInputType.emailAddress,
                                   decoration: InputDecoration(
-                                    labelText: 'Email',
+                                    labelText: _authController
+                                                .obfuscatedEmail !=
+                                            null
+                                        ? '${_authController.obfuscatedEmail}'
+                                        : 'Email',
                                     prefixIcon: Icon(Icons.email_outlined),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -139,8 +157,20 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                     }
                                     return null;
                                   },
-                                  onFieldSubmitted: (_) {
-                                    sendVerificationCode();
+                                  onFieldSubmitted: (_) async {
+                                    if (_authController.obfuscatedEmail !=
+                                        null) {
+                                      if (await _authController
+                                          .checkPartialEmail(_authController
+                                              .email.value.text)) {
+                                        sendVerificationCode();
+                                      } else {
+                                        Get.snackbar('Ошибка',
+                                            'Введенный email не совпадает с сохраненным');
+                                      }
+                                    } else {
+                                      sendVerificationCode();
+                                    }
                                   },
                                 )),
                             Obx(() {

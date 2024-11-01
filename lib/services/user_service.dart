@@ -16,18 +16,14 @@ class UserService extends GetxController {
 
   UserService({required this.dio});
 
-  // Retrieve user profile from server
   Future<UserModel?> fetchUserProfile() async {
     try {
-      // Retrieve the stored token
       final token = await secureStorage.read(key: 'auth_token');
 
       if (token == null) {
-        // No token found, user is not logged in
         return null;
       }
 
-      // Make authenticated request to get user profile
       final response = await dio.get(
         '/auth/profile',
         options: Options(
@@ -38,19 +34,15 @@ class UserService extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Parse user data
         final userData = response.data;
         final userModel = UserModel.fromJson(userData);
 
-        // Store user data locally and in memory
         await storeUserLocally(userModel);
 
         return userModel;
       }
     } on DioException catch (e) {
-      // Handle authentication errors
       if (e.response?.statusCode == 401) {
-        // Token might be expired, logout user
         await logout();
       }
       print('Error fetching user profile: ${e.message}');

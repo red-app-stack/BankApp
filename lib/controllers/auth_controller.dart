@@ -32,6 +32,7 @@ class AuthController extends GetxController {
   final Rx<TextEditingController> password = TextEditingController().obs;
   final Rx<TextEditingController> verification = TextEditingController().obs;
 
+  bool isLoggingIn = false;
   final RxBool _isCodeSent = false.obs;
   bool get isCodeSent => _isCodeSent.value;
 
@@ -52,6 +53,9 @@ class AuthController extends GetxController {
   String get userRole => _userRole.value;
   Map<String, dynamic>? tempUserData;
   String? tempUserToken;
+
+  String? obfuscatedEmail;
+  String? obfuscatedPhoneNumber;
 
   void setIsCodeCorrect(bool value) => _isCodeCorrect.value = value;
   void setStatus(bool value) => _status.value = value;
@@ -81,7 +85,7 @@ class AuthController extends GetxController {
         dio.options.connectTimeout = const Duration(seconds: 10);
         dio.options.receiveTimeout = const Duration(seconds: 10);
         dio.interceptors.add(AuthInterceptor());
-        await checkAuthStatus();
+        // await checkAuthStatus();
         _retryAttempts.value = 0;
       } else if (_retryAttempts.value < maxRetries) {
         _retryAttempts.value++;
@@ -96,6 +100,7 @@ class AuthController extends GetxController {
       print('Error during server check: $e');
     } finally {
       setStatus(false);
+      print('Server check completed');
       _isCheckingServer.value = false;
     }
   }
@@ -111,7 +116,7 @@ class AuthController extends GetxController {
             '$url/',
             options: Options(
               headers: {'Connection': 'keep-alive'},
-              validateStatus: (status) => status == 404,
+              validateStatus: (status) => status == 999,
               sendTimeout: const Duration(seconds: 8),
             ),
           );
@@ -119,7 +124,7 @@ class AuthController extends GetxController {
           final responseTime = stopwatch.elapsedMilliseconds;
           print('Response time for $url: ${responseTime}ms');
 
-          if (response.statusCode == 404) {
+          if (response.statusCode == 999) {
             serverResponseTimes[url] = responseTime;
           }
         } catch (e) {
@@ -152,72 +157,35 @@ class AuthController extends GetxController {
   }
 
   Future<void> verifyServerConnection() async {
-    print('Server health check!');
-    try {
-      if (_availableBaseUrl.value.isEmpty) {
-        print('No server available, skipping health check');
-        await checkServer();
-        return;
-      }
+    // print('Server health check!');
+    // try {
+    //   if (_availableBaseUrl.value.isEmpty) {
+    //     print('No server available, skipping health check');
+    //     await checkServer();
+    //     return;
+    //   }
 
-      final response = await dio.get(
-        '${_availableBaseUrl.value}/',
-        options: Options(
-          validateStatus: (status) => status == 404,
-          sendTimeout: const Duration(seconds: 5),
-        ),
-      );
+    //   final response = await dio.get(
+    //     '${_availableBaseUrl.value}/',
+    //     options: Options(
+    //       validateStatus: (status) => status == 999,
+    //       sendTimeout: const Duration(seconds: 5),
+    //     ),
+    //   );
 
-      if (response.statusCode != 404) {
-        print('Server connection lost, finding new server');
-        _availableBaseUrl.value = '';
-        await checkServer();
-      } else {
-        print('Server connection is fine');
-      }
-    } catch (e) {
-      print('Server health check failed: $e');
-      _availableBaseUrl.value = '';
-      await checkServer();
-    }
+    //   if (response.statusCode != 999) {
+    //     print('Server connection lost, finding new server');
+    //     _availableBaseUrl.value = '';
+    //     await checkServer();
+    //   } else {
+    //     print('Server connection is fine');
+    //   }
+    // } catch (e) {
+    //   print('Server health check failed: $e');
+    //   _availableBaseUrl.value = '';
+    //   await checkServer();
+    // }
   }
-
-  // Future<void> login() async {
-  //   if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
-  //     Get.snackbar('Error', 'Please fill all fields');
-  //     return;
-  //   }
-
-  //   try {
-  //     setStatus(true);
-  //     final response = await dio.post('/auth/login', data: {
-  //       'email': email.value.text.trim(),
-  //       'password': password.value.text.trim(),
-  //     });
-
-  //     if (response.statusCode == 200) {
-  //       final userData = response.data['user'];
-  //       final storedHashedPassword = userData['password'];
-
-  //       if (BCrypt.checkpw(password.value.text.trim(), storedHashedPassword)) {
-  //         _isCodeSent.value = true;
-  //         _allowResend.value = false;
-  //         sendVerificationCode(email.value.text.trim());
-  //         Get.offNamed('/verification');
-  //         Get.snackbar('Success', 'Login successful');
-
-  //         tempUserData = userData;
-  //         tempUserToken = response.data['token'];
-  //       } else {
-  //         Get.snackbar('Error', 'Invalid credentials');
-  //       }
-  //     }
-  //   } on DioException catch (e) {
-  //     _handleApiError(e);
-  //   } finally {
-  //     setStatus(false);
-  //   }
-  // }
 
   Future<void> login() async {
     if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
@@ -256,34 +224,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // Future<void> register() async {
-  //   await verifyServerConnection();
-  //   try {
-  //     setStatus(true);
-
-  //     final response = await dio.post('/auth/register', data: {
-  //       'email': email.value.text.trim(),
-  //       'password': password.value.text.trim(),
-  //       'fullName': fullName.value.text.trim(),
-  //       'phoneNumber': phone.value.text.trim(),
-  //     });
-  //     print(phone.value.text.trim());
-  //     if (response.statusCode == 201) {
-  //       final token = response.data['token'];
-  //       final userData = response.data['user'];
-
-  //       await _securelyStoreCredentials(token, userData);
-  //       Get.offAllNamed('/main');
-  //       Get.snackbar('Успех', 'Успешная регистрация');
-  //     }
-  //   } on DioException catch (e) {
-  //     _handleApiError(e);
-  //     Get.snackbar('Ошибка', 'Неудачная регистрация');
-  //   } finally {
-  //     setStatus(false);
-  //   }
-  // }
-
   Future<void> register() async {
     await verifyServerConnection();
     try {
@@ -312,30 +252,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // Future<void> logout() async {
-  //   try {
-  //     setStatus(true);
-  //     final token = await _getAccessToken();
-
-  //     await dio.post(
-  //       '/auth/logout',
-  //       options: Options(
-  //         headers: {
-  //           'Authorization': 'Bearer $token',
-  //         },
-  //       ),
-  //     );
-  //   } on DioException catch (e) {
-  //     _handleApiError(e);
-  //   } finally {
-  //     await _clearSecureStorage();
-  //     tempUserData = null;
-  //     tempUserToken = null;
-  //     Get.offAllNamed('/phoneLogin');
-  //     setStatus(false);
-  //   }
-  // }
-
   Future<void> logout() async {
     try {
       setStatus(true);
@@ -351,23 +267,128 @@ class AuthController extends GetxController {
     }
   }
 
-  // Future<void> checkAuthStatus() async {
-  //   try {
-  //     final token = await secureStorage.read(key: 'auth_token');
-  //     if (token != null) {
-  //       final response = await dio.get('/auth/verify');
-  //       if (response.statusCode == 200) {
-  //         Get.offAllNamed('/main');
-  //       } else {
-  //         await _clearSecureStorage();
-  //         Get.offAllNamed('/phoneLogin');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     await _clearSecureStorage();
-  //     Get.offAllNamed('/phoneLogin');
-  //   }
-  // }
+  Future<Map<String, dynamic>> checkUserExistence({
+    String? email,
+    String? phoneNumber,
+  }) async {
+    try {
+      if (email == null && phoneNumber == null) {
+        return {'error': 'Either email or phone number is required'};
+      }
+
+      final requestData = {
+        if (email != null) 'email': email,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      };
+
+      final response = await dio.post(
+        '/auth/check-user',
+        data: requestData,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data['exists'] == true) {
+          return {
+            'exists': true,
+            'user': {
+              'email': data['user']['email'],
+              'phoneNumber': data['user']['phoneNumber'],
+            }
+          };
+        } else if (data['exists'] == false) {
+          return {
+            'exists': false,
+            'message': 'User does not exist',
+          };
+        } else {
+          return {'error': 'Unexpected response format'};
+        }
+      } else {
+        return {'error': 'Failed to check user existence'};
+      }
+    } catch (e) {
+      print("Error checking user existence: $e");
+      return {'error': 'An error occurred while checking user existence'};
+    }
+  }
+
+  void checkUserPhone() async {
+    final result = await checkUserExistence(
+      phoneNumber: phone.value.text.trim(),
+    );
+
+    if (result['exists'] == true) {
+      obfuscatedEmail = result['user']['email'];
+      obfuscatedPhoneNumber = result['user']['phoneNumber'];
+      print("User exists with obfuscated data:");
+      print("Email: $obfuscatedEmail");
+      print("Phone: $obfuscatedPhoneNumber");
+    } else if (result['exists'] == false) {
+      print(result['message']);
+    } else {
+      print("Error: ${result['error']}");
+    }
+    Get.toNamed('/emailLogin');
+  }
+
+  void checkUserAndStoreResults() async {
+    final result = await checkUserExistence(
+      email: email.value.text.trim(),
+      phoneNumber: phone.value.text.trim(),
+    );
+
+    if (result['exists'] == true) {
+      obfuscatedEmail = result['user']['email'];
+      obfuscatedPhoneNumber = result['user']['phoneNumber'];
+      print("User exists with obfuscated data:");
+      print("Email: $obfuscatedEmail");
+      print("Phone: $obfuscatedPhoneNumber");
+    } else if (result['exists'] == false) {
+      print(result['message']);
+    } else {
+      print("Error: ${result['error']}");
+    }
+  }
+
+  Future<bool> checkPartialEmail(String enteredEmail) async {
+    setStatus(true);
+    print(
+        'Checking email: $enteredEmail (Attempt ${_retryAttempts.value + 1} of $maxRetries)');
+
+    try {
+      final response = await dio.post('/auth/check-partial-email', data: {
+        'enteredEmail': enteredEmail,
+        'obfuscatedEmail': obfuscatedEmail,
+      });
+
+      if (response.statusCode == 200) {
+        _retryAttempts.value = 0;
+        return true;
+      } else if (response.statusCode == 502 &&
+          _retryAttempts.value < maxRetries) {
+        _retryAttempts.value++;
+        await Future.delayed(const Duration(seconds: 1));
+        return await checkPartialEmail(enteredEmail);
+      }
+      _retryAttempts.value = 0;
+      return false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 502 && _retryAttempts.value < maxRetries) {
+        _retryAttempts.value++;
+        await Future.delayed(const Duration(seconds: 1));
+        return await checkPartialEmail(enteredEmail);
+      }
+      _retryAttempts.value = 0;
+      return false;
+    } catch (e) {
+      print('Partial email check error: $e');
+      _retryAttempts.value = 0;
+      return false;
+    } finally {
+      setStatus(false);
+    }
+  }
 
   Future<void> checkAuthStatus() async {
     try {
@@ -391,24 +412,11 @@ class AuthController extends GetxController {
 
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
-    // Store token
     await userService.secureStorage.write(key: 'auth_token', value: token);
 
-    // Create and store user model
     final userModel = UserModel.fromJson(userData);
     await userService.storeUserLocally(userModel);
   }
-
-  // Future<void> _securelyStoreCredentials(
-  //     String token, Map<String, dynamic> userData) async {
-  //   await secureStorage.write(key: 'auth_token', value: token);
-  //   final userDataString = jsonEncode(userData);
-  //   await secureStorage.write(key: 'user_data', value: userDataString);
-  // }
-
-  // Future<void> _clearSecureStorage() async {
-  //   await secureStorage.deleteAll();
-  // }
 
   void _handleApiError(DioException e) {
     if (e.response?.statusCode == 401) {
@@ -459,30 +467,31 @@ class AuthController extends GetxController {
   }
 
   Future<void> verifyCode(String code) async {
-    verifyServerConnection();
     setStatus(true);
+    await verifyServerConnection();
     try {
-      final stopwatch = Stopwatch()..start();
       final response = await dio.post('/auth/verify-code', data: {
         'code': code,
         'email': email.value.text.trim(),
+        'exists': obfuscatedEmail != null,
       });
-      stopwatch.stop();
-// Если ответ был слишком быстрый, то ждем, чтобы не перегружать пользователя и сервер
-      if (stopwatch.elapsedMilliseconds < 2000) {
-        await Future.delayed(
-            Duration(milliseconds: 2000 - stopwatch.elapsedMilliseconds));
-      }
 
       if (response.statusCode == 200) {
         _isCodeCorrect.value = true;
+        if (response.data['userData'] != null) {
+          fullName.value.text = response.data['userData'];
+          isLoggingIn = true;
+        }
+        print(fullName.value.text);
+        print(isLoggingIn);
+
         if (tempUserToken != null && tempUserData != null) {
           await _securelyStoreCredentials(tempUserToken!, tempUserData!);
         }
         Get.toNamed('/passwordEntering');
       } else {
         _isCodeCorrect.value = false;
-        Get.snackbar('Error', 'Invalid code');
+        Get.snackbar('Ошибка', 'Неверный код');
       }
     } on DioException catch (e) {
       _isCodeCorrect.value = false;
