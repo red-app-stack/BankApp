@@ -140,7 +140,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
             ),
             SizedBox(height: size.height * 0.02),
             Text(
-              'Владислав \nВасильевич Ш.',
+              'Фамилия Имя',
               textAlign: TextAlign.center,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,

@@ -78,14 +78,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: size.height * 0.1),
+                SizedBox(height: size.height * 0.08),
                 Center(
                   child: SvgPicture.asset(
                     'assets/icons/illustration_home.svg',
-                    height: size.height * 0.5,
+                    height: size.height * 0.4,
+                    width: size.width * 0.8,
                   ),
                 ),
-                SizedBox(height: size.height * 0.2),
               ],
             ),
           ),
@@ -106,7 +106,7 @@ class HomeScreen extends StatelessWidget {
         child: InkWell(
           onTap: () {},
           borderRadius: BorderRadius.circular(12),
-          splashFactory: InkRipple.splashFactory, 
+          splashFactory: InkRipple.splashFactory,
           splashColor: theme.colorScheme.primary.withOpacity(0.08),
           highlightColor: theme.colorScheme.primary.withOpacity(0.04),
           child: Padding(

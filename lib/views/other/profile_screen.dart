@@ -45,7 +45,6 @@ class ProfileScreen extends StatelessWidget {
             icon: 'assets/icons/ic_smartphone.svg',
             title: '+7 (707) 2****05',
             description: 'Ваш доверенный номер'),
-
         MenuItem(
             icon: 'assets/icons/ic_phone.svg',
             title: 'Переводы по номеру телефона'),
@@ -111,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
                         ]),
                         SizedBox(height: size.height * 0.02),
                         Text(
-                          'Владислав\nВасильевич Ш.',
+                          'Фамилия Имя',
                           maxLines: 2,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleLarge?.copyWith(

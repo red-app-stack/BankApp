@@ -1,3 +1,6 @@
+import 'package:bank_app/services/interceptor.dart';
+import 'package:bank_app/services/user_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
@@ -13,6 +16,15 @@ Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await dotenv.load();
+  final dio = Dio(BaseOptions(
+    baseUrl: dotenv.env['API_URL_1'] ?? '',
+    connectTimeout: Duration(seconds: 10),
+    receiveTimeout: Duration(seconds: 10),
+  ));
+  dio.interceptors.add(AuthInterceptor());
+  final userService = UserService(dio: dio);
+
+  Get.put(userService);
 
   Get.put(AuthController());
 
@@ -21,7 +33,6 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.dark,
     statusBarBrightness: Brightness.light,
   ));
-
   Future.delayed(const Duration(seconds: 2), () {
     FlutterNativeSplash.remove();
   });

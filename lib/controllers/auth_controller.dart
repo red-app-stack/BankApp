@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:bank_app/services/interceptor.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../services/user_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
+  final UserService userService = Get.find<UserService>();
+
   final dio = Dio();
   final secureStorage = const FlutterSecureStorage();
 
@@ -179,9 +183,46 @@ class AuthController extends GetxController {
     }
   }
 
+  // Future<void> login() async {
+  //   if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
+  //     Get.snackbar('Error', 'Please fill all fields');
+  //     return;
+  //   }
+
+  //   try {
+  //     setStatus(true);
+  //     final response = await dio.post('/auth/login', data: {
+  //       'email': email.value.text.trim(),
+  //       'password': password.value.text.trim(),
+  //     });
+
+  //     if (response.statusCode == 200) {
+  //       final userData = response.data['user'];
+  //       final storedHashedPassword = userData['password'];
+
+  //       if (BCrypt.checkpw(password.value.text.trim(), storedHashedPassword)) {
+  //         _isCodeSent.value = true;
+  //         _allowResend.value = false;
+  //         sendVerificationCode(email.value.text.trim());
+  //         Get.offNamed('/verification');
+  //         Get.snackbar('Success', 'Login successful');
+
+  //         tempUserData = userData;
+  //         tempUserToken = response.data['token'];
+  //       } else {
+  //         Get.snackbar('Error', 'Invalid credentials');
+  //       }
+  //     }
+  //   } on DioException catch (e) {
+  //     _handleApiError(e);
+  //   } finally {
+  //     setStatus(false);
+  //   }
+  // }
+
   Future<void> login() async {
     if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please fill all fields');
+      Get.snackbar('Ошибка', 'Заполните все поля');
       return;
     }
 
@@ -200,11 +241,11 @@ class AuthController extends GetxController {
           _isCodeSent.value = true;
           _allowResend.value = false;
           sendVerificationCode(email.value.text.trim());
-          Get.offNamed('/verification');
-          Get.snackbar('Success', 'Login successful');
 
           tempUserData = userData;
           tempUserToken = response.data['token'];
+
+          Get.offNamed('/verification');
         } else {
           Get.snackbar('Error', 'Invalid credentials');
         }
@@ -216,7 +257,36 @@ class AuthController extends GetxController {
     }
   }
 
+  // Future<void> register() async {
+  //   await verifyServerConnection();
+  //   try {
+  //     setStatus(true);
+
+  //     final response = await dio.post('/auth/register', data: {
+  //       'email': email.value.text.trim(),
+  //       'password': password.value.text.trim(),
+  //       'fullName': fullName.value.text.trim(),
+  //       'phoneNumber': phone.value.text.trim(),
+  //     });
+  //     print(phone.value.text.trim());
+  //     if (response.statusCode == 201) {
+  //       final token = response.data['token'];
+  //       final userData = response.data['user'];
+
+  //       await _securelyStoreCredentials(token, userData);
+  //       Get.offAllNamed('/main');
+  //       Get.snackbar('Успех', 'Успешная регистрация');
+  //     }
+  //   } on DioException catch (e) {
+  //     _handleApiError(e);
+  //     Get.snackbar('Ошибка', 'Неудачная регистрация');
+  //   } finally {
+  //     setStatus(false);
+  //   }
+  // }
+
   Future<void> register() async {
+    await verifyServerConnection();
     try {
       setStatus(true);
 
@@ -226,6 +296,7 @@ class AuthController extends GetxController {
         'fullName': fullName.value.text.trim(),
         'phoneNumber': phone.value.text.trim(),
       });
+
       if (response.statusCode == 201) {
         final token = response.data['token'];
         final userData = response.data['user'];
@@ -242,43 +313,103 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<String?> _getAccessToken() async {
+    return await secureStorage.read(key: 'auth_token');
+  }
+
+  // Future<void> logout() async {
+  //   try {
+  //     setStatus(true);
+  //     final token = await _getAccessToken();
+
+  //     await dio.post(
+  //       '/auth/logout',
+  //       options: Options(
+  //         headers: {
+  //           'Authorization': 'Bearer $token',
+  //         },
+  //       ),
+  //     );
+  //   } on DioException catch (e) {
+  //     _handleApiError(e);
+  //   } finally {
+  //     await _clearSecureStorage();
+  //     tempUserData = null;
+  //     tempUserToken = null;
+  //     Get.offAllNamed('/phoneLogin');
+  //     setStatus(false);
+  //   }
+  // }
+
   Future<void> logout() async {
     try {
       setStatus(true);
-      await dio.post('/auth/logout');
-    } on DioException catch (e) {
-      _handleApiError(e);
+      await userService.logout();
+    } catch (e) {
+      print('Logout error: $e');
+      Get.snackbar('Ошибка', 'Неудачная попытка выхода');
     } finally {
-      setStatus(false);
-      await _clearSecureStorage();
+      tempUserData = null;
+      tempUserToken = null;
       Get.offAllNamed('/phoneLogin');
+      setStatus(false);
     }
   }
 
+  // Future<void> checkAuthStatus() async {
+  //   try {
+  //     final token = await secureStorage.read(key: 'auth_token');
+  //     if (token != null) {
+  //       final response = await dio.get('/auth/verify');
+  //       if (response.statusCode == 200) {
+  //         Get.offAllNamed('/main');
+  //       } else {
+  //         await _clearSecureStorage();
+  //         Get.offAllNamed('/phoneLogin');
+  //       }
+  //     }
+  //   } catch (e) {
+  //     await _clearSecureStorage();
+  //     Get.offAllNamed('/phoneLogin');
+  //   }
+  // }
+
   Future<void> checkAuthStatus() async {
     try {
-      final token = await secureStorage.read(key: 'auth_token');
-      if (token != null) {
-        final response = await dio.get('/auth/verify');
-        if (response.statusCode == 200) {
+      final isAuthenticated = await userService.checkAuthentication();
+
+      if (isAuthenticated) {
+        final userProfile = await userService.fetchUserProfile();
+        if (userProfile != null) {
           Get.offAllNamed('/main');
         } else {
-          await _clearSecureStorage();
-          Get.offAllNamed('/phoneLogin');
+          await userService.logout();
         }
+      } else {
+        Get.offAllNamed('/phoneLogin');
       }
     } catch (e) {
-      await _clearSecureStorage();
-      Get.offAllNamed('/phoneLogin');
+      print('Auth check error: $e');
+      await userService.logout();
     }
   }
 
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
-    await secureStorage.write(key: 'auth_token', value: token);
-    final userDataString = jsonEncode(userData);
-    await secureStorage.write(key: 'user_data', value: userDataString);
+    // Store token
+    await userService.secureStorage.write(key: 'auth_token', value: token);
+
+    // Create and store user model
+    final userModel = UserModel.fromJson(userData);
+    await userService.storeUserLocally(userModel);
   }
+
+  // Future<void> _securelyStoreCredentials(
+  //     String token, Map<String, dynamic> userData) async {
+  //   await secureStorage.write(key: 'auth_token', value: token);
+  //   final userDataString = jsonEncode(userData);
+  //   await secureStorage.write(key: 'user_data', value: userDataString);
+  // }
 
   Future<void> _clearSecureStorage() async {
     await secureStorage.deleteAll();
@@ -333,6 +464,7 @@ class AuthController extends GetxController {
   }
 
   Future<void> verifyCode(String code) async {
+    verifyServerConnection();
     setStatus(true);
     try {
       final stopwatch = Stopwatch()..start();
@@ -375,19 +507,5 @@ class AuthController extends GetxController {
     fullName.value.dispose();
     _timer?.cancel();
     super.onClose();
-  }
-}
-
-class AuthInterceptor extends Interceptor {
-  @override
-  void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
-    final token = await const FlutterSecureStorage().read(key: 'auth_token');
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
-    }
-    options.headers['Accept'] = 'application/json';
-    options.headers['Content-Type'] = 'application/json';
-    return handler.next(options);
   }
 }

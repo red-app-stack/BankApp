@@ -81,7 +81,6 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                         SizedBox(
                           height: size.height * 0.02,
                         ),
-
                         fakeHero(
                             tag: 'text_input1',
                             child: TextFormField(
@@ -228,8 +227,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                               setState(() {});
                             },
                             onChanged: (value) {
-                              setState(
-                                  () {});
+                              setState(() {});
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {

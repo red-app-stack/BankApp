@@ -209,6 +209,7 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      print(authController.phone.value.text.trim());
                       authController.verifyServerConnection();
                       authController.email.value.text = '';
                       authController.password.value.text = '';

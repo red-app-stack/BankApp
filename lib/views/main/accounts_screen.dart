@@ -53,45 +53,46 @@ class AccountsController extends GetxController {
     'assets/icons/history.svg',
   ];
 
+  final String defaultName = 'Фамилия Имя';
+
   final List<BankCard> bankCards = [
     BankCard(
-      name: 'Владислав Шапка',
+      name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '4829 •••• •••• 3078',
-      tengeBalance: '458 932.00 ₸',
-      usdBalance: '1 254.32 \$',
-      euroBalance: '1 023.45 €',
+      tengeBalance: '0.00 ₸',
+      usdBalance: '0.00 \$',
+      euroBalance: '0.00 €',
       color: 'primary',
     ),
     BankCard(
-      name: 'Владислав Шапка',
+      name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '9686 •••• •••• 2197',
-      tengeBalance: '285 109.00 ₸',
-      usdBalance: '581.34 \$',
-      euroBalance: '537.43 €',
+      tengeBalance: '0.00 ₸',
+      usdBalance: '0.00 \$',
+      euroBalance: '0.00 €',
       color: 'tertiary',
     ),
     BankCard(
-      name: 'Владислав Шапка',
+      name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '4386 •••• •••• 8921',
-      tengeBalance: '152 846.00 ₸',
-      usdBalance: '311.65 \$',
-      euroBalance: '288.11 €',
+      tengeBalance: '0.00 ₸',
+      usdBalance: '0.00 \$',
+      euroBalance: '0.00 €',
       color: 'secondary',
     ),
     BankCard(
-      name: 'Владислав Шапка',
+      name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '5829 •••• •••• 8764',
-      tengeBalance: '2 846.00 ₸',
-      usdBalance: '5.80 \$',
-      euroBalance: '5.36 €',
+      tengeBalance: '0.00 ₸',
+      usdBalance: '0.00 \$',
+      euroBalance: '0.00 €',
       color: 'gray',
     )
   ];
-
   final List<CardPromoItem> promoItems = [
     CardPromoItem(
       banner: 'assets/images/digital_bonus.svg',
