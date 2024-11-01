@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/your_username/bank_app"><img src="https://github.com/red-app-stack/bank_app/blob/main/assets/images/play_store_512_2.png" alt="Логотип Банка" width="200"/></a>
+  <a href="https://github.com/red-app-stack/BankApp"><img src="https://github.com/red-app-stack/BankApp/blob/main/assets/images/play_store_512_2.png" alt="Логотип Банка" width="200"/></a>
 </p>
 
 <h2 align="center"><b>Суперприложение для Банка</b></h2>
@@ -45,7 +45,7 @@
 <summary><strong>Готовая установка APK (Рекомендуется)</strong></summary>
   
 #### Шаги установки:
-1. Перейдите во вкладку [Releases](https://github.com/red-app-stack/bank_app/releases/tag/pre-release) этого репозитория.
+1. Перейдите во вкладку [Releases](https://github.com/red-app-stack/BankApp/releases/tag/pre-release) этого репозитория.
 2. Найдите последний релиз и скачайте APK файл.
 3. Убедитесь, что в настройках вашего устройства разрешена установка приложений из неизвестных источников.
 4. Установите загруженный APK файл на ваше устройство.
