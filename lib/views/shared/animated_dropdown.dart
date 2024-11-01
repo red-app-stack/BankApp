@@ -97,7 +97,6 @@ class _CardItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _CardItem({
-    super.key,
     required this.card,
     required this.theme,
     required this.isSelected,

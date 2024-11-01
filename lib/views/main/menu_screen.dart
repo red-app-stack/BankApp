@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../shared/shared_classes.dart';
-import '../../controllers/auth_controller.dart';
 
 class MenuController extends GetxController {
   final RxDouble scrollOffset = 0.0.obs;

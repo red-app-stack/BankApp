@@ -1,7 +1,5 @@
 import 'package:bank_app/views/auth/code_entering_screen.dart';
 import 'package:bank_app/views/auth/email_login_screen.dart';
-import 'package:bank_app/views/auth/verification_screen.dart';
-import 'package:bank_app/views/other/profile_screen.dart';
 import 'package:bank_app/views/other/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -152,20 +150,17 @@ class CustomSlideTransitionLeft extends CustomTransition {
   }
 }
 
-
 class Routes {
+  static const main = '/main';
   static const phoneLogin = '/phoneLogin';
   static const emailLogin = '/emailLogin';
   static const register = '/register';
   static const home = '/home';
-  static const main = '/main';
-  static const profile = '/profile';
   static const codeEntering = '/codeEntering';
   static const passwordEntering = '/passwordEntering';
-  static const verification = '/verification';
   static const transfers = '/transfers';
-  static const phoneTransfer = '/phoneTransfer';
 
+  static const phoneTransfer = '/phoneTransfer';
   static const securitySettings = '/securitySettings';
 }
 
@@ -179,14 +174,14 @@ class AppRoutes {
     ),
     GetPage(
       name: Routes.emailLogin,
-      page: () => EmailLoginPage(),
-      customTransition: CustomSlideTransition(),
+      page: () => EmailVerificationPage(),
+      customTransition: FadeWithHeroTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
       name: Routes.register,
       page: () => RegisterPage(),
-      customTransition: CustomSlideTransition(),
+      customTransition: FadeWithHeroTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
@@ -204,19 +199,13 @@ class AppRoutes {
     GetPage(
       name: Routes.codeEntering,
       page: () => CodeEnteringScreen(),
-      customTransition: CustomSlideTransition(),
+      customTransition: FadeWithHeroTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
       name: Routes.passwordEntering,
       page: () => PasswordEnteringScreen(),
-      customTransition: CustomSlideTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.verification,
-      page: () => VerificationScreen(),
-      customTransition: CustomSlideTransition(),
+      customTransition: FadeWithHeroTransition(),
       transitionDuration: Duration(milliseconds: 300),
     ),
     GetPage(
@@ -236,14 +225,6 @@ class AppRoutes {
       page: () => SecuritySettingsScreen(),
       customTransition: CustomSlideTransitionLeft(),
       transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.profile,
-      page: () => ProfileScreen(
-        onBack: () {},
-      ),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 400),
     ),
   ];
 }

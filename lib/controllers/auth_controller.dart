@@ -12,18 +12,34 @@ class AuthController extends GetxController {
   final dio = Dio();
   final secureStorage = const FlutterSecureStorage();
 
-  final apiBaseUrl = 'https://bankdevsec5836.serveo.net';
-//   /api/v1
+  final urls = [
+    'http://127.0.0.1:3000',
+    'https://bankdevsec5836.loca.lt',
+    'https://bankdevsec5836.serveo.net',
+  ];
+
+  final RxString _availableBaseUrl = RxString('');
+  String get apiBaseUrl => _availableBaseUrl.value;
+  final RxBool _isCheckingServer = false.obs;
+  final RxInt _retryAttempts = 0.obs;
+  final int maxRetries = 5;
+
   final Rx<TextEditingController> fullName = TextEditingController().obs;
   final Rx<TextEditingController> email = TextEditingController().obs;
+  final Rx<TextEditingController> phone = TextEditingController().obs;
   final Rx<TextEditingController> password = TextEditingController().obs;
+  final Rx<TextEditingController> verification = TextEditingController().obs;
 
-  final RxString _verificationCode = ''.obs;
-  String get verificationCode => _verificationCode.value;
   final RxBool _isCodeSent = false.obs;
   bool get isCodeSent => _isCodeSent.value;
 
-  final RxInt _countdownTimer = 30.obs; // Timer duration
+  final RxBool _isCodeCorrect = true.obs;
+  bool get isCodeCorrect => _isCodeCorrect.value;
+
+  final RxBool _allowResend = false.obs;
+  bool get allowResend => _allowResend.value;
+
+  final RxInt _countdownTimer = 60.obs;
   int get countdownTimer => _countdownTimer.value;
   Timer? _timer;
 
@@ -35,18 +51,134 @@ class AuthController extends GetxController {
   Map<String, dynamic>? tempUserData;
   String? tempUserToken;
 
+  void setIsCodeCorrect(bool value) => _isCodeCorrect.value = value;
+  void setStatus(bool value) => _status.value = value;
+  void setCodeSent(bool value) => _isCodeSent.value = value;
+  void setRole(String value) => _userRole.value = value;
+
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
-    dio.options.baseUrl = apiBaseUrl;
-    dio.options.connectTimeout = const Duration(seconds: 5);
-    dio.options.receiveTimeout = const Duration(seconds: 3);
-    dio.interceptors.add(AuthInterceptor());
-    checkAuthStatus();
+    print('CHECKING SERVERS');
+    await checkServer();
+    // startServerHealthCheck();
   }
 
-  void setStatus(bool value) => _status.value = value;
-  void setRole(String value) => _userRole.value = value;
+  Future<void> checkServer() async {
+    if (_isCheckingServer.value) return;
+    _isCheckingServer.value = true;
+    setStatus(true);
+
+    try {
+      if (_availableBaseUrl.value.isEmpty) {
+        await findServer();
+      }
+
+      if (_availableBaseUrl.value.isNotEmpty) {
+        dio.options.baseUrl = apiBaseUrl;
+        dio.options.connectTimeout = const Duration(seconds: 10);
+        dio.options.receiveTimeout = const Duration(seconds: 10);
+        dio.interceptors.add(AuthInterceptor());
+        await checkAuthStatus();
+        _retryAttempts.value = 0;
+      } else if (_retryAttempts.value < maxRetries) {
+        _retryAttempts.value++;
+        print('Retry attempt ${_retryAttempts.value} of $maxRetries');
+        await Future.delayed(Duration(seconds: 2));
+        await checkServer();
+      } else {
+        print('Max retry attempts reached');
+        Get.snackbar('Error', 'Unable to connect to server');
+      }
+    } catch (e) {
+      print('Error during server check: $e');
+    } finally {
+      setStatus(false);
+      _isCheckingServer.value = false;
+    }
+  }
+
+  Future<void> findServer() async {
+    Map<String, int> serverResponseTimes = {};
+
+    await Future.wait(
+      urls.map((url) async {
+        try {
+          final stopwatch = Stopwatch()..start();
+          final response = await dio.get(
+            '$url/',
+            options: Options(
+              headers: {'Connection': 'keep-alive'},
+              validateStatus: (status) => status == 404,
+              sendTimeout: const Duration(seconds: 8),
+            ),
+          );
+          stopwatch.stop();
+          final responseTime = stopwatch.elapsedMilliseconds;
+          print('Response time for $url: ${responseTime}ms');
+
+          if (response.statusCode == 404) {
+            serverResponseTimes[url] = responseTime;
+          }
+        } catch (e) {
+          print('Failed to connect to $url: $e');
+        }
+      }),
+    );
+
+    if (serverResponseTimes.isNotEmpty) {
+      final fastestServer = serverResponseTimes.entries
+          .reduce((a, b) => a.value < b.value ? a : b)
+          .key;
+      _availableBaseUrl.value = fastestServer;
+      print(
+          'Selected fastest server: $fastestServer (${serverResponseTimes[fastestServer]}ms)');
+    } else {
+      _availableBaseUrl.value = '';
+      print('No working servers found');
+    }
+  }
+
+  Timer? _healthCheckTimer;
+
+  void startServerHealthCheck() {
+    _healthCheckTimer?.cancel();
+    _healthCheckTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => verifyServerConnection(),
+    );
+  }
+
+  Future<void> verifyServerConnection() async {
+    print('Server health check!');
+    try {
+      if (_availableBaseUrl.value.isEmpty) {
+        print('No server available, skipping health check');
+        await checkServer();
+        return;
+      }
+
+      final response = await dio.get(
+        '${_availableBaseUrl.value}/',
+        options: Options(
+          validateStatus: (status) => status == 404,
+          sendTimeout: const Duration(seconds: 5),
+        ),
+      );
+
+      if (response.statusCode != 404) {
+        print('Server connection lost, finding new server');
+        _availableBaseUrl.value = '';
+        await checkServer();
+      } else {
+        print('Server connection is fine');
+      }
+    } catch (e) {
+      print('Server health check failed: $e');
+      _availableBaseUrl.value = '';
+      await checkServer();
+    }
+  }
 
   Future<void> login() async {
     if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
@@ -67,6 +199,7 @@ class AuthController extends GetxController {
 
         if (BCrypt.checkpw(password.value.text.trim(), storedHashedPassword)) {
           _isCodeSent.value = true;
+          _allowResend.value = false;
           sendVerificationCode(email.value.text.trim());
           Get.offNamed('/verification');
           Get.snackbar('Success', 'Login successful');
@@ -167,56 +300,83 @@ class AuthController extends GetxController {
   }
 
   Future<void> sendVerificationCode(String email) async {
+    _isCodeSent.value = true;
+    setStatus(true);
+    int statuscode = 0;
     try {
       final response = await dio.post('/auth/send-verification-code', data: {
         'email': email,
       });
       print(response.statusCode);
+      statuscode = response.statusCode ?? 0;
       if (response.statusCode == 200) {
-        _isCodeSent.value = true;
+        _allowResend.value = false;
+        print('Verification code sent to $email');
         startCountdown();
-        Get.snackbar('Success', 'Verification code sent to $email');
+      } else {
+        print(response.statusCode);
       }
     } on DioException catch (e) {
+      print('Verification code error $e');
+      if (statuscode == 502) sendVerificationCode(email);
       _handleApiError(e);
+    } finally {
+      if (statuscode != 502) setStatus(false);
     }
   }
 
   void startCountdown() {
-    _countdownTimer.value = 30;
+    _countdownTimer.value = 60;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      print('ТАЙМЕР');
-      print(_countdownTimer.value);
       if (_countdownTimer.value > 0) {
         _countdownTimer.value--;
       } else {
         _timer?.cancel();
-        _isCodeSent.value = false; // Allow resending the code
+        _allowResend.value = true;
       }
     });
   }
 
   Future<void> verifyCode(String code) async {
+    setStatus(true);
     try {
+      final stopwatch = Stopwatch()..start();
       final response = await dio.post('/auth/verify-code', data: {
         'code': code,
+        'email': email.value.text.trim(),
       });
+      stopwatch.stop();
+
+      // If response was faster than 2 seconds, wait for the remaining time
+      if (stopwatch.elapsedMilliseconds < 3000) {
+        await Future.delayed(
+            Duration(milliseconds: 3000 - stopwatch.elapsedMilliseconds));
+      }
 
       if (response.statusCode == 200) {
+        _isCodeCorrect.value = true;
         if (tempUserToken != null && tempUserData != null) {
           await _securelyStoreCredentials(tempUserToken!, tempUserData!);
         }
-        Get.offAllNamed('/main');
-        Get.snackbar('Success', 'Code verified successfully');
+        Get.toNamed('/passwordEntering');
+      } else {
+        _isCodeCorrect.value = false;
+        Get.snackbar('Error', 'Invalid code');
       }
     } on DioException catch (e) {
+      _isCodeCorrect.value = false;
       _handleApiError(e);
+    } finally {
+      setStatus(false);
     }
   }
 
   @override
   void onClose() {
     email.value.dispose();
+    phone.value.dispose();
+    _healthCheckTimer?.cancel();
+    verification.value.dispose();
     password.value.dispose();
     fullName.value.dispose();
     _timer?.cancel();

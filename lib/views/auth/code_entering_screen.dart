@@ -22,9 +22,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(seconds: 2), () {
-      _authenticateWithBiometrics();
-    });
+    // Future.delayed(const Duration(seconds: 2), () {
+    //   _authenticateWithBiometrics();
+    // });
     super.initState();
   }
 
@@ -32,133 +32,223 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+    final isLandscape = size.width > size.height;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(
+              horizontal: 16.0, vertical: isLandscape ? 0.0 : 16.0),
+          child: isLandscape
+              ? _buildLandscapeLayout(theme, size)
+              : _buildPortraitLayout(theme, size),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortraitLayout(ThemeData theme, Size size) {
+    return Column(
+      children: [
+        _buildBackButton(theme),
+        SizedBox(height: size.height * 0.02),
+        _buildUserCard(theme, size),
+        SizedBox(height: size.height * 0.02),
+        _buildAccessCodeLabel(theme),
+        SizedBox(height: size.height * 0.02),
+        _buildCodeIndicators(theme),
+        SizedBox(height: size.height * 0.02),
+        Expanded(child: _buildNumPad(theme, false, size)),
+        SizedBox(height: size.height * 0.01),
+        _buildForgotCodeButton(theme),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout(ThemeData theme, Size size) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 4,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: SvgPicture.asset(
-                    'assets/icons/ic_back.svg',
-                    width: 32,
-                    height: 32,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  onPressed: () => Get.toNamed('/phoneLogin'),
-                ),
-              ),
+              _buildBackButton(theme),
+              _buildUserCard(theme, size),
               SizedBox(height: size.height * 0.02),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundColor:
-                            theme.colorScheme.primary.withOpacity(0.1),
-                        child: Text(
-                          'ВВ',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: size.height * 0.02),
-                      Text(
-                        'Владислав \nВасильевич Ш.',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  "Введите код доступа",
-                  style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.outline,
-                      fontSize: 12,
-                      fontFamily: 'OpenSans',
-                      fontWeight: FontWeight.w400),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _codeLength,
-                  (index) => Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8),
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: index < _enteredCode.length
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outlineVariant,
-                        width: 1.5,
-                      ),
-                      color: index < _enteredCode.length
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48),
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    childAspectRatio: 1,
-                    mainAxisSpacing: 25,
-                    crossAxisSpacing: 25,
-                    children: [
-                      for (var i = 1; i <= 9; i++)
-                        _buildNumericButton(i.toString(), theme),
-                      _buildBiometricButton(theme),
-                      _buildNumericButton('0', theme),
-                      _buildDeleteButton(theme),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              TextButton(
-                onPressed: () {
-                  // Handle forgotten code logic
-                },
-                child: Text(
-                  'Забыли код доступа?',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              _buildForgotCodeButton(theme),
             ],
           ),
+        ),
+        Expanded(
+          flex: 6,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildAccessCodeLabel(theme),
+              SizedBox(height: size.height * 0.01),
+              _buildCodeIndicators(theme),
+              SizedBox(height: size.height * 0.02),
+              _buildNumPad(theme, true, size),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// Add these helper methods
+  Widget _buildBackButton(ThemeData theme) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: IconButton(
+        icon: SvgPicture.asset(
+          'assets/icons/ic_back.svg',
+          width: 32,
+          height: 32,
+          colorFilter: ColorFilter.mode(
+            theme.colorScheme.primary,
+            BlendMode.srcIn,
+          ),
+        ),
+        onPressed: () => Get.toNamed('/phoneLogin'),
+      ),
+    );
+  }
+
+  Widget _buildUserCard(ThemeData theme, Size size) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 48,
+              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              child: Text(
+                'ВВ',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: size.height * 0.02),
+            Text(
+              'Владислав \nВасильевич Ш.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccessCodeLabel(ThemeData theme) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      child: Text(
+        "Введите код доступа",
+        style: theme.textTheme.titleMedium?.copyWith(
+          color: theme.colorScheme.outline,
+          fontSize: 12,
+          fontFamily: 'OpenSans',
+          fontWeight: FontWeight.w400,
+        ),
+        textAlign: TextAlign.left,
+      ),
+    );
+  }
+
+  Widget _buildCodeIndicators(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        _codeLength,
+        (index) => Container(
+          margin: EdgeInsets.symmetric(horizontal: 8),
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: index < _enteredCode.length
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outlineVariant,
+              width: 1.5,
+            ),
+            color: index < _enteredCode.length
+                ? theme.colorScheme.primary
+                : Colors.transparent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumPad(ThemeData theme, bool isLandscape, Size size) {
+    return LayoutBuilder(builder: (context, constraints) {
+      // Calculate available height and width
+      final availableHeight = constraints.maxHeight;
+      final availableWidth = constraints.maxWidth;
+
+      // Calculate width constraints based on orientation
+      final maxWidth = isLandscape ? size.width * 0.25 : size.width * 0.70;
+
+      // Calculate dynamic spacing based on available height
+      final verticalSpacing = (availableHeight * 0.05).clamp(5.0, 25.0);
+
+      // Calculate dynamic aspect ratio based on available height 
+      final aspectRatio = isLandscape
+          ? (availableWidth / (availableHeight)).clamp(1.0, 1.5)
+          : (availableWidth / availableHeight).clamp(1.0, 1.5);
+
+      return Container(
+        constraints: BoxConstraints(
+          maxWidth: maxWidth,
+          maxHeight: availableHeight,
+        ),
+        child: GridView.count(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(), // Prevents scrolling
+          crossAxisCount: 3,
+          childAspectRatio: aspectRatio,
+          mainAxisSpacing: verticalSpacing,
+          crossAxisSpacing: verticalSpacing,
+          padding:
+              EdgeInsets.all(verticalSpacing / 2), // Add padding around grid
+          children: [
+            for (var i = 1; i <= 9; i++)
+              _buildNumericButton(i.toString(), theme),
+            _buildBiometricButton(theme),
+            _buildNumericButton('0', theme),
+            _buildDeleteButton(theme),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildForgotCodeButton(ThemeData theme) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: () {},
+      child: Text(
+        'Забыли код доступа?',
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
