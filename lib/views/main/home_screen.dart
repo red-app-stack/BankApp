@@ -105,8 +105,8 @@ class HomeScreen extends StatelessWidget {
       child: Ink(
         child: InkWell(
           onTap: () {},
-          borderRadius: BorderRadius.circular(12), // Soft rounded corners
-          splashFactory: InkRipple.splashFactory, // Smoother ripple effect
+          borderRadius: BorderRadius.circular(12),
+          splashFactory: InkRipple.splashFactory, 
           splashColor: theme.colorScheme.primary.withOpacity(0.08),
           highlightColor: theme.colorScheme.primary.withOpacity(0.04),
           child: Padding(

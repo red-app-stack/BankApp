@@ -38,7 +38,6 @@ class ZoomFadeTransition extends CustomTransition {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    // Using a custom curve combination for smoother animation
     final zoomCurve = CurvedAnimation(
       parent: animation,
       curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
@@ -54,7 +53,7 @@ class ZoomFadeTransition extends CustomTransition {
       child: ScaleTransition(
         alignment: alignment ?? Alignment.center,
         scale: Tween<double>(
-          begin: 0.85, // Slightly larger starting scale for subtler effect
+          begin: 0.85,
           end: 1.0,
         ).animate(zoomCurve),
         child: child,
@@ -73,12 +72,11 @@ class ScaleFadeTransition extends CustomTransition {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    // Using separate curves for scale and fade for more dynamic effect
     final scaleCurve = CurvedAnimation(
       parent: animation,
       curve: const Interval(
         0.0,
-        0.9, // Scale completes slightly before fade
+        0.9, 
         curve: Curves.easeOutCubic,
       ),
     );
@@ -86,7 +84,7 @@ class ScaleFadeTransition extends CustomTransition {
     final fadeCurve = CurvedAnimation(
       parent: animation,
       curve: const Interval(
-        0.2, // Fade starts after scale begins
+        0.2,
         1.0,
         curve: Curves.easeInOut,
       ),
@@ -95,7 +93,7 @@ class ScaleFadeTransition extends CustomTransition {
     return ScaleTransition(
       alignment: alignment ?? Alignment.center,
       scale: Tween<double>(
-        begin: 0.92, // More subtle scale effect
+        begin: 0.92,
         end: 1.0,
       ).animate(scaleCurve),
       child: FadeTransition(
@@ -139,7 +137,7 @@ class CustomSlideTransitionLeft extends CustomTransition {
     Widget child,
   ) {
     final tween = Tween<Offset>(
-      begin: const Offset(-1.0, 0.0), // Slide from left to right
+      begin: const Offset(-1.0, 0.0),
       end: Offset.zero,
     ).chain(CurveTween(curve: curve ?? Curves.easeInOut));
 

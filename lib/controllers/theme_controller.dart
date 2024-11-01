@@ -11,8 +11,6 @@ class ThemeController extends GetxController {
   @override
   Future<void> onInit() async {
     sp = await SharedPreferences.getInstance();
-    // await loadThemeMode();
-    // themeData.value = loadThemeData(themeMode.value);
     super.onInit();
   }
 

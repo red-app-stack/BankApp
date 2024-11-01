@@ -22,6 +22,8 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
+
+    // TODO: Аутентификация при запуске по условию что пользователь ее включил
     // Future.delayed(const Duration(seconds: 2), () {
     //   _authenticateWithBiometrics();
     // });
@@ -97,7 +99,6 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     );
   }
 
-// Add these helper methods
   Widget _buildBackButton(ThemeData theme) {
     return Align(
       alignment: Alignment.topLeft,
@@ -195,17 +196,13 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Widget _buildNumPad(ThemeData theme, bool isLandscape, Size size) {
     return LayoutBuilder(builder: (context, constraints) {
-      // Calculate available height and width
       final availableHeight = constraints.maxHeight;
       final availableWidth = constraints.maxWidth;
 
-      // Calculate width constraints based on orientation
       final maxWidth = isLandscape ? size.width * 0.25 : size.width * 0.70;
 
-      // Calculate dynamic spacing based on available height
       final verticalSpacing = (availableHeight * 0.05).clamp(5.0, 25.0);
 
-      // Calculate dynamic aspect ratio based on available height 
       final aspectRatio = isLandscape
           ? (availableWidth / (availableHeight)).clamp(1.0, 1.5)
           : (availableWidth / availableHeight).clamp(1.0, 1.5);
@@ -217,13 +214,15 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
         ),
         child: GridView.count(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(), // Prevents scrolling
+
+          // Выключенная прокрутка GridView
+          physics: NeverScrollableScrollPhysics(),
           crossAxisCount: 3,
           childAspectRatio: aspectRatio,
           mainAxisSpacing: verticalSpacing,
           crossAxisSpacing: verticalSpacing,
           padding:
-              EdgeInsets.all(verticalSpacing / 2), // Add padding around grid
+              EdgeInsets.all(verticalSpacing / 2),
           children: [
             for (var i = 1; i <= 9; i++)
               _buildNumericButton(i.toString(), theme),

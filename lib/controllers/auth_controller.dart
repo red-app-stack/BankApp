@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -13,9 +13,8 @@ class AuthController extends GetxController {
   final secureStorage = const FlutterSecureStorage();
 
   final urls = [
-    'http://127.0.0.1:3000',
-    'https://bankdevsec5836.loca.lt',
-    'https://bankdevsec5836.serveo.net',
+    dotenv.env['API_URL_1'] ?? '',
+    dotenv.env['API_URL_2'] ?? '',
   ];
 
   final RxString _availableBaseUrl = RxString('');
@@ -59,8 +58,8 @@ class AuthController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    print('CHECKING SERVERS');
     await checkServer();
+    // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
     // startServerHealthCheck();
   }
 
@@ -274,12 +273,6 @@ class AuthController extends GetxController {
     }
   }
 
-  String _hashPassword(String password) {
-    final hashedPassword = BCrypt.hashpw(
-        password, BCrypt.gensalt(logRounds: 10)); // Set salt rounds to 10
-    return hashedPassword;
-  }
-
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
     await secureStorage.write(key: 'auth_token', value: token);
@@ -293,11 +286,11 @@ class AuthController extends GetxController {
 
   void _handleApiError(DioException e) {
     if (e.response?.statusCode == 401) {
-      // Get.snackbar('Error', 'Invalid credentials');
+      Get.snackbar('Ошибка', 'Неверный логин или пароль');
     } else if (e.response?.statusCode == 403) {
-      // Get.snackbar('Error', 'Access denied');
+      Get.snackbar('Ошибка', 'Доступ запрещен');
     } else {
-      // Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Ошибка', 'Произошла ошибка сети');
     }
   }
 
@@ -348,11 +341,10 @@ class AuthController extends GetxController {
         'email': email.value.text.trim(),
       });
       stopwatch.stop();
-
-      // If response was faster than 2 seconds, wait for the remaining time
-      if (stopwatch.elapsedMilliseconds < 3000) {
+// Если ответ был слишком быстрый, то ждем, чтобы не перегружать пользователя и сервер
+      if (stopwatch.elapsedMilliseconds < 2000) {
         await Future.delayed(
-            Duration(milliseconds: 3000 - stopwatch.elapsedMilliseconds));
+            Duration(milliseconds: 2000 - stopwatch.elapsedMilliseconds));
       }
 
       if (response.statusCode == 200) {

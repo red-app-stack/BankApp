@@ -38,7 +38,6 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     ),
   ];
 
-  // A map to store the state of each toggleable item
   final Map<String, bool> switchStates = {
     'assets/icons/ic_fingerprint.svg': true,
     'assets/icons/ic_screen_protect.svg': false,
@@ -154,8 +153,8 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       });
                     }
                   : null,
-              borderRadius: BorderRadius.circular(12), // Soft rounded corners
-              splashFactory: InkRipple.splashFactory, // Smoother ripple effect
+              borderRadius: BorderRadius.circular(12),
+              splashFactory: InkRipple.splashFactory,
               splashColor: theme.colorScheme.primary.withOpacity(0.08),
               highlightColor: theme.colorScheme.primary.withOpacity(0.04),
               child: Padding(

@@ -67,12 +67,6 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Text(
-                        //   'Регистрация',
-                        //   style: theme.textTheme.headlineMedium?.copyWith(
-                        //     fontWeight: FontWeight.bold,
-                        //   ),
-                        // ),
                         fakeHero(
                             tag: 'text_info',
                             child: Text(
@@ -235,7 +229,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                             },
                             onChanged: (value) {
                               setState(
-                                  () {}); // Trigger rebuild to update colors
+                                  () {});
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {

@@ -1,4 +1,3 @@
-//main_screen.dart // page 0
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +48,7 @@ class MainScreenController extends GetxController
         isProfileOpen.value = isProfile;
         isSupportOpen.value = isSupport;
         overlayAnimationController.forward(
-            from: 0.001); // Start from 30% to reduce gap
+            from: 0.001);
       });
     } else {
       overlayScreen.value = screen;
@@ -161,7 +160,6 @@ class MainScreenState extends State<MainScreen> {
   late PageController _pageController;
   final MainScreenController _controller = Get.put(MainScreenController());
 
-  // Your existing screen list
   final List<Widget> _screens = [
     PaymentsScreen(),
     TransfersScreen(),

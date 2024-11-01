@@ -179,7 +179,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
         foregroundColor:
-            WidgetStateProperty.all(AppColorsLight.onPrimary), // Text color
+            WidgetStateProperty.all(AppColorsLight.onPrimary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -190,9 +190,9 @@ class AppTheme {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
         side: WidgetStateProperty.all(
-            BorderSide(color: AppColorsLight.primary)), // Border color
+            BorderSide(color: AppColorsLight.primary)),
         foregroundColor:
-            WidgetStateProperty.all(AppColorsLight.primary), // Text color
+            WidgetStateProperty.all(AppColorsLight.primary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -374,7 +374,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
         foregroundColor:
-            WidgetStateProperty.all(AppColorsDark.onPrimary), // Text color
+            WidgetStateProperty.all(AppColorsDark.onPrimary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -385,9 +385,9 @@ class AppTheme {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
         side: WidgetStateProperty.all(
-            BorderSide(color: AppColorsDark.primary)), // Border color
+            BorderSide(color: AppColorsDark.primary)),
         foregroundColor:
-            WidgetStateProperty.all(AppColorsDark.primary), // Text color
+            WidgetStateProperty.all(AppColorsDark.primary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,

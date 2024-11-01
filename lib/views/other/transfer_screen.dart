@@ -1,4 +1,3 @@
-//transfer by phone
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
@@ -54,7 +53,6 @@ class PhoneTransferController extends GetxController {
   final RxString formattedAmount = ''.obs;
   final RxBool isCardDropdownExpanded = false.obs;
 
-  // Text editing controllers to manage cursor position
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final FocusNode amountFocusNode = FocusNode();
@@ -65,61 +63,48 @@ class PhoneTransferController extends GetxController {
   void onInit() {
     super.onInit();
     selectedCard.value = cards.first;
-    amountController.text = '0'; // Add this line
-    updateAmount('0'); // Add this line to properly format
+    amountController.text = '0';
+    updateAmount('0');
   }
 
   void updatePhoneNumber(String value) {
-    // Get current cursor position
     int cursorPosition = phoneController.selection.start;
 
-    // Store the current digits for comparison
     String oldDigits =
         _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
     String newDigits = value.replaceAll(RegExp(r'\D'), '');
-    // Detect if we're deleting
     bool isDeleting = newDigits.length < oldDigits.length;
 
-    // Format the new digits
     String formatted = '';
     if (newDigits.isNotEmpty) {
-      // Handle area code
       if (newDigits.length <= 3) {
         formatted = '($newDigits';
       }
-      // Handle first part
       else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
       }
-      // Handle second part
       else if (newDigits.length <= 8) {
         formatted =
             '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6)}';
       }
-      // Handle last part
       else {
         formatted =
             '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, min(10, newDigits.length))}';
       }
     }
 
-    // Calculate new cursor position
     int newCursorPosition;
     if (isDeleting) {
-      // When deleting, keep cursor at the same position unless we've deleted a format character
       newCursorPosition = max(0, min(cursorPosition - 1, formatted.length));
     } else {
-      // When adding, place cursor after the last digit
       newCursorPosition = formatted.length;
     }
 
-    // Update the text field
     phoneController.value = TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
 
-    // Store the new value for next comparison
     _previousPhoneValue = int.tryParse(formatted) ?? 0;
   }
 
@@ -139,7 +124,6 @@ class PhoneTransferController extends GetxController {
 
     int number = int.tryParse(digitsOnly) ?? 0;
 
-    // Ignore changes if amount exceeds max
     if (number > maxTransferAmount) {
       number = int.parse(previousNumber);
       String formatted = previousNumber.replaceAllMapped(

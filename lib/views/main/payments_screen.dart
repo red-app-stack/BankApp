@@ -1,4 +1,3 @@
-//payments_screen.dart // page 1
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -30,7 +29,6 @@ class PaymentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    // final PaymentsController controller = Get.put(PaymentsController());
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -64,7 +62,6 @@ class PaymentsScreen extends StatelessWidget {
                 ),
                 SizedBox(height: size.height * 0.02),
 
-                // Popular services card
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -111,7 +108,6 @@ class PaymentsScreen extends StatelessWidget {
                 ),
                 SizedBox(height: size.height * 0.02),
 
-                // Favorites card
                 Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -164,8 +160,8 @@ class PaymentsScreen extends StatelessWidget {
       child: Ink(
         child: InkWell(
           onTap: () {},
-          borderRadius: BorderRadius.circular(12), // Soft rounded corners
-          splashFactory: InkRipple.splashFactory, // Smoother ripple effect
+          borderRadius: BorderRadius.circular(12),
+          splashFactory: InkRipple.splashFactory,
           splashColor: theme.colorScheme.primary.withOpacity(0.08),
           highlightColor: theme.colorScheme.primary.withOpacity(0.04),
           child: Padding(

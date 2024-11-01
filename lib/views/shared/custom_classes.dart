@@ -61,10 +61,10 @@ class SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
   @override
-  double get minExtent => 40.0; // Минимальная высота заголовка
+  double get minExtent => 40.0;
 
   @override
-  double get maxExtent => 40.0; // Максимальная высота заголовка
+  double get maxExtent => 40.0;
 
   @override
   Widget build(

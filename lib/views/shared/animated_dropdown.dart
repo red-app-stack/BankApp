@@ -28,7 +28,6 @@ class AnimatedCardDropdown extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           InkWell(
             onTap: onToggle,
             borderRadius: BorderRadius.circular(12),
@@ -57,7 +56,6 @@ class AnimatedCardDropdown extends StatelessWidget {
             ),
           ),
 
-          // Dropdown Content
           ClipRRect(
             child: AnimatedCrossFade(
               firstChild: selectedCard != null
@@ -65,7 +63,7 @@ class AnimatedCardDropdown extends StatelessWidget {
                       card: selectedCard!,
                       theme: theme,
                       isSelected: true,
-                      onTap: onToggle, // Changed to use onToggle when collapsed
+                      onTap: onToggle,
                     )
                   : const SizedBox.shrink(),
               secondChild: Column(

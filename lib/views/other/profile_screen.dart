@@ -1,6 +1,4 @@
-//menu_screen.dart // page 5
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
@@ -43,7 +41,6 @@ class ProfileScreen extends StatelessWidget {
             icon: 'assets/icons/ic_notifications.svg', title: 'Уведомления'),
         MenuItem(
             icon: 'assets/icons/ic_language.svg', title: 'Язык приложения'),
-        // Скоро заменю на настоящий.
         MenuItem(
             icon: 'assets/icons/ic_smartphone.svg',
             title: '+7 (707) 2****05',
@@ -173,8 +170,8 @@ class ProfileScreen extends StatelessWidget {
           child: Ink(
             child: InkWell(
               onTap: () {},
-              borderRadius: BorderRadius.circular(12), // Soft rounded corners
-              splashFactory: InkRipple.splashFactory, // Smoother ripple effect
+              borderRadius: BorderRadius.circular(12),
+              splashFactory: InkRipple.splashFactory,
               splashColor: theme.colorScheme.primary.withOpacity(0.08),
               highlightColor: theme.colorScheme.primary.withOpacity(0.04),
               child: Padding(
@@ -251,78 +248,6 @@ class ProfileScreen extends StatelessWidget {
             color: theme.colorScheme.secondaryContainer,
           ),
       ],
-    );
-  }
-
-  Widget _buildShimmerLoading(ThemeData theme) {
-    return Shimmer.fromColors(
-      baseColor: theme.colorScheme.surfaceContainer,
-      highlightColor: theme.colorScheme.surfaceBright,
-      period: Duration(seconds: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 20),
-          // Заголовок "Профиль"
-          Container(
-            width: 200,
-            height: theme.textTheme.headlineMedium!.fontSize,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          SizedBox(height: 28),
-          // Фото профиля
-          CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.white,
-          ),
-          SizedBox(height: 10),
-          // Кнопка "Изменить фото профиля"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Информационные карточки
-          for (int i = 0; i < 4; i++) ...[
-            Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: EdgeInsets.symmetric(vertical: 10),
-            ),
-          ],
-          SizedBox(height: 20),
-          // Кнопка "Настройки"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-          // Кнопка "Выйти"
-          Container(
-            width: double.infinity,
-            height: 50, // Высота кнопки из темы
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30), // Скругление из темы
-            ),
-          ),
-          SizedBox(height: 20),
-        ],
-      ),
     );
   }
 }

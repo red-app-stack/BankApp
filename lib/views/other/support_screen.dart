@@ -1,4 +1,3 @@
-//menu_screen.dart // page 5
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';

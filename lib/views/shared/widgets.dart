@@ -28,13 +28,13 @@ Widget buildTextInput(
           decoration: InputDecoration(
             labelText: hint,
             labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.outline, // Unselected color
+              color: Theme.of(context).colorScheme.outline,
               fontWeight: FontWeight.normal,
             ),
             floatingLabelStyle: TextStyle(
               color: Theme.of(context)
                   .colorScheme
-                  .inverseSurface, // Selected color
+                  .inverseSurface,
               fontWeight: FontWeight.bold,
             ),
             hintStyle: Theme.of(context).textTheme.bodyMedium,
@@ -57,13 +57,13 @@ Widget buildTextInput(
               onPressed: () {
                 if (iconType == 'password') {
                   setState(() {
-                    activeIcon = !activeIcon; // Toggle password visibility
+                    activeIcon = !activeIcon;
                   });
                 } else if (onIconPressed != null) {
                   onIconPressed();
                   if (iconType == 'delete') {
                     setState(() {
-                      activeIcon = false; // Toggle password visibility
+                      activeIcon = false;
                     });
                   }
                 }
@@ -121,7 +121,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.person,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Profile icon might have some action
+        onPressed: onPressed,
       );
     case 'edit':
       return IconButton(
@@ -129,7 +129,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.edit,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for editing can be handled
+        onPressed: onPressed,
       );
     case 'email':
       return IconButton(
@@ -137,21 +137,21 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.email,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for editing can be handled
+        onPressed: onPressed,
       );
     case 'delete':
       return activeIcon
           ? IconButton(
               icon: Icon(Icons.delete,
                   color: Theme.of(context).colorScheme.error),
-              onPressed: onPressed, // Action for deleting the input
+              onPressed: onPressed,
             )
           : IconButton(
               icon: Icon(
                 Icons.edit,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
-              onPressed: onPressed, // Action for editing can be handled
+              onPressed: onPressed,
             );
     case 'search':
       return IconButton(
@@ -159,7 +159,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.search,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for searching
+        onPressed: onPressed,
       );
     case 'clear':
       return IconButton(
@@ -167,7 +167,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.clear,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action to clear input
+        onPressed: onPressed,
       );
     case 'check':
       return IconButton(
@@ -175,7 +175,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.check,
           color: Theme.of(context).colorScheme.primary,
         ),
-        onPressed: onPressed, // Action for confirming
+        onPressed: onPressed,
       );
     case 'dropdown':
       return IconButton(
@@ -183,7 +183,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.arrow_drop_down,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for showing dropdown
+        onPressed: onPressed,
       );
     case 'camera':
       return IconButton(
@@ -191,7 +191,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.camera_alt,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for camera/photo upload
+        onPressed: onPressed,
       );
     case 'attach':
       return IconButton(
@@ -199,7 +199,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.attach_file,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action to attach a file
+        onPressed: onPressed,
       );
     case 'mic':
       return IconButton(
@@ -207,7 +207,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.mic,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for voice input
+        onPressed: onPressed,
       );
     case 'send':
       return IconButton(
@@ -215,7 +215,7 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.send,
           color: Theme.of(context).colorScheme.primary,
         ),
-        onPressed: onPressed, // Action for sending data
+        onPressed: onPressed,
       );
     case 'calendar':
       return IconButton(
@@ -223,11 +223,11 @@ Widget? _buildSuffixIcon(String iconType, bool activeIcon, BuildContext context,
           Icons.calendar_today,
           color: Theme.of(context).colorScheme.onSurface,
         ),
-        onPressed: onPressed, // Action for sending data
+        onPressed: onPressed,
       );
     case 'none':
     default:
-      return null; // No icon
+      return null;
   }
 }
 

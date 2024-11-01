@@ -1,4 +1,3 @@
-//accounts_screen.dart // page 4
 import 'package:bank_app/utils/themes/theme_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
