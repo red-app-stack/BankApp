@@ -20,57 +20,34 @@ class ThemeController extends GetxController {
     _setTheme(themeMode.value);
   }
 
-  ThemeData loadThemeData(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.dark:
-        return AppTheme.darkTheme;
-      case ThemeMode.light:
-        return AppTheme.lightTheme;
-      case ThemeMode.system:
-        if (WidgetsBinding.instance.window.platformBrightness ==
-            Brightness.dark) {
-          return AppTheme.darkTheme;
-        } else {
-          return AppTheme.lightTheme;
-        }
-      default:
-        return AppTheme.darkTheme;
-    }
-  }
-
   void toggleThisTheme(ThemeMode newThemeMode, BuildContext context) {
     _setTheme(newThemeMode);
   }
 
   void toggleTheme(BuildContext context) {
-
     ThemeMode newThemeMode;
 
     if (themeMode.value == ThemeMode.system) {
-      newThemeMode = WidgetsBinding.instance.window.platformBrightness == Brightness.light
-          ? ThemeMode.dark
-          : ThemeMode.light;
+      final brightness = MediaQuery.of(context).platformBrightness;
+      newThemeMode =
+          brightness == Brightness.light ? ThemeMode.dark : ThemeMode.light;
     } else {
       newThemeMode =
           themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     }
-
     _setTheme(newThemeMode);
-
   }
 
   void setSystemTheme(BuildContext context) {
     _setTheme(ThemeMode.system);
     themeMode.value = ThemeMode.system;
     sp!.setBool('system', true);
-
   }
 
   void _setTheme(ThemeMode mode) {
     themeMode.value = mode;
     sp!.setString('themeMode', _themeModeToString(mode));
   }
-
 
   ThemeMode _themeModeFromString(String mode) {
     switch (mode) {

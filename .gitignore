@@ -11,7 +11,7 @@
 .svn/
 migrate_working_dir/
 key.properties
-
+!build/outputs/*.apk
 # IntelliJ related
 *.iml
 *.ipr
@@ -44,4 +44,3 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 macos/Flutter/ephemeral/flutter_export_environment.sh
-redreem.jks
