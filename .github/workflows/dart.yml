@@ -13,19 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Set up Flutter
+      # Set up Flutter with a specific version that includes Dart 3.5.3 or later
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.5' # specify the Flutter version here
+          flutter-version: '3.13.0' # Adjust this version as necessary
 
       # Install dependencies
       - name: Install dependencies
         run: flutter pub get
-
-      # Uncomment this step to verify the use of 'flutter format' on each commit.
-      # - name: Verify formatting
-      #   run: flutter format --output=none --set-exit-if-changed .
 
       # Analyze project source
       - name: Analyze project source
