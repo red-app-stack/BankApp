@@ -84,6 +84,8 @@ class AuthController extends GetxController {
       if (_availableBaseUrl.value.isEmpty) {
         await findServer();
       }
+      Get.snackbar('Error', urls.join('\n'));
+      Get.snackbar('Selected', apiBaseUrl);
 
       if (_availableBaseUrl.value.isNotEmpty) {
         await DioRetryHelper.retryRequest(() async {
@@ -96,6 +98,8 @@ class AuthController extends GetxController {
       } else {
         print('Max retry attempts reached');
         Get.snackbar('Error', 'Unable to connect to server');
+        Get.snackbar('Error', urls.join('\n'));
+        Get.snackbar('Selected', apiBaseUrl);
       }
     } catch (e) {
       print('Error during server check: $e');
@@ -158,34 +162,34 @@ class AuthController extends GetxController {
   }
 
   Future<void> verifyServerConnection() async {
-    // print('Server health check!');
-    // try {
-    //   if (_availableBaseUrl.value.isEmpty) {
-    //     print('No server available, skipping health check');
-    //     await checkServer();
-    //     return;
-    //   }
+    print('Server health check!');
+    try {
+      if (_availableBaseUrl.value.isEmpty) {
+        print('No server available, skipping health check');
+        await checkServer();
+        return;
+      }
 
-    //   final response = await DioRetryHelper.retryRequest(() =>  dioInstance.get(
-    //     '${_availableBaseUrl.value}/',
-    //     options: Options(
-    //       validateStatus: (status) => status == 999,
-    //       sendTimeout: const Duration(seconds: 5),
-    //     ),
-    //   ));
+      final response = await DioRetryHelper.retryRequest(() => dio.get(
+            '${_availableBaseUrl.value}/',
+            options: Options(
+              validateStatus: (status) => status == 999,
+              sendTimeout: const Duration(seconds: 5),
+            ),
+          ));
 
-    //   if (response.statusCode != 999) {
-    //     print('Server connection lost, finding new server');
-    //     _availableBaseUrl.value = '';
-    //     await checkServer();
-    //   } else {
-    //     print('Server connection is fine');
-    //   }
-    // } catch (e) {
-    //   print('Server health check failed: $e');
-    //   _availableBaseUrl.value = '';
-    //   await checkServer();
-    // }
+      if (response.statusCode != 999) {
+        print('Server connection lost, finding new server');
+        _availableBaseUrl.value = '';
+        await checkServer();
+      } else {
+        print('Server connection is fine');
+      }
+    } catch (e) {
+      print('Server health check failed: $e');
+      _availableBaseUrl.value = '';
+      await checkServer();
+    }
   }
 
   Future<void> login() async {

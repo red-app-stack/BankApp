@@ -126,7 +126,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                 tag: 'text_info',
                                 child: Text(
                                   _authController.obfuscatedEmail == null
-                                      ? "Введите Ваш личный адрес электронной почты"
+                                      ? "Введите Ваш личный адрес gmail почты. Другие пока что не поддерживаются."
                                       : 'Аккаунт с данным телефоном уже зарегистрирован. Введите почту чтобы продолжить.',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: theme.colorScheme.outline,

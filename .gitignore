@@ -11,7 +11,7 @@
 .svn/
 migrate_working_dir/
 key.properties
-!build/outputs/*.apk
+!build/app/outputs/flutter-apk/*.apk
 # IntelliJ related
 *.iml
 *.ipr
