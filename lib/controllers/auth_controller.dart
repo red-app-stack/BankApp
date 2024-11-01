@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:bank_app/services/interceptor.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
@@ -313,10 +312,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<String?> _getAccessToken() async {
-    return await secureStorage.read(key: 'auth_token');
-  }
-
   // Future<void> logout() async {
   //   try {
   //     setStatus(true);
@@ -411,9 +406,9 @@ class AuthController extends GetxController {
   //   await secureStorage.write(key: 'user_data', value: userDataString);
   // }
 
-  Future<void> _clearSecureStorage() async {
-    await secureStorage.deleteAll();
-  }
+  // Future<void> _clearSecureStorage() async {
+  //   await secureStorage.deleteAll();
+  // }
 
   void _handleApiError(DioException e) {
     if (e.response?.statusCode == 401) {

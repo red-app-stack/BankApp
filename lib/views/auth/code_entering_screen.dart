@@ -22,8 +22,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-
-    // TODO: Аутентификация при запуске по условию что пользователь ее включил
+    //  Аутентификация при запуске по условию что пользователь ее включил
     // Future.delayed(const Duration(seconds: 2), () {
     //   _authenticateWithBiometrics();
     // });
@@ -221,8 +220,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           childAspectRatio: aspectRatio,
           mainAxisSpacing: verticalSpacing,
           crossAxisSpacing: verticalSpacing,
-          padding:
-              EdgeInsets.all(verticalSpacing / 2),
+          padding: EdgeInsets.all(verticalSpacing / 2),
           children: [
             for (var i = 1; i <= 9; i++)
               _buildNumericButton(i.toString(), theme),

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bank_app/controllers/auth_controller.dart';
+// import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -181,17 +181,17 @@ class UserModel {
 }
 
 // Extension on login/register to store credentials
-extension AuthExtension on AuthController {
-  Future<void> _securelyStoreCredentials(
-      String token, Map<String, dynamic> userData) async {
-    final secureStorage = const FlutterSecureStorage();
+// extension AuthExtension on AuthController {
+//   Future<void> _securelyStoreCredentials(
+//       String token, Map<String, dynamic> userData) async {
+//     final secureStorage = const FlutterSecureStorage();
 
-    // Store authentication token
-    await secureStorage.write(key: 'auth_token', value: token);
+//     // Store authentication token
+//     await secureStorage.write(key: 'auth_token', value: token);
 
-    // Create and store user model
-    final userModel = UserModel.fromJson(userData);
-    final userService = Get.find<UserService>();
-    await userService.storeUserLocally(userModel);
-  }
-}
+//     // Create and store user model
+//     final userModel = UserModel.fromJson(userData);
+//     final userService = Get.find<UserService>();
+//     await userService.storeUserLocally(userModel);
+//   }
+// }
