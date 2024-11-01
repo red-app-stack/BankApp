@@ -30,7 +30,7 @@ app.use(morgan('dev'));
 app.use(morgan('combined', { stream: accessLogStream }));
 
 app.get('/', (req, res) => {
-  res.status(404).send('');
+  res.status(999).send('');
 });
 
 function getTransporter(email) {
@@ -133,17 +133,17 @@ function logEvent(message) {
 }
 
 function isValidPassword(password) {
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/; 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   // как минимум 8 символов, 1 заглавную букву, 1 строчную букву, 1 цифру и 1 спец. символ
   return passwordRegex.test(password);
 }
 
 // Точка регистрации
 app.post('/auth/register', async (req, res) => {
-  const { 
-    email, 
-    password, 
-    fullName, 
+  const {
+    email,
+    password,
+    fullName,
     phoneNumber,
     dateOfBirth,
     address,
@@ -173,10 +173,10 @@ app.post('/auth/register', async (req, res) => {
 
   try {
     const userExists = await pool.query(
-      'SELECT * FROM users WHERE email = $1 OR (phone_number = $2 AND phone_number IS NOT NULL)', 
+      'SELECT * FROM users WHERE email = $1 OR (phone_number = $2 AND phone_number IS NOT NULL)',
       [email, phoneNumber]
     );
-    
+
     if (userExists.rows.length > 0) {
       logEvent(`Registration failed: User with email ${email} or phone ${phoneNumber} already exists`);
       return res.status(400).json({ error: 'User already exists' });
@@ -221,8 +221,8 @@ app.post('/auth/register', async (req, res) => {
     const token = generateToken(user);
 
     logEvent(`New user registered successfully: ${email}`);
-    return res.status(201).json({ 
-      token, 
+    return res.status(201).json({
+      token,
       user: {
         id: user.id,
         email: user.email,
@@ -248,7 +248,7 @@ function isValidDate(dateString) {
 
 function isValidPhone(phone) {
   // Разрешает форматы типа: (123) 456-78-90
-  const phoneRegex = /^\([0-9]{3}\)\s[0-9]{3}-[0-9]{2}-[0-9]{2}$/;
+  const phoneRegex = /^\([0-9]{3}\)\s[0-9]{3}-[0-9]{4}$/;
   return phoneRegex.test(phone);
 }
 
@@ -303,14 +303,20 @@ app.post('/auth/check-user', async (req, res) => {
   try {
     // Проверка существования пользователя по email или phoneNumber
     const result = await pool.query(
-      'SELECT id FROM users WHERE email = $1 OR phone_number = $2 LIMIT 1',
+      'SELECT email, phone_number FROM users WHERE email = $1 OR phone_number = $2 LIMIT 1',
       [email, phoneNumber]
     );
 
-    // Если пользователь найден, отправить ответ
     if (result.rows.length > 0) {
+      const user = result.rows[0];
       logEvent(`User with email ${email} or phone ${phoneNumber} exists`);
-      return res.status(200).json({ exists: true });
+      return res.status(200).json({
+        exists: true,
+        user: {
+          email: user.email ? obfuscateEmail(user.email) : null,
+          phoneNumber: user.phone_number ? obfuscatePhone(user.phone_number) : null
+        }
+      });
     }
 
     logEvent(`No user found with email ${email} or phone ${phoneNumber}`);
@@ -323,14 +329,54 @@ app.post('/auth/check-user', async (req, res) => {
   }
 });
 
+app.post('/auth/check-partial-email', async (req, res) => {
+  const { enteredEmail, obfuscatedEmail } = req.body;
+
+  if (!enteredEmail || !obfuscatedEmail) {
+    logEvent('Partial email check failed: Missing enteredEmail or obfuscatedEmail');
+    return res.status(400).json({ error: 'Both enteredEmail and obfuscatedEmail are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT email FROM users WHERE email LIKE $1 LIMIT 1',
+      [`%${enteredEmail}%`]
+    );
+
+    if (result.rows.length === 0) {
+      logEvent(`Partial email check: No matching email found for enteredEmail ${enteredEmail}`);
+      return res.status(404).json({ message: 'No matching email found' });
+    } else if (result.rows.length === 1) {
+      logEvent(`Partial email check: Found email ${result.rows[0].email} for enteredEmail ${enteredEmail}`);
+      return res.status(200).json({ message: 'Partial email match successful' });
+    }
+
+    const fullEmail = result.rows[0].email;
+    const obfuscatedFoundEmail = obfuscateEmail(fullEmail);
+
+    if (obfuscatedFoundEmail === obfuscatedEmail) {
+      logEvent(`Partial email check successful for ${enteredEmail}`);
+      return res.status(200).json({ message: 'Partial email match successful' });
+    } else {
+      logEvent(`Partial email check: Obfuscated email does not match`);
+      return res.status(404).json({ message: 'No matching email found' });
+    }
+
+  } catch (error) {
+    console.error(`Error checking partial email:`, error);
+    logEvent(`Error checking partial email: ${error.message}`);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 global.otpStore = {};
 const otpAttempts = {};
 const OTP_MAX_ATTEMPTS = 3;
 const OTP_EXPIRY_MINUTES = 10;
 
 app.post('/auth/verify-code', async (req, res) => {
-  const { code, email } = req.body;
-  logEvent(`Code verification: ${code}, ${email}`);
+  const { code, email, exists } = req.body;
+  logEvent(`Code verification: ${code}, ${email}, exists: ${exists}`);
 
   if (!code || !email) {
     logEvent('Code verification failed: Missing code or email');
@@ -372,10 +418,32 @@ app.post('/auth/verify-code', async (req, res) => {
 
   // Проверка правильности кода подтверждения
   if (global.otpStore[email] === code) {
+
+    let userData = null;
+    if (exists) {
+      try {
+        const userResult = await pool.query('SELECT full_name FROM users WHERE email = $1', [email]);
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
+        
+        if (userResult.length > 0) {
+          userData = userResult[0];
+        } else {
+          logEvent(`No user found for email: ${email}`);
+        }
+      } catch (dbError) {
+        logEvent(`Database error: ${dbError}`);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+
     delete global.otpStore[email];
     delete otpAttempts[email];
     logEvent(`Code verified successfully for ${email}`);
-    return res.status(200).json({ message: 'Code verified successfully' });
+    return res.status(200).json({
+      message: 'Code verified successfully',
+      userData: userData ? userData.full_name : null,
+    });
   } else {
     const remainingAttempts = OTP_MAX_ATTEMPTS - otpAttempts[email].count;
     logEvent(`Code verification failed for ${email}: Invalid code. ${remainingAttempts} attempts remaining`);
@@ -386,7 +454,7 @@ app.post('/auth/verify-code', async (req, res) => {
   }
 });
 
-	// Отправка кода подтверждения
+// Отправка кода подтверждения
 app.post('/auth/send-verification-code', async (req, res) => {
   const { email } = req.body;
 
