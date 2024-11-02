@@ -115,17 +115,6 @@ function generateToken(user) {
   });
 }
 
-function authenticateToken(req, res, next) {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.sendStatus(401); // Ответ не авторизован
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403); // Ответ запрещено
-    req.user = user;
-    next();
-  });
-}
-
 // Вспомогательная функция написания логов сервера
 function logEvent(message) {
   const timestamp = new Date().toISOString();
@@ -329,6 +318,7 @@ app.post('/auth/check-user', async (req, res) => {
   }
 });
 
+// Проверка частичного совпадения email
 app.post('/auth/check-partial-email', async (req, res) => {
   const { enteredEmail, obfuscatedEmail } = req.body;
 
@@ -346,9 +336,6 @@ app.post('/auth/check-partial-email', async (req, res) => {
     if (result.rows.length === 0) {
       logEvent(`Partial email check: No matching email found for enteredEmail ${enteredEmail}`);
       return res.status(404).json({ message: 'No matching email found' });
-    } else if (result.rows.length === 1) {
-      logEvent(`Partial email check: Found email ${result.rows[0].email} for enteredEmail ${enteredEmail}`);
-      return res.status(200).json({ message: 'Partial email match successful' });
     }
 
     const fullEmail = result.rows[0].email;
@@ -358,7 +345,7 @@ app.post('/auth/check-partial-email', async (req, res) => {
       logEvent(`Partial email check successful for ${enteredEmail}`);
       return res.status(200).json({ message: 'Partial email match successful' });
     } else {
-      logEvent(`Partial email check: Obfuscated email does not match`);
+      logEvent(`Partial email check: Obfuscated email does not match for enteredEmail ${enteredEmail}`);
       return res.status(404).json({ message: 'No matching email found' });
     }
 
@@ -368,6 +355,7 @@ app.post('/auth/check-partial-email', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 global.otpStore = {};
 const otpAttempts = {};
@@ -418,18 +406,20 @@ app.post('/auth/verify-code', async (req, res) => {
 
   // Проверка правильности кода подтверждения
   if (global.otpStore[email] === code) {
+    let fullName = null;
 
-    let userData = null;
     if (exists) {
       try {
-        const userResult = await pool.query('SELECT full_name FROM users WHERE email = $1', [email]);
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
-        
-        if (userResult.length > 0) {
-          userData = userResult[0];
-        } else {
+        const result = await pool.query(
+          'SELECT full_name FROM users WHERE email LIKE $1 LIMIT 1',
+          [`%${email}%`]
+        );
+
+        if (result.rows.length === 0) {
           logEvent(`No user found for email: ${email}`);
+        } else {
+          fullName = result.rows[0].full_name;
+          logEvent(`Found user: ${fullName} for email: ${email}`);
         }
       } catch (dbError) {
         logEvent(`Database error: ${dbError}`);
@@ -442,7 +432,7 @@ app.post('/auth/verify-code', async (req, res) => {
     logEvent(`Code verified successfully for ${email}`);
     return res.status(200).json({
       message: 'Code verified successfully',
-      userData: userData ? userData.full_name : null,
+      userData: fullName
     });
   } else {
     const remainingAttempts = OTP_MAX_ATTEMPTS - otpAttempts[email].count;
@@ -494,10 +484,21 @@ app.post('/auth/send-verification-code', async (req, res) => {
   }
 });
 
+
+function authenticateToken(req, res, next) {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.sendStatus(401); // Нет токена
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403); // Неверный токен
+    req.user = user;
+    next();
+  });
+}
+
 // Точка выхода
 app.post('/auth/logout', authenticateToken, async (req, res) => {
-  // Добавить логику черного листа если пользователь вышел
-  logEvent(`User logged out: ${req.user.email}`);
+  logEvent(`User logged out: ${req.user.email}`); // Use req.user set by authenticateToken
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
