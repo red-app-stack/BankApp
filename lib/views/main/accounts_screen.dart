@@ -35,11 +35,6 @@ class AccountsController extends GetxController {
   var currentPage = 0.obs;
 
   @override
-  void onInit() {
-    super.onInit();
-  }
-
-  @override
   void onClose() {
     pageController.dispose();
     super.onClose();

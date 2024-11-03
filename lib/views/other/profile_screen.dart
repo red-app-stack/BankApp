@@ -1,7 +1,6 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../services/user_service.dart';
 import '../../utils/themes/theme_extension.dart';
@@ -9,7 +8,6 @@ import '../shared/shared_classes.dart';
 import '../shared/widgets.dart';
 
 class ProfileScreen extends StatelessWidget {
-  final AuthController _authController = Get.find<AuthController>();
   final UserService _userService = Get.find<UserService>();
 
   final VoidCallback onBack;

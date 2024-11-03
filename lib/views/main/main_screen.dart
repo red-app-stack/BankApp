@@ -1,3 +1,4 @@
+import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'transfers_screen.dart';
 
 class MainScreenController extends GetxController
     with GetSingleTickerProviderStateMixin {
+  final AuthController _authController = Get.find<AuthController>();
   late AnimationController overlayAnimationController;
   late Animation<double> overlayAnimation;
   final Rx<Widget?> overlayScreen = Rx<Widget?>(null);
@@ -47,8 +49,7 @@ class MainScreenController extends GetxController
         overlayScreen.value = screen;
         isProfileOpen.value = isProfile;
         isSupportOpen.value = isSupport;
-        overlayAnimationController.forward(
-            from: 0.001);
+        overlayAnimationController.forward(from: 0.001);
       });
     } else {
       overlayScreen.value = screen;
@@ -156,7 +157,7 @@ class SlideOverlayTransition extends StatelessWidget {
 
 class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2;
-
+  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   late PageController _pageController;
   final MainScreenController _controller = Get.put(MainScreenController());
 
@@ -202,6 +203,11 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _handleProfileTap() {
+    if (!_controller._authController.isAuthenticated) {
+      Get.toNamed('/phoneLogin');
+      return;
+    }
+
     if (_controller.isProfileOpen.value) {
       _controller.hideOverlay();
     } else {
@@ -228,6 +234,33 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
+    if (!_controller._authController.isAuthenticated &&
+        _controller._authController.isCheckingAuth) {
+      Get.snackbar('Подождите', 'Идет проверка авторизации');
+      return;
+    }
+
+    // Handle profile and support buttons when not authenticated
+    if (!_controller._authController.isAuthenticated) {
+      if (index == 2 || index == 4) {
+        // Allow access to Home and Menu
+        _navigateToPage(index);
+      } else {
+        // Prevent bottom nav selection by returning early
+        Get.toNamed('/phoneLogin');
+        setState(() {
+          // Force index back to previous selection
+          _selectedIndex = _pageController.page!.round();
+        });
+      }
+      return;
+    }
+
+    // User is authenticated, handle all navigation
+    _navigateToPage(index);
+  }
+
+  void _navigateToPage(int index) {
     if (_controller.hasOverlay) {
       _controller.hideOverlay();
     }
@@ -438,6 +471,7 @@ class MainScreenState extends State<MainScreen> {
           canvasColor: Colors.transparent,
         ),
         child: CurvedNavigationBar(
+          key: _bottomNavigationKey,
           color: Theme.of(context).colorScheme.surfaceContainer,
           buttonBackgroundColor: Theme.of(context).colorScheme.primary,
           backgroundColor: Colors.transparent,
@@ -446,6 +480,15 @@ class MainScreenState extends State<MainScreen> {
             _iconPaths.length,
             (index) => _buildIcon(index),
           ),
+          letIndexChange: (index) {
+            if (!_controller._authController.isAuthenticated &&
+                index != 2 &&
+                index != 4) {
+              Get.toNamed('/phoneLogin');
+              return false;
+            }
+            return true;
+          },
           onTap: _onItemTapped,
           animationDuration: Duration(milliseconds: 500),
           animationCurve: Curves.easeInOut,

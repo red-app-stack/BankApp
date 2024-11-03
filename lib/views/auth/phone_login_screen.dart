@@ -88,9 +88,7 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                 alignment: Alignment.topLeft,
                 child: fakeHero(
                     tag: 'ic_back',
-
-                    // for fast entering to check internal stuff. DO NOT TOUCH FOR THE LOVE OF GOD xd
-                    child: (1 == 0)
+                    child: (1 == 1)
                         ? IconButton(
                             icon: SvgPicture.asset(
                               'assets/icons/ic_back.svg',
@@ -101,7 +99,9 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                                 BlendMode.srcIn,
                               ),
                             ),
-                            onPressed: () => Get.toNamed('/main'),
+                            onPressed: (1 == 1)
+                                ? () => Navigator.of(context).pop()
+                                : () => Get.toNamed('/main'),
                           )
                         : SizedBox(
                             height: 32,

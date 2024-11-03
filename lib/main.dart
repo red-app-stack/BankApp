@@ -52,7 +52,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return GetMaterialApp(
       locale: const Locale('ru', 'RU'),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -66,7 +65,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      initialRoute: Routes.phoneLogin,
+      initialRoute: Routes.main,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {

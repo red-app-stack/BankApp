@@ -50,6 +50,7 @@ class AuthController extends GetxController {
 
   final RxBool _status = false.obs;
   bool get status => _status.value;
+  bool isAuthenticated = false;
   bool isCheckingAuth = false;
 
   final RxString _userRole = RxString('client');
@@ -79,26 +80,20 @@ class AuthController extends GetxController {
 
     isCheckingAuth = true;
     try {
-      // Add this line to ensure server is available
       await checkServer();
 
-      final isAuthenticated = await userService.checkAuthentication();
+      isAuthenticated = await userService.checkAuthentication();
       print('User is authenticated: $isAuthenticated');
       if (isAuthenticated) {
-        final userProfile =
-            userService.currentUser ?? await userService.fetchUserProfile();
+        final userProfile = userService.currentUser ?? await userService.fetchUserProfile();
         if (userProfile != null) {
-          Get.offAllNamed('/codeEntering');
-          return; // Add return to prevent further execution
+          return;
         }
       }
-      // Move this outside the else
       await userService.logout();
-      Get.offAllNamed('/phoneLogin');
     } catch (e) {
       print('Auth check error: $e');
       await userService.logout();
-      Get.offAllNamed('/phoneLogin');
     } finally {
       isCheckingAuth = false;
     }
@@ -288,7 +283,6 @@ class AuthController extends GetxController {
       await userService.logout();
     } catch (e) {
       print('Logout error: $e');
-      Get.snackbar('Ошибка', 'Неудачная попытка выхода');
     } finally {
       tempUserData = null;
       tempUserToken = null;

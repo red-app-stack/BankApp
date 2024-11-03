@@ -43,7 +43,7 @@ class UserService extends GetxController {
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        await logout(); // Logout if token is invalid
+        await userLogout(); // Logout if token is invalid
       }
       print('Error fetching user profile: ${e.message}');
     }
@@ -94,6 +94,15 @@ class UserService extends GetxController {
     } finally {
       await secureStorage.deleteAll();
       _currentUser.value = null;
+    }
+  }
+
+  Future<void> userLogout() async {
+    try {
+      await logout();
+    } catch (e) {
+      print('Logout error: $e');
+    } finally {
       Get.offAllNamed('/phoneLogin');
     }
   }

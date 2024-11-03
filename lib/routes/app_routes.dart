@@ -11,6 +11,85 @@ import '/views/auth/register_screen.dart';
 import '/views/main/home_screen.dart';
 import '../views/main/main_screen.dart';
 
+class Routes {
+  static const main = '/main';
+  static const phoneLogin = '/phoneLogin';
+  static const emailLogin = '/emailLogin';
+  static const register = '/register';
+  static const home = '/home';
+  static const codeEntering = '/codeEntering';
+  static const passwordEntering = '/passwordEntering';
+  static const transfers = '/transfers';
+
+  static const phoneTransfer = '/phoneTransfer';
+  static const securitySettings = '/securitySettings';
+}
+
+class AppRoutes {
+  static final routes = [
+    GetPage(
+      name: Routes.phoneLogin,
+      page: () => PhoneLoginPage(),
+      customTransition: CustomSlideTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.emailLogin,
+      page: () => EmailVerificationPage(),
+      customTransition: FadeWithHeroTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.register,
+      page: () => RegisterPage(),
+      customTransition: FadeWithHeroTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.home,
+      page: () => HomeScreen(),
+      customTransition: FadeWithHeroTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.main,
+      page: () => MainScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 800),
+    ),
+    GetPage(
+      name: Routes.codeEntering,
+      page: () => CodeEnteringScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.passwordEntering,
+      page: () => PasswordEnteringScreen(),
+      customTransition: FadeWithHeroTransition(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.transfers,
+      page: () => TransfersScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.phoneTransfer,
+      page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.securitySettings,
+      page: () => SecuritySettingsScreen(),
+      customTransition: CustomSlideTransitionLeft(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+  ];
+}
+
 class FadeWithHeroTransition extends CustomTransition {
   @override
   Widget buildTransition(
@@ -146,83 +225,4 @@ class CustomSlideTransitionLeft extends CustomTransition {
       child: child,
     );
   }
-}
-
-class Routes {
-  static const main = '/main';
-  static const phoneLogin = '/phoneLogin';
-  static const emailLogin = '/emailLogin';
-  static const register = '/register';
-  static const home = '/home';
-  static const codeEntering = '/codeEntering';
-  static const passwordEntering = '/passwordEntering';
-  static const transfers = '/transfers';
-
-  static const phoneTransfer = '/phoneTransfer';
-  static const securitySettings = '/securitySettings';
-}
-
-class AppRoutes {
-  static final routes = [
-    GetPage(
-      name: Routes.phoneLogin,
-      page: () => PhoneLoginPage(),
-      customTransition: CustomSlideTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.emailLogin,
-      page: () => EmailVerificationPage(),
-      customTransition: FadeWithHeroTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.register,
-      page: () => RegisterPage(),
-      customTransition: FadeWithHeroTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.home,
-      page: () => HomeScreen(),
-      customTransition: FadeWithHeroTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.main,
-      page: () => MainScreen(),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 800),
-    ),
-    GetPage(
-      name: Routes.codeEntering,
-      page: () => CodeEnteringScreen(),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.passwordEntering,
-      page: () => PasswordEnteringScreen(),
-      customTransition: FadeWithHeroTransition(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.transfers,
-      page: () => TransfersScreen(),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 400),
-    ),
-    GetPage(
-      name: Routes.phoneTransfer,
-      page: () => PhoneTransferScreen(),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 400),
-    ),
-    GetPage(
-      name: Routes.securitySettings,
-      page: () => SecuritySettingsScreen(),
-      customTransition: CustomSlideTransitionLeft(),
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-  ];
 }
