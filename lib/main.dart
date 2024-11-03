@@ -15,6 +15,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  final startTime = DateTime.now();
   await dotenv.load();
   final dio = Dio(BaseOptions(
     baseUrl: dotenv.env['API_URL_1'] ?? '',
@@ -26,16 +27,23 @@ Future<void> main() async {
 
   Get.put(userService);
 
-  Get.put(AuthController());
+  AuthController authController = Get.put(AuthController());
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
     statusBarBrightness: Brightness.light,
   ));
-  Future.delayed(const Duration(seconds: 2), () {
-    FlutterNativeSplash.remove();
-  });
+  await userService.fetchUserProfile();
+  await authController.checkAuthStatus();
+  final endTime = DateTime.now();
+  final timePassed = endTime.difference(startTime);
+  if (timePassed.inSeconds < 2) {
+    await Future.delayed(Duration(seconds: 2 - timePassed.inSeconds));
+  }
+
+  FlutterNativeSplash.remove();
+
   runApp(const MyApp());
 }
 
@@ -44,12 +52,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return GetMaterialApp(
+      locale: const Locale('ru', 'RU'),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: [
-        const Locale('ru'),
-        const Locale('en'),
+        const Locale('ru', 'RU'),
+        const Locale('en', 'US'),
+        const Locale('kk', 'KZ'),
       ],
+      fallbackLocale: const Locale('ru', 'RU'),
       title: 'Банк',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

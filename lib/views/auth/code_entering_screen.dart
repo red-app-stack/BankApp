@@ -7,6 +7,7 @@ import 'package:local_auth_darwin/local_auth_darwin.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
+import '../shared/widgets.dart';
 
 class CodeEnteringScreen extends StatefulWidget {
   const CodeEnteringScreen({super.key});
@@ -60,7 +61,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
       children: [
         _buildBackButton(theme),
         SizedBox(height: size.height * 0.02),
-        _buildUserCard(theme, size),
+        buildUserCard(_userService, theme, size),
         SizedBox(height: size.height * 0.02),
         _buildAccessCodeLabel(theme),
         SizedBox(height: size.height * 0.02),
@@ -82,7 +83,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _buildBackButton(theme),
-              _buildUserCard(theme, size),
+              buildUserCard(_userService, theme, size),
               SizedBox(height: size.height * 0.02),
               _buildForgotCodeButton(theme),
             ],
@@ -107,53 +108,22 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Widget _buildBackButton(ThemeData theme) {
     return Align(
-      alignment: Alignment.topLeft,
-      child: IconButton(
-        icon: SvgPicture.asset(
-          'assets/icons/ic_back.svg',
-          width: 32,
-          height: 32,
-          colorFilter: ColorFilter.mode(
-            theme.colorScheme.primary,
-            BlendMode.srcIn,
-          ),
-        ),
-        onPressed: () => Get.toNamed('/phoneLogin'),
-      ),
-    );
-  }
-
-  Widget _buildUserCard(ThemeData theme, Size size) {
-    return Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                child: Text(
-                  _userService
-                      .getInitials(_userService.currentUser?.fullName ?? ''),
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        alignment: Alignment.topLeft,
+        child: fakeHero(
+          tag: 'ic_back',
+          child: IconButton(
+            icon: SvgPicture.asset(
+              'assets/icons/ic_back.svg',
+              width: 32,
+              height: 32,
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary,
+                BlendMode.srcIn,
               ),
-              SizedBox(height: size.height * 0.02),
-              Text(
-                _userService.currentUser?.fullName ?? '...',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
+            onPressed: _authController.isCreatingCode
+                ? () => Navigator.of(context).pop()
+                : () => Get.toNamed('/phoneLogin'),
           ),
         ));
   }
@@ -251,9 +221,25 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: () {},
+      onPressed: !_authController.isCreatingCode
+          ? () {}
+          : creationStage == 0
+              ? () {}
+              : creationStage == 1
+                  ? () {
+                      _enteredCode = '';
+                      createdCode = '';
+                      setState(() {
+                        creationStage = 0;
+                      });
+                    }
+                  : () {},
       child: Text(
-        'Забыли код доступа?',
+        !_authController.isCreatingCode
+            ? 'Забыли код доступа?'
+            : creationStage == 0
+                ? ''
+                : 'Сбросить код доступа',
         style: theme.textTheme.bodyLarge?.copyWith(
           color: theme.colorScheme.primary,
           fontWeight: FontWeight.w600,
@@ -392,8 +378,10 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           creationStage = 1;
           createdCode = _enteredCode;
           setState(() => _enteredCode = '');
-        } else {
-          await _authController.storeAccessCode(_enteredCode);
+        } else if (creationStage == 1) {
+          await _authController.secureStore(
+              'access_code', _authController.hashAccessCode(_enteredCode));
+          _authController.isCreatingCode = false;
           Get.offAllNamed('/main');
         }
       } else {
@@ -412,7 +400,6 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   @override
   void dispose() {
     _codeFocusNode.dispose();
-    _authController.code.value.dispose();
     super.dispose();
   }
 }

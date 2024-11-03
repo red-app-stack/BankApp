@@ -50,6 +50,7 @@ class AuthController extends GetxController {
 
   final RxBool _status = false.obs;
   bool get status => _status.value;
+  bool isCheckingAuth = false;
 
   final RxString _userRole = RxString('client');
   String get userRole => _userRole.value;
@@ -67,13 +68,41 @@ class AuthController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    await checkServer();
+    // await checkServer();
     await checkAuthStatus();
     // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
     // startServerHealthCheck();
   }
 
-// First, add a helper method for retrying requests
+  Future<void> checkAuthStatus() async {
+    if (isCheckingAuth) return;
+
+    isCheckingAuth = true;
+    try {
+      // Add this line to ensure server is available
+      await checkServer();
+
+      final isAuthenticated = await userService.checkAuthentication();
+      print('User is authenticated: $isAuthenticated');
+      if (isAuthenticated) {
+        final userProfile =
+            userService.currentUser ?? await userService.fetchUserProfile();
+        if (userProfile != null) {
+          Get.offAllNamed('/codeEntering');
+          return; // Add return to prevent further execution
+        }
+      }
+      // Move this outside the else
+      await userService.logout();
+      Get.offAllNamed('/phoneLogin');
+    } catch (e) {
+      print('Auth check error: $e');
+      await userService.logout();
+      Get.offAllNamed('/phoneLogin');
+    } finally {
+      isCheckingAuth = false;
+    }
+  }
 
   Future<void> checkServer() async {
     if (_isCheckingServer.value) return;
@@ -84,8 +113,6 @@ class AuthController extends GetxController {
       if (_availableBaseUrl.value.isEmpty) {
         await findServer();
       }
-      Get.snackbar('Error', urls.join('\n'));
-      Get.snackbar('Selected', apiBaseUrl);
 
       if (_availableBaseUrl.value.isNotEmpty) {
         await DioRetryHelper.retryRequest(() async {
@@ -95,11 +122,6 @@ class AuthController extends GetxController {
           dio.interceptors.add(AuthInterceptor());
           return dio.get('/'); // Health check request
         });
-      } else {
-        print('Max retry attempts reached');
-        Get.snackbar('Error', 'Unable to connect to server');
-        Get.snackbar('Error', urls.join('\n'));
-        Get.snackbar('Selected', apiBaseUrl);
       }
     } catch (e) {
       print('Error during server check: $e');
@@ -334,9 +356,13 @@ class AuthController extends GetxController {
       print("Email: $obfuscatedEmail");
       print("Phone: $obfuscatedPhoneNumber");
     } else if (result['exists'] == false) {
+      obfuscatedEmail = null;
+      obfuscatedPhoneNumber = null;
       print(result['message']);
     } else {
       print("Error: ${result['error']}");
+      obfuscatedEmail = null;
+      obfuscatedPhoneNumber = null;
     }
     Get.toNamed('/emailLogin');
     setStatus(false);
@@ -383,59 +409,33 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> checkAuthStatus() async {
-    try {
-      final isAuthenticated = await userService.checkAuthentication();
-      print('User is authenticated: $isAuthenticated');
-      if (isAuthenticated) {
-        final userProfile = await userService.fetchUserProfile();
-        if (userProfile != null) {
-          Get.offAllNamed('/codeEntering');
-        } else {
-          await userService.logout();
-        }
-      } else {
-        Get.offAllNamed('/phoneLogin');
-      }
-    } catch (e) {
-      print('Auth check error: $e');
-      await userService.logout();
-      Get.offAllNamed('/phoneLogin');
-    }
-  }
-
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
-    print('STORING DATA!');
-    await userService.secureStorage.write(key: 'auth_token', value: token);
+    await secureStore('auth_token', token);
 
     final userModel = UserModel.fromJson(userData);
     await userService.storeUserLocally(userModel);
   }
 
-  Future<void> storeAccessCode(String code) async {
+  Future<void> secureStore(String key, String data) async {
     try {
-      setStatus(true);
-      final hashedCode = await _hashCode(code);
-      await userService.secureStorage
-          .write(key: 'access_code', value: hashedCode);
-      isCreatingCode = false;
+      await userService.secureStorage.write(key: key, value: data);
     } catch (e) {
-      print('Error storing access code: $e');
-      Get.snackbar('Ошибка', 'Не удалось сохранить код доступа');
-    } finally {
-      setStatus(false);
+      print('Error storing data securely: $key, $data');
     }
+  }
+
+  Future<String?> secureRead(String key) async {
+    return await userService.secureStorage.read(key: key);
   }
 
   Future<bool> validateAccessCode(String enteredCode) async {
     try {
       setStatus(true);
-      final storedHash =
-          await userService.secureStorage.read(key: 'access_code');
+      final storedHash = await secureRead('access_code');
       if (storedHash == null) return false;
 
-      final enteredHash = await _hashCode(enteredCode);
+      final enteredHash = hashAccessCode(enteredCode);
       return storedHash == enteredHash;
     } catch (e) {
       print('Error validating access code: $e');
@@ -445,7 +445,7 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<String> _hashCode(String code) async {
+  String hashAccessCode(String code) {
     final bytes = utf8.encode(code);
     final digest = sha256.convert(bytes);
     return digest.toString();
@@ -538,12 +538,13 @@ class AuthController extends GetxController {
 
   @override
   void onClose() {
-    email.value.dispose();
-    phone.value.dispose();
     _healthCheckTimer?.cancel();
+    phone.value.dispose();
+    email.value.dispose();
     verification.value.dispose();
-    password.value.dispose();
     fullName.value.dispose();
+    password.value.dispose();
+    code.value.dispose();
     _timer?.cancel();
     super.onClose();
   }

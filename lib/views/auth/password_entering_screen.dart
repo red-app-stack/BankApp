@@ -43,6 +43,10 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
     _fullNameFocusNode.dispose();
     _passwordFocusNode.dispose();
     _passwordValidityWorker.dispose();
+    // _authController.password.value.dispose();
+    // _authController.email.value.dispose();
+    // _authController.phone.value.dispose();
+    // _authController.verification.value.dispose();
     super.dispose();
   }
 

@@ -169,6 +169,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                     return null;
                                   },
                                   onFieldSubmitted: (_) {
+                                    codeFocus.requestFocus();
                                     sendVerificationCode();
                                   },
                                 )),

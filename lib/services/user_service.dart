@@ -102,10 +102,9 @@ class UserService extends GetxController {
   Future<bool> checkAuthentication() async {
     try {
       final token = await secureStorage.read(key: 'auth_token');
-
+      print('Token found: ${token != null}'); // Add this debug line
       if (token == null) return false;
 
-      // Verify token with backend
       final response = await DioRetryHelper.retryRequest(() => dio.get(
             '/auth/verify',
             options: Options(
@@ -114,9 +113,10 @@ class UserService extends GetxController {
               },
             ),
           ));
-
+      print('Auth response: ${response.statusCode}'); // Add this debug line
       return response.statusCode == 200;
     } catch (e) {
+      print('Auth check failed: $e'); // Add this debug line
       return false;
     }
   }
@@ -161,7 +161,7 @@ class UserModel {
       id: json['id'] ?? 0,
       email: json['email'] ?? '',
       fullName: json['full_name'] ?? '',
-      phoneNumber: json['phone_umber'] ?? '',
+      phoneNumber: json['phone_number'] ?? '',
       role: json['role'] ?? 'client',
       isVerified: json['is_verified'] ?? false,
       createdAt: json['created_at'] != null
@@ -174,11 +174,12 @@ class UserModel {
     return {
       'id': id,
       'email': email,
-      'fullName': fullName,
-      'phoneNumber': phoneNumber,
+      'full_name': fullName, // Changed to match API snake_case
+      'phone_number': phoneNumber, // Changed to match API snake_case
       'role': role,
-      'isVerified': isVerified,
-      'createdAt': createdAt.toIso8601String(),
+      'is_verified': isVerified, // Changed to match API snake_case
+      'created_at':
+          createdAt.toIso8601String(), // Changed to match API snake_case
     };
   }
 }

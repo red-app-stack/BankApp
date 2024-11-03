@@ -52,6 +52,7 @@ dependencies:
   curved_labeled_navigation_bar: ^2.0.2
   flutter_dotenv: ^5.2.1
   crypto: ^3.0.6
+  card_swiper: ^3.0.1
 dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:

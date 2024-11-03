@@ -192,7 +192,7 @@ class AppRoutes {
       name: Routes.main,
       page: () => MainScreen(),
       customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 500),
+      transitionDuration: Duration(milliseconds: 800),
     ),
     GetPage(
       name: Routes.codeEntering,

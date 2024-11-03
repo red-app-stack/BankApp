@@ -1,7 +1,13 @@
+import 'dart:math';
+
 import 'package:bank_app/utils/themes/theme_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:card_swiper/card_swiper.dart';
+
+import '../../services/user_service.dart';
+import '../shared/formatters.dart';
 
 class BankCard {
   final String name;
@@ -24,16 +30,13 @@ class BankCard {
 }
 
 class AccountsController extends GetxController {
+  final UserService userService = Get.find<UserService>();
   late PageController pageController;
   var currentPage = 0.obs;
 
   @override
   void onInit() {
     super.onInit();
-    pageController = PageController(
-      viewportFraction: 0.85,
-      initialPage: bankCards.length * 500,
-    );
   }
 
   @override
@@ -53,43 +56,41 @@ class AccountsController extends GetxController {
     'assets/icons/history.svg',
   ];
 
-  final String defaultName = 'Фамилия Имя';
-
   final List<BankCard> bankCards = [
     BankCard(
       name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '4829 •••• •••• 3078',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
+      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
+      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
+      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
       color: 'primary',
     ),
     BankCard(
       name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '9686 •••• •••• 2197',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
+      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
+      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
+      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
       color: 'tertiary',
     ),
     BankCard(
       name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '4386 •••• •••• 8921',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
+      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
+      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
+      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
       color: 'secondary',
     ),
     BankCard(
       name: 'Фамилия Имя',
       type: 'VISA Мультивалютная',
       number: '5829 •••• •••• 8764',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
+      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
+      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
+      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
       color: 'gray',
     )
   ];
@@ -172,47 +173,90 @@ class AccountsScreen extends StatelessWidget {
                               style: theme.textTheme.titleMedium,
                             ),
                             const Spacer(),
-                            Obx(() => Row(
-                                  children: List.generate(
-                                    controller.bankCards.length,
-                                    (index) => Container(
-                                      width: 8,
-                                      height: 8,
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 4),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: controller.currentPage.value ==
-                                                index
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.primary
-                                                .withOpacity(0.2),
+                            controller.bankCards.length > 1
+                                ? Obx(() => SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.3, // Constrain width
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(
+                                          controller.bankCards.length,
+                                          (index) => AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            curve: Curves.easeInOut,
+                                            width:
+                                                controller.currentPage.value ==
+                                                        index
+                                                    ? 16
+                                                    : 8,
+                                            height: 8,
+                                            margin: EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape
+                                                  .circle, // Keep circle shape for inactive
+                                              color: controller
+                                                          .currentPage.value ==
+                                                      index
+                                                  ? theme.colorScheme.primary
+                                                  : theme.colorScheme.primary
+                                                      .withOpacity(0.2),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )),
+                                    ))
+                                : Container(),
                           ],
                         ),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
                         child: SizedBox(
-                          height: 220,
-                          child: PageView.builder(
-                            controller: controller.pageController,
-                            physics: const BouncingScrollPhysics(),
-                            onPageChanged: controller.onPageChanged,
+                          height: size.width > size.height
+                              ? size.height * 0.6
+                              : null,
+                          child: Swiper(
+                            physics: controller.bankCards.length <= 1
+                                ? const NeverScrollableScrollPhysics()
+                                : null,
+                            loop: controller.bankCards.length > 1,
+                            allowImplicitScrolling:
+                                controller.bankCards.length > 1,
+                            itemCount: controller.bankCards.length,
                             itemBuilder: (context, index) {
-                              final card = controller.bankCards[
-                                  index % controller.bankCards.length];
-                              return Container(
-                                margin: EdgeInsets.symmetric(horizontal: 8),
-                                child: _buildBankCard(
-                                  context: context,
-                                  card: card,
-                                ),
+                              final card = controller.bankCards[index];
+                              return LayoutBuilder(
+                                builder: (context, constraints) {
+                                  double cardWidth = constraints.maxWidth;
+                                  if (size.width > size.height) {
+                                    cardWidth = min(400, size.width * 0.7);
+                                  }
+                                  return Center(
+                                    child: SizedBox(
+                                      width: cardWidth,
+                                      child: AspectRatio(
+                                        aspectRatio: 1.586,
+                                        child: _buildBankCard(
+                                            context: context, card: card),
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
                             },
+                            onIndexChanged: controller.onPageChanged,
+                            layout: SwiperLayout.TINDER,
+                            itemWidth: size.width * 0.85,
+                            itemHeight: size.width *
+                                0.85 /
+                                1.586, // Correct aspect ratio
+                            scale: 0.5,
+                            viewportFraction: 0.5,
+                            index: controller.currentPage.value,
+                            duration: 400,
                           ),
                         ),
                       ),
@@ -298,6 +342,8 @@ class AccountsScreen extends StatelessWidget {
     required BuildContext context,
     required BankCard card,
   }) {
+    final size = MediaQuery.of(context).size;
+    var width = (size.width > size.height) ? size.height : size.width;
     final theme = Theme.of(context);
     final Color colorBg = card.color == 'primary'
         ? theme.extension<CustomColors>()!.primaryCardBg!
@@ -314,123 +360,138 @@ class AccountsScreen extends StatelessWidget {
                 ? theme.extension<CustomColors>()!.tertiaryCardFg!
                 : theme.extension<CustomColors>()!.grayCardFg!;
     return Container(
-      decoration: BoxDecoration(
-        color: colorBg,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned(
-            top: -60,
-            right: -90,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorFg,
+        constraints: BoxConstraints(
+          maxWidth: width * 0.2,
+        ),
+        decoration: BoxDecoration(
+          color: colorBg,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: AspectRatio(
+          aspectRatio: 1.586,
+          child: Stack(
+            children: [
+              Positioned(
+                top: -width * 0.136,
+                right: -width * 0.19,
+                child: Container(
+                  width: width * 0.4,
+                  height: width * 0.4,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorFg,
+                  ),
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            top: -30,
-            left: -140,
-            child: Container(
-              width: 380,
-              height: 380,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorFg,
+              Positioned(
+                top: -width * 0.057,
+                left: -width * 0.296,
+                child: Container(
+                  width: width * 0.808,
+                  height: width * 0.8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorFg,
+                  ),
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  card.name,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  card.type,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  card.number,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
-                    fontFamily: 'Monospace',
-                  ),
-                ),
-                const Spacer(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.end,
-                        children: [
-                          card.tengeBalance != null
-                              ? Text(
-                                  card.tengeBalance ?? '0.00 ₸',
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    fontFamily: 'Roboto',
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                )
-                              : Container(),
-                          card.usdBalance != null
-                              ? Text(
-                                  card.usdBalance ?? '0.00 \$',
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                )
-                              : Container(),
-                          card.euroBalance != null
-                              ? Text(
-                                  card.euroBalance ?? '0.00 €',
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                )
-                              : Container(),
-                        ],
-                      ),
-                    )
+                    Text(
+                      controller.userService.currentUser?.fullName ?? '',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w400),
+                    ),
+                    const Spacer(),
+                    Text(
+                      card.type,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w500),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      card.number,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 8,
+                            crossAxisAlignment: WrapCrossAlignment.end,
+                            children: [
+                              card.tengeBalance != null
+                                  ? Text(
+                                      card.tengeBalance ?? '₸ 0.00',
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        fontFamily: 'Roboto',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                  : Container(),
+                              card.usdBalance != null
+                                  ? Text(
+                                      card.usdBalance ?? '\$ 0.00',
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        fontFamily: 'Roboto',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                  : Container(),
+                              card.euroBalance != null
+                                  ? Text(
+                                      card.euroBalance ?? '€ 0.00',
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        fontFamily: 'Roboto',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                  : Container(),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    Align(
+                        alignment: Alignment.bottomRight,
+                        child: SvgPicture.asset(
+                          "assets/icons/visa.svg",
+                          width: 50,
+                          height: 16,
+                          colorFilter: ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ))
                   ],
                 ),
-                Align(
-                    alignment: Alignment.bottomRight,
-                    child: SvgPicture.asset(
-                      "assets/icons/visa.svg",
-                      width: 50,
-                      height: 16,
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ))
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildCardItem({

@@ -8,7 +8,6 @@ class DioRetryHelper {
     int attempts = 0;
     while (attempts < maxRetries) {
       try {
-        if (attempts > 0) print('Atttempt ${attempts+1}');
         return await request();
       } on DioException catch (e) {
         attempts++;
