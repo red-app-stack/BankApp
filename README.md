@@ -1,6 +1,8 @@
-# Суперприложение для Банка
+<p align="center">
+  <a href="https://github.com/red-app-stack/BankApp"><img src="https://github.com/red-app-stack/BankApp/blob/main/assets/images/play_store_512_2.png" alt="Логотип Банка" width="200"/></a>
+</p>
 
-![Логотип Банка](https://github.com/red-app-stack/BankApp/blob/main/assets/images/play_store_512_2.png)
+<h2 align="center"><b>Суперприложение для Банка</b></h2>
 
 ## Описание
 
@@ -48,7 +50,7 @@
 
 <summary><strong>Готовая установка APK (Рекомендуется)</strong></summary>
   
-### Шаги готовой установки
+#### Шаги готовой установки
 
 1. Перейдите во вкладку [Releases](https://github.com/red-app-stack/BankApp/releases/tag/pre-release) этого репозитория.
 2. Найдите последний релиз и скачайте APK файл.
@@ -61,7 +63,7 @@
 <details>
 <summary><strong>Установка через генерацию своего APK</strong></summary>
   
-### Шаги установки
+#### Шаги ручной установки
 
 1. Установите [Flutter](https://flutter.dev) и настройте среду для разработки.
 2. Клонируйте репозиторий:
