@@ -45,11 +45,11 @@ class MainScreenController extends GetxController
   void showOverlay(Widget screen,
       {bool isProfile = false, bool isSupport = false}) {
     if (hasOverlay) {
-      overlayAnimationController.reverse(from: 0.001).whenComplete(() {
+      overlayAnimationController.reverse(from: 0.003).whenComplete(() {
         overlayScreen.value = screen;
         isProfileOpen.value = isProfile;
         isSupportOpen.value = isSupport;
-        overlayAnimationController.forward(from: 0.001);
+        overlayAnimationController.forward(from: 0.003);
       });
     } else {
       overlayScreen.value = screen;

@@ -1,15 +1,12 @@
 import 'dart:convert';
-
-// import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-
+import '../views/shared/secure_store.dart';
 import 'dio_helper.dart';
 
 class UserService extends GetxController {
   final Dio dio;
-  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+  final secureStore = Get.find<SecureStore>();
 
   // Observable user data
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
@@ -20,10 +17,10 @@ class UserService extends GetxController {
 
   Future<UserModel?> fetchUserProfile() async {
     try {
-      final token = await secureStorage.read(key: 'auth_token');
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
 
       if (token == null) {
-        return null; // No token means user is not logged in
+        return null;
       }
 
       final response = await DioRetryHelper.retryRequest(() => dio.get(
@@ -52,7 +49,7 @@ class UserService extends GetxController {
 
   Future<void> storeUserLocally(UserModel user) async {
     try {
-      await secureStorage.write(
+      await secureStore.secureStorage.write(
           key: 'user_data', value: user.toJson().toString());
 
       _currentUser.value = user;
@@ -63,7 +60,7 @@ class UserService extends GetxController {
 
   Future<UserModel?> retrieveLocalUser() async {
     try {
-      final userDataString = await secureStorage.read(key: 'user_data');
+      final userDataString = await secureStore.secureStorage.read(key: 'user_data');
 
       if (userDataString != null) {
         final userModel = UserModel.fromJson(
@@ -80,7 +77,7 @@ class UserService extends GetxController {
 
   Future<void> logout() async {
     try {
-      final token = await secureStorage.read(key: 'auth_token');
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token != null) {
         await DioRetryHelper.retryRequest(() => dio.post(
               '/auth/logout',
@@ -92,7 +89,7 @@ class UserService extends GetxController {
     } catch (e) {
       print('Logout error: $e');
     } finally {
-      await secureStorage.deleteAll();
+      await secureStore.secureStorage.deleteAll();
       _currentUser.value = null;
     }
   }
@@ -110,7 +107,7 @@ class UserService extends GetxController {
   // Check if user is authenticated
   Future<bool> checkAuthentication() async {
     try {
-      final token = await secureStorage.read(key: 'auth_token');
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
       print('Token found: ${token != null}'); // Add this debug line
       if (token == null) return false;
 
@@ -183,12 +180,12 @@ class UserModel {
     return {
       'id': id,
       'email': email,
-      'full_name': fullName, // Changed to match API snake_case
-      'phone_number': phoneNumber, // Changed to match API snake_case
+      'full_name': fullName,
+      'phone_number': phoneNumber,
       'role': role,
-      'is_verified': isVerified, // Changed to match API snake_case
+      'is_verified': isVerified,
       'created_at':
-          createdAt.toIso8601String(), // Changed to match API snake_case
+          createdAt.toIso8601String(),
     };
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:card_swiper/card_swiper.dart';
 
+import '../../controllers/accounts_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
 import '../shared/formatters.dart';
@@ -31,86 +32,57 @@ class BankCard {
   });
 }
 
-class AccountsController extends GetxController {
+class AccountsScreenController extends GetxController {
   final UserService userService = Get.find<UserService>();
-  late PageController pageController;
+  final AccountsController accountsController = Get.find<AccountsController>();
   final AuthController _authController = Get.find<AuthController>();
-  bool get isLoggedIn => _authController.isLoggedIn;
 
+  bool get isLoggedIn => _authController.isLoggedIn;
   var currentPage = 0.obs;
 
+  List<BankCard> get bankCards => accountsController.accounts
+      .map((account) => BankCard(
+            name: userService.currentUser?.fullName ?? '',
+            type: 'VISA ${account.accountType}',
+            number: account.accountNumber,
+            tengeBalance: account.currency == 'KZT'
+                ? formatCurrency(
+                    account.balance, 'KZT', currentLocale.toString())
+                : null,
+            usdBalance: account.currency == 'USD'
+                ? formatCurrency(
+                    account.balance, 'USD', currentLocale.toString())
+                : null,
+            euroBalance: account.currency == 'EUR'
+                ? formatCurrency(
+                    account.balance, 'EUR', currentLocale.toString())
+                : null,
+            color: _getCardColor(account.accountType),
+          ))
+      .toList();
+
+  String _getCardColor(String accountType) {
+    switch (accountType.toLowerCase()) {
+      case 'credit':
+        return 'primary';
+      case 'deposit':
+        return 'secondary';
+      case 'card':
+        return 'tertiary';
+      default:
+        return 'gray';
+    }
+  }
+
   @override
-  void onClose() {
-    pageController.dispose();
-    super.onClose();
+  void onInit() {
+    super.onInit();
+    accountsController.fetchAccounts();
   }
 
   void onPageChanged(int index) {
     currentPage.value = index % bankCards.length;
   }
-
-  final List<String> cardActionIcons = [
-    'assets/icons/transfer.svg',
-    'assets/icons/payment.svg',
-    'assets/icons/qr.svg',
-    'assets/icons/history.svg',
-  ];
-
-  final List<BankCard> bankCards = [
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '4829 •••• •••• 3078',
-      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
-      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
-      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
-      color: 'primary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '9686 •••• •••• 2197',
-      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
-      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
-      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
-      color: 'tertiary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '4386 •••• •••• 8921',
-      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
-      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
-      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
-      color: 'secondary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '5829 •••• •••• 8764',
-      tengeBalance: formatCurrency(0.00, 'KZT', currentLocale.toString()),
-      usdBalance: formatCurrency(0.00, 'USD', currentLocale.toString()),
-      euroBalance: formatCurrency(0.00, 'EUR', currentLocale.toString()),
-      color: 'gray',
-    )
-  ];
-  final List<CardPromoItem> promoItems = [
-    CardPromoItem(
-      banner: 'assets/images/digital_bonus.svg',
-      title: 'Цифровая карта бонус',
-      info: 'Одна карта - тысяча возможностей',
-    ),
-    CardPromoItem(
-      banner: 'assets/images/credit_card.svg',
-      title: 'Кредитная карта',
-      info: 'Беспроцентный период до 55 дней',
-    ),
-    CardPromoItem(
-      banner: 'assets/images/debit_card.svg',
-      title: 'Дебетовая карта',
-      info: 'Кэшбэк до 5% на все покупки',
-    ),
-  ];
 }
 
 class CardPromoItem {
@@ -126,7 +98,8 @@ class CardPromoItem {
 }
 
 class AccountsScreen extends StatelessWidget {
-  final AccountsController _controller = Get.put(AccountsController());
+  final AccountsScreenController _controller =
+      Get.put(AccountsScreenController());
 
   AccountsScreen({super.key});
 
@@ -181,7 +154,8 @@ class AccountsScreen extends StatelessWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: List.generate(
-                                          _controller.bankCards.length,
+                                          _controller.accountsController
+                                              .accounts.length,
                                           (index) => AnimatedContainer(
                                             duration: const Duration(
                                                 milliseconds: 200),
@@ -255,7 +229,7 @@ class AccountsScreen extends StatelessWidget {
                                 1.586, // Correct aspect ratio
                             scale: 0.5,
                             viewportFraction: 0.5,
-                            scrollDirection: Axis.vertical,
+                            curve: Curves.easeInOut,
                             index: _controller.currentPage.value,
                             duration: 400,
                           ),
@@ -272,7 +246,9 @@ class AccountsScreen extends StatelessWidget {
                           icon: 'assets/icons/ic_add.svg',
                           title: 'Открыть новую карту',
                           description: null,
-                          onTap: () {}),
+                          onTap: () {
+                            Get.toNamed('/createAccount');
+                          }),
                     ],
                   ),
                 ),

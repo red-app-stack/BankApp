@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'controllers/accounts_controller.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'views/shared/static_background.dart';
@@ -25,11 +26,10 @@ Future<void> main() async {
     receiveTimeout: Duration(seconds: 10),
   ));
   dio.interceptors.add(AuthInterceptor());
-  final userService = UserService(dio: dio);
-
   Get.put(SecureStore());
+  final userService = UserService(dio: dio);
   Get.put(userService);
-
+  Get.put(AccountsController(dio: dio));
   AuthController authController = Get.put(AuthController());
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(

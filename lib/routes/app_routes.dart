@@ -1,5 +1,6 @@
 import 'package:bank_app/views/auth/code_entering_screen.dart';
 import 'package:bank_app/views/auth/email_login_screen.dart';
+import 'package:bank_app/views/other/create_account_screen.dart';
 import 'package:bank_app/views/other/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,6 +22,7 @@ class Routes {
   static const passwordEntering = '/passwordEntering';
   static const transfers = '/transfers';
 
+  static const createAccount = '/createAccount';
   static const phoneTransfer = '/phoneTransfer';
   static const securitySettings = '/securitySettings';
 }
@@ -78,6 +80,12 @@ class AppRoutes {
     GetPage(
       name: Routes.phoneTransfer,
       page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.createAccount,
+      page: () => CreateAccountScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

@@ -26,12 +26,6 @@ class TransfersScreen extends StatelessWidget {
       case 'phone':
         Get.toNamed('/phoneTransfer');
         break;
-      case 'self':
-        Get.toNamed('/phoneTransfer');
-        break;
-      case 'domestic':
-        Get.toNamed('/phoneTransfer');
-        break;
     }
   }
 
