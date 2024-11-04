@@ -22,8 +22,8 @@ Future<void> main() async {
   await dotenv.load();
   final dio = Dio(BaseOptions(
     baseUrl: dotenv.env['API_URL_1'] ?? '',
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 10),
+    connectTimeout: Duration(seconds: 15),
+    receiveTimeout: Duration(seconds: 15),
   ));
   dio.interceptors.add(AuthInterceptor());
   Get.put(SecureStore());

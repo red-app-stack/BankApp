@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
@@ -18,11 +19,9 @@ class UserService extends GetxController {
   Future<UserModel?> fetchUserProfile() async {
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
-
       if (token == null) {
         return null;
       }
-
       final response = await DioRetryHelper.retryRequest(() => dio.get(
             '/auth/profile',
             options: Options(
@@ -49,8 +48,8 @@ class UserService extends GetxController {
 
   Future<void> storeUserLocally(UserModel user) async {
     try {
-      await secureStore.secureStorage.write(
-          key: 'user_data', value: user.toJson().toString());
+      await secureStore.secureStorage
+          .write(key: 'user_data', value: user.toJson().toString());
 
       _currentUser.value = user;
     } catch (e) {
@@ -60,7 +59,8 @@ class UserService extends GetxController {
 
   Future<UserModel?> retrieveLocalUser() async {
     try {
-      final userDataString = await secureStore.secureStorage.read(key: 'user_data');
+      final userDataString =
+          await secureStore.secureStorage.read(key: 'user_data');
 
       if (userDataString != null) {
         final userModel = UserModel.fromJson(
@@ -83,12 +83,20 @@ class UserService extends GetxController {
               '/auth/logout',
               options: Options(
                 headers: {'Authorization': 'Bearer $token'},
+                validateStatus: (status) => status! < 500,
               ),
-            ));
+            )).timeout(
+          const Duration(seconds: 15),
+          onTimeout: () {
+            print('Logout request timed out, proceeding with local logout');
+            throw TimeoutException('Logout request timed out');
+          },
+        );
       }
     } catch (e) {
-      print('Logout error: $e');
+      print('Logout attempt failed: $e');
     } finally {
+      // Always clear local data
       await secureStore.secureStorage.deleteAll();
       _currentUser.value = null;
     }
@@ -102,6 +110,12 @@ class UserService extends GetxController {
     } finally {
       Get.offAllNamed('/phoneLogin');
     }
+  }
+
+  Future<bool> tokenFound() async {
+    final token = await secureStore.secureStorage.read(key: 'auth_token');
+    if (token == null) return false;
+    return true;
   }
 
   // Check if user is authenticated
@@ -184,8 +198,7 @@ class UserModel {
       'phone_number': phoneNumber,
       'role': role,
       'is_verified': isVerified,
-      'created_at':
-          createdAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
     };
   }
 }

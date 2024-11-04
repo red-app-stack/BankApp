@@ -51,6 +51,7 @@ class AccountsController extends GetxController {
 
   Future<void> fetchAccounts() async {
     try {
+      print('fetching.');
       isLoading.value = true;
       final token = await secureStore.secureStorage.read(key: 'auth_token');
 
@@ -119,8 +120,8 @@ class AccountsController extends GetxController {
     double total = accounts
         .where((acc) => acc.currency == currency)
         .fold(0, (sum, acc) => sum + acc.balance);
-    
-    switch(currency) {
+
+    switch (currency) {
       case 'KZT':
         return '₸ ${total.toStringAsFixed(2)}';
       case 'USD':

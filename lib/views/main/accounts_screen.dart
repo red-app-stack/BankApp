@@ -39,8 +39,10 @@ class AccountsScreenController extends GetxController {
 
   bool get isLoggedIn => _authController.isLoggedIn;
   var currentPage = 0.obs;
+final RxList<BankCard> bankCards = <BankCard>[].obs;
 
-  List<BankCard> get bankCards => accountsController.accounts
+void updateBankCards() {
+  bankCards.value = accountsController.accounts
       .map((account) => BankCard(
             name: userService.currentUser?.fullName ?? '',
             type: 'VISA ${account.accountType}',
@@ -60,8 +62,10 @@ class AccountsScreenController extends GetxController {
             color: _getCardColor(account.accountType),
           ))
       .toList();
+}
 
   String _getCardColor(String accountType) {
+    print(accountType);
     switch (accountType.toLowerCase()) {
       case 'credit':
         return 'primary';
@@ -84,7 +88,6 @@ class AccountsScreenController extends GetxController {
     currentPage.value = index % bankCards.length;
   }
 }
-
 class CardPromoItem {
   final String banner;
   final String title;
@@ -323,6 +326,12 @@ class AccountsScreen extends StatelessWidget {
     );
   }
 
+  String _censorCardNumber(String cardNumber) {
+    if (cardNumber.length < 8)
+      return cardNumber; // Fallback if the card number is too short
+    return '${cardNumber.substring(0, 4)} •••• •••• ${cardNumber.substring(cardNumber.length - 4)}';
+  }
+
   Widget _buildBankCard({
     required BuildContext context,
     required BankCard card,
@@ -403,7 +412,7 @@ class AccountsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      card.number,
+                      _censorCardNumber(card.number),
                       style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white,
                           fontFamily: 'Poppins',
