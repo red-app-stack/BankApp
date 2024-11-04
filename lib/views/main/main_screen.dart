@@ -76,85 +76,6 @@ class MainScreen extends StatefulWidget {
   MainScreenState createState() => MainScreenState();
 }
 
-class ZoomFadeTransition extends StatelessWidget {
-  final Widget child;
-  final Animation<double> animation;
-
-  const ZoomFadeTransition({
-    required this.child,
-    required this.animation,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final zoomCurve = CurvedAnimation(
-      parent: animation,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
-    );
-
-    final fadeCurve = CurvedAnimation(
-      parent: animation,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-    );
-
-    return FadeTransition(
-      opacity: fadeCurve,
-      child: ScaleTransition(
-        alignment: Alignment.center,
-        scale: Tween<double>(
-          begin: 0.85,
-          end: 1.0,
-        ).animate(zoomCurve),
-        child: child,
-      ),
-    );
-  }
-}
-
-class SlideOverlayTransition extends StatelessWidget {
-  final Widget child;
-  final Animation<double> animation;
-  final bool fromRight;
-
-  const SlideOverlayTransition({
-    required this.child,
-    required this.animation,
-    this.fromRight = true,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: Offset(fromRight ? 1.0 : -1.0, 0.0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          )),
-          child: FadeTransition(
-            opacity: Tween<double>(
-              begin: 0.0,
-              end: 1.0,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-            )),
-            child: child,
-          ),
-        );
-      },
-      child: child,
-    );
-  }
-}
-
 class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
@@ -204,7 +125,17 @@ class MainScreenState extends State<MainScreen> {
 
   void _handleProfileTap() {
     if (!_controller._authController.isAuthenticated) {
-      Get.toNamed('/phoneLogin');
+      if (_controller._authController.isCheckingAuth) {
+        Get.snackbar('Подождите', 'Идет проверка авторизации');
+        return;
+      } else {
+        Get.toNamed('/phoneLogin');
+        return;
+      }
+    }
+
+    if (!_controller._authController.isLoggedIn) {
+      Get.toNamed('/codeEntering');
       return;
     }
 
@@ -221,6 +152,21 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _handleSupportTap() {
+    if (!_controller._authController.isAuthenticated) {
+      if (_controller._authController.isCheckingAuth) {
+        Get.snackbar('Подождите', 'Идет проверка авторизации');
+        return;
+      } else {
+        Get.toNamed('/phoneLogin');
+        return;
+      }
+    }
+
+    if (!_controller._authController.isLoggedIn) {
+      Get.toNamed('/codeEntering');
+      return;
+    }
+
     if (_controller.isSupportOpen.value) {
       _controller.hideOverlay();
     } else {
@@ -234,26 +180,42 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (!_controller._authController.isAuthenticated &&
-        _controller._authController.isCheckingAuth) {
+    if (_controller._authController.isCheckingAuth && !(index == 2 ||
+        index == 4)) {
+          _controller._authController.displayStatus = true;
       Get.snackbar('Подождите', 'Идет проверка авторизации');
+      setState(() {
+        _selectedIndex = _pageController.page!.round();
+      });
       return;
     }
 
-    // Handle profile and support buttons when not authenticated
     if (!_controller._authController.isAuthenticated) {
       if (index == 2 || index == 4) {
         // Allow access to Home and Menu
         _navigateToPage(index);
       } else {
-        // Prevent bottom nav selection by returning early
         Get.toNamed('/phoneLogin');
         setState(() {
           // Force index back to previous selection
           _selectedIndex = _pageController.page!.round();
         });
+        return;
       }
-      return;
+    }
+
+    if (!_controller._authController.isLoggedIn) {
+      if (index == 2 || index == 4) {
+        // Allow access to Home and Menu
+        _navigateToPage(index);
+      } else {
+        Get.toNamed('/codeEntering');
+        setState(() {
+          // Force index back to previous selection
+          _selectedIndex = _pageController.page!.round();
+        });
+        return;
+      }
     }
 
     // User is authenticated, handle all navigation
@@ -481,10 +443,28 @@ class MainScreenState extends State<MainScreen> {
             (index) => _buildIcon(index),
           ),
           letIndexChange: (index) {
-            if (!_controller._authController.isAuthenticated &&
+            if (index == 2 || index == 4) {
+              return true;
+            }
+            
+            if (_controller._authController.isCheckingAuth &&
+                index != 2 &&
+                index != 4) {
+              Get.snackbar('Сообщение', 'Подождите, идет проверка авторизации');
+              return false;
+            } else if (!_controller._authController.isCheckingAuth &&
+                !_controller._authController.isAuthenticated &&
+                !_controller._authController.isLoggedIn &&
                 index != 2 &&
                 index != 4) {
               Get.toNamed('/phoneLogin');
+              return false;
+            } else if (!_controller._authController.isCheckingAuth &&
+                _controller._authController.isAuthenticated &&
+                !_controller._authController.isLoggedIn &&
+                index != 2 &&
+                index != 4) {
+              Get.toNamed('/codeEntering');
               return false;
             }
             return true;
@@ -494,6 +474,85 @@ class MainScreenState extends State<MainScreen> {
           animationCurve: Curves.easeInOut,
         ),
       ),
+    );
+  }
+}
+
+class ZoomFadeTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+
+  const ZoomFadeTransition({
+    required this.child,
+    required this.animation,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final zoomCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+    );
+
+    final fadeCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+    );
+
+    return FadeTransition(
+      opacity: fadeCurve,
+      child: ScaleTransition(
+        alignment: Alignment.center,
+        scale: Tween<double>(
+          begin: 0.85,
+          end: 1.0,
+        ).animate(zoomCurve),
+        child: child,
+      ),
+    );
+  }
+}
+
+class SlideOverlayTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+  final bool fromRight;
+
+  const SlideOverlayTransition({
+    required this.child,
+    required this.animation,
+    this.fromRight = true,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: Offset(fromRight ? 1.0 : -1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          )),
+          child: FadeTransition(
+            opacity: Tween<double>(
+              begin: 0.0,
+              end: 1.0,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+            )),
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 }

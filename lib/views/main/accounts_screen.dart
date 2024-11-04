@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:bank_app/utils/themes/theme_extension.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:card_swiper/card_swiper.dart';
 
+import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
 import '../shared/formatters.dart';
 
@@ -32,6 +34,9 @@ class BankCard {
 class AccountsController extends GetxController {
   final UserService userService = Get.find<UserService>();
   late PageController pageController;
+  final AuthController _authController = Get.find<AuthController>();
+  bool get isLoggedIn => _authController.isLoggedIn;
+
   var currentPage = 0.obs;
 
   @override
@@ -121,7 +126,7 @@ class CardPromoItem {
 }
 
 class AccountsScreen extends StatelessWidget {
-  final AccountsController controller = Get.put(AccountsController());
+  final AccountsController _controller = Get.put(AccountsController());
 
   AccountsScreen({super.key});
 
@@ -168,7 +173,7 @@ class AccountsScreen extends StatelessWidget {
                               style: theme.textTheme.titleMedium,
                             ),
                             const Spacer(),
-                            controller.bankCards.length > 1
+                            _controller.bankCards.length > 1
                                 ? Obx(() => SizedBox(
                                       width: MediaQuery.of(context).size.width *
                                           0.3, // Constrain width
@@ -176,13 +181,13 @@ class AccountsScreen extends StatelessWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: List.generate(
-                                          controller.bankCards.length,
+                                          _controller.bankCards.length,
                                           (index) => AnimatedContainer(
                                             duration: const Duration(
                                                 milliseconds: 200),
                                             curve: Curves.easeInOut,
                                             width:
-                                                controller.currentPage.value ==
+                                                _controller.currentPage.value ==
                                                         index
                                                     ? 16
                                                     : 8,
@@ -192,7 +197,7 @@ class AccountsScreen extends StatelessWidget {
                                             decoration: BoxDecoration(
                                               shape: BoxShape
                                                   .circle, // Keep circle shape for inactive
-                                              color: controller
+                                              color: _controller
                                                           .currentPage.value ==
                                                       index
                                                   ? theme.colorScheme.primary
@@ -214,15 +219,15 @@ class AccountsScreen extends StatelessWidget {
                               ? size.height * 0.6
                               : null,
                           child: Swiper(
-                            physics: controller.bankCards.length <= 1
+                            physics: _controller.bankCards.length <= 1
                                 ? const NeverScrollableScrollPhysics()
                                 : null,
-                            loop: controller.bankCards.length > 1,
+                            loop: _controller.bankCards.length > 1,
                             allowImplicitScrolling:
-                                controller.bankCards.length > 1,
-                            itemCount: controller.bankCards.length,
+                                _controller.bankCards.length > 1,
+                            itemCount: _controller.bankCards.length,
                             itemBuilder: (context, index) {
-                              final card = controller.bankCards[index];
+                              final card = _controller.bankCards[index];
                               return LayoutBuilder(
                                 builder: (context, constraints) {
                                   double cardWidth = constraints.maxWidth;
@@ -242,7 +247,7 @@ class AccountsScreen extends StatelessWidget {
                                 },
                               );
                             },
-                            onIndexChanged: controller.onPageChanged,
+                            onIndexChanged: _controller.onPageChanged,
                             layout: SwiperLayout.TINDER,
                             itemWidth: size.width * 0.85,
                             itemHeight: size.width *
@@ -250,7 +255,8 @@ class AccountsScreen extends StatelessWidget {
                                 1.586, // Correct aspect ratio
                             scale: 0.5,
                             viewportFraction: 0.5,
-                            index: controller.currentPage.value,
+                            scrollDirection: Axis.vertical,
+                            index: _controller.currentPage.value,
                             duration: 400,
                           ),
                         ),
@@ -325,6 +331,14 @@ class AccountsScreen extends StatelessWidget {
                 SizedBox(
                   height: size.height * 0.02,
                 ),
+                !_controller._authController.isLoggedIn
+                    ? BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          color: Colors.black.withOpacity(0.1),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ],
             ),
           ),
@@ -397,7 +411,7 @@ class AccountsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      controller.userService.currentUser?.fullName ?? '',
+                      _controller.userService.currentUser?.fullName ?? '',
                       style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white,
                           fontFamily: 'Poppins',

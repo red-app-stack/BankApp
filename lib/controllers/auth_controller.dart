@@ -8,10 +8,12 @@ import '../services/dio_helper.dart';
 import '../services/user_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import '../views/shared/secure_store.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
   final UserService userService = Get.find<UserService>();
+  final SecureStore secureStore = Get.find<SecureStore>();
 
   final dio = Dio();
 
@@ -51,7 +53,9 @@ class AuthController extends GetxController {
   final RxBool _status = false.obs;
   bool get status => _status.value;
   bool isAuthenticated = false;
+  bool isLoggedIn = false;
   bool isCheckingAuth = false;
+  bool displayStatus = false;
 
   final RxString _userRole = RxString('client');
   String get userRole => _userRole.value;
@@ -85,7 +89,8 @@ class AuthController extends GetxController {
       isAuthenticated = await userService.checkAuthentication();
       print('User is authenticated: $isAuthenticated');
       if (isAuthenticated) {
-        final userProfile = userService.currentUser ?? await userService.fetchUserProfile();
+        final userProfile =
+            userService.currentUser ?? await userService.fetchUserProfile();
         if (userProfile != null) {
           return;
         }
@@ -96,6 +101,10 @@ class AuthController extends GetxController {
       await userService.logout();
     } finally {
       isCheckingAuth = false;
+      if (displayStatus) {
+        Get.snackbar('Сообщение', 'Аутентификация проверена.');
+        displayStatus = false;
+      }
     }
   }
 
@@ -405,34 +414,27 @@ class AuthController extends GetxController {
 
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
-    await secureStore('auth_token', token);
+    await secureStore.secureStore('auth_token', token);
 
     final userModel = UserModel.fromJson(userData);
     await userService.storeUserLocally(userModel);
   }
 
-  Future<void> secureStore(String key, String data) async {
-    try {
-      await userService.secureStorage.write(key: key, value: data);
-    } catch (e) {
-      print('Error storing data securely: $key, $data');
-    }
-  }
-
-  Future<String?> secureRead(String key) async {
-    return await userService.secureStorage.read(key: key);
-  }
-
   Future<bool> validateAccessCode(String enteredCode) async {
     try {
       setStatus(true);
-      final storedHash = await secureRead('access_code');
-      if (storedHash == null) return false;
+      final storedHash = await secureStore.secureRead('access_code');
+      if (storedHash == null) {
+        isLoggedIn = false;
+        return false;
+      }
 
       final enteredHash = hashAccessCode(enteredCode);
+      isLoggedIn = storedHash == enteredHash;
       return storedHash == enteredHash;
     } catch (e) {
       print('Error validating access code: $e');
+      isLoggedIn = false;
       return false;
     } finally {
       setStatus(false);

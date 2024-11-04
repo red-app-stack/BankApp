@@ -27,14 +27,10 @@ class SettingsScreen extends StatelessWidget {
                     value: themeController.themeMode.value,
                     onChanged: (ThemeMode? newThemeMode) {
                       if (newThemeMode != null) {
-                        if (newThemeMode == ThemeMode.system) {
-                          themeController.setSystemTheme(context);
-                        } else {
-                          themeController.toggleTheme(context);
-                        }
+                        themeController.setThemeMode(newThemeMode);
                       }
                     },
-                    items: [
+                    items: const [
                       DropdownMenuItem(
                         value: ThemeMode.system,
                         child: Text('Системная'),

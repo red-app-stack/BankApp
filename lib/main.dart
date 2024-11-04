@@ -1,11 +1,13 @@
 import 'package:bank_app/services/interceptor.dart';
 import 'package:bank_app/services/user_service.dart';
+import 'package:bank_app/views/shared/secure_store.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'controllers/auth_controller.dart';
+import 'controllers/theme_controller.dart';
 import 'views/shared/static_background.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
@@ -25,6 +27,7 @@ Future<void> main() async {
   dio.interceptors.add(AuthInterceptor());
   final userService = UserService(dio: dio);
 
+  Get.put(SecureStore());
   Get.put(userService);
 
   AuthController authController = Get.put(AuthController());
@@ -34,6 +37,7 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.dark,
     statusBarBrightness: Brightness.light,
   ));
+
   await userService.fetchUserProfile();
   await authController.checkAuthStatus();
   final endTime = DateTime.now();
@@ -41,6 +45,9 @@ Future<void> main() async {
   if (timePassed.inSeconds < 2) {
     await Future.delayed(Duration(seconds: 2 - timePassed.inSeconds));
   }
+
+  final themeController = Get.put(ThemeController());
+  await themeController.loadSavedSettings();
 
   FlutterNativeSplash.remove();
 
@@ -64,7 +71,7 @@ class MyApp extends StatelessWidget {
       title: 'Банк',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: Get.find<ThemeController>().themeMode.value,
       initialRoute: Routes.main,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,

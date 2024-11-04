@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
+import '../../controllers/theme_controller.dart';
+import '../shared/secure_store.dart';
 import '../shared/shared_classes.dart';
+import '../shared/user_settings.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
@@ -11,6 +15,38 @@ class SecuritySettingsScreen extends StatefulWidget {
 }
 
 class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
+  final secureStore = Get.find<SecureStore>();
+
+  @override
+  void initState() {
+    super.initState();
+    loadSecuritySettings();
+  }
+
+  Future<void> loadSecuritySettings() async {
+    final settings = await secureStore.loadSettings();
+    if (settings != null) {
+      setState(() {
+        switchStates['assets/icons/ic_fingerprint.svg'] =
+            settings.useBiometrics;
+        switchStates['assets/icons/ic_screen_protect.svg'] =
+            settings.screenProtection;
+        switchStates['assets/icons/ic_face.svg'] = settings.biometricOperations;
+      });
+    }
+  }
+
+  Future<void> saveSecuritySettings() async {
+    final settings = UserSettings(
+      themeMode: Get.find<ThemeController>().themeMode.value,
+      useBiometrics: switchStates['assets/icons/ic_fingerprint.svg'] ?? false,
+      screenProtection:
+          switchStates['assets/icons/ic_screen_protect.svg'] ?? true,
+      biometricOperations: switchStates['assets/icons/ic_face.svg'] ?? true,
+    );
+    await secureStore.saveSettings(settings);
+  }
+
   final List<MenuSection> sections = [
     MenuSection(
       title: null,
@@ -200,6 +236,7 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                           setState(() {
                             switchStates[item.icon] = value;
                           });
+                          saveSecuritySettings(); // Add this line to save immediately after state change
                         },
                         activeColor: theme.colorScheme.primary,
                       ),

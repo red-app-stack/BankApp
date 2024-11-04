@@ -123,7 +123,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
             ),
             onPressed: _authController.isCreatingCode
                 ? () => Navigator.of(context).pop()
-                : () => Get.toNamed('/phoneLogin'),
+                : _authController.isAuthenticated
+                    ? () => Navigator.of(context).pop()
+                    : () => Get.toNamed('/phoneLogin'),
           ),
         ));
   }
@@ -364,9 +366,13 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     }
 
     if (authenticated) {
-      Get.offAllNamed('/main');
+      _authController.isAuthenticated = true;
+      _authController.isLoggedIn = true;
+      Get.back(); // Close code entering screen
+      Get.until((route) => Get.currentRoute == '/main');
       print("Authentication successful!");
     } else {
+      _authController.isLoggedIn = false;
       print("Authentication failed.");
     }
   }
@@ -379,16 +385,20 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           createdCode = _enteredCode;
           setState(() => _enteredCode = '');
         } else if (creationStage == 1) {
-          await _authController.secureStore(
+          await _authController.secureStore.secureStore(
               'access_code', _authController.hashAccessCode(_enteredCode));
           _authController.isCreatingCode = false;
-          Get.offAllNamed('/main');
+          _authController.isAuthenticated = true;
+          _authController.isLoggedIn = true;
+          Get.back(); // Close code entering screen
+          Get.until((route) => Get.currentRoute == '/main');
         }
       } else {
         // Validate existing code
         final isValid = await _authController.validateAccessCode(_enteredCode);
         if (isValid) {
-          Get.offAllNamed('/main');
+          Get.back(); // Close code entering screen
+          Get.until((route) => Get.currentRoute == '/main');
         } else {
           setState(() => _enteredCode = '');
           Get.snackbar('Ошибка', 'Неверный код доступа');
