@@ -39,30 +39,44 @@ class AccountsScreenController extends GetxController {
 
   bool get isLoggedIn => _authController.isLoggedIn;
   var currentPage = 0.obs;
-final RxList<BankCard> bankCards = <BankCard>[].obs;
+  final RxList<BankCard> bankCards = <BankCard>[].obs;
+  @override
+  void onInit() {
+    super.onInit();
+    ever(accountsController.accounts, (_) => updateBankCards());
+    fetchAndUpdateCards();
+  }
 
-void updateBankCards() {
-  bankCards.value = accountsController.accounts
-      .map((account) => BankCard(
-            name: userService.currentUser?.fullName ?? '',
-            type: 'VISA ${account.accountType}',
-            number: account.accountNumber,
-            tengeBalance: account.currency == 'KZT'
-                ? formatCurrency(
-                    account.balance, 'KZT', currentLocale.toString())
-                : null,
-            usdBalance: account.currency == 'USD'
-                ? formatCurrency(
-                    account.balance, 'USD', currentLocale.toString())
-                : null,
-            euroBalance: account.currency == 'EUR'
-                ? formatCurrency(
-                    account.balance, 'EUR', currentLocale.toString())
-                : null,
-            color: _getCardColor(account.accountType),
-          ))
-      .toList();
-}
+  void fetchAndUpdateCards() async {
+    await accountsController.fetchAccounts();
+  }
+
+  void updateBankCards() {
+    print(
+        'Updating bank cards with ${accountsController.accounts.length} accounts');
+    if (accountsController.accounts.isEmpty) return;
+
+    bankCards.value = accountsController.accounts
+        .map((account) => BankCard(
+              name: userService.currentUser?.fullName ?? '',
+              type: 'VISA ${account.accountType}',
+              number: account.accountNumber,
+              tengeBalance: account.currency == 'KZT'
+                  ? formatCurrency(
+                      account.balance, 'KZT', currentLocale.toString())
+                  : null,
+              usdBalance: account.currency == 'USD'
+                  ? formatCurrency(
+                      account.balance, 'USD', currentLocale.toString())
+                  : null,
+              euroBalance: account.currency == 'EUR'
+                  ? formatCurrency(
+                      account.balance, 'EUR', currentLocale.toString())
+                  : null,
+              color: _getCardColor(account.accountType),
+            ))
+        .toList();
+  }
 
   String _getCardColor(String accountType) {
     print(accountType);
@@ -78,16 +92,11 @@ void updateBankCards() {
     }
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    accountsController.fetchAccounts();
-  }
-
   void onPageChanged(int index) {
     currentPage.value = index % bankCards.length;
   }
 }
+
 class CardPromoItem {
   final String banner;
   final String title;

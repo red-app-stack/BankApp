@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'controllers/accounts_controller.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
+import 'services/server_check_helper.dart';
 import 'views/shared/static_background.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
@@ -20,12 +21,17 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   final startTime = DateTime.now();
   await dotenv.load();
+  final serverHealthService = ServerHealthService();
+  Get.put(serverHealthService);
+  final baseUrl = await serverHealthService.findFastestServer();
   final dio = Dio(BaseOptions(
-    baseUrl: dotenv.env['API_URL_1'] ?? '',
+    baseUrl: baseUrl,
     connectTimeout: Duration(seconds: 15),
     receiveTimeout: Duration(seconds: 15),
+    validateStatus: (status) => true, // Accept all status codes initially
   ));
   dio.interceptors.add(AuthInterceptor());
+  
   Get.put(SecureStore());
   final userService = UserService(dio: dio);
   Get.put(userService);

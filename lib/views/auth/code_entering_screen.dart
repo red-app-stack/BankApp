@@ -1,3 +1,4 @@
+import 'package:bank_app/controllers/accounts_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -368,8 +369,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     if (authenticated) {
       _authController.isAuthenticated = true;
       _authController.isLoggedIn = true;
-      Get.back(); // Close code entering screen
+      Get.back();
       Get.until((route) => Get.currentRoute == '/main');
+      Get.find<AccountsController>().fetchAccounts();
       print("Authentication successful!");
     } else {
       _authController.isLoggedIn = false;
@@ -391,14 +393,15 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           _authController.isAuthenticated = true;
           _authController.isLoggedIn = true;
           Get.back(); // Close code entering screen
+          Get.find<AccountsController>().fetchAccounts();
           Get.until((route) => Get.currentRoute == '/main');
         }
       } else {
-        // Validate existing code
         final isValid = await _authController.validateAccessCode(_enteredCode);
         if (isValid) {
-          Get.back(); // Close code entering screen
+          Get.back();
           Get.until((route) => Get.currentRoute == '/main');
+          Get.find<AccountsController>().fetchAccounts();
         } else {
           setState(() => _enteredCode = '');
           Get.snackbar('Ошибка', 'Неверный код доступа');

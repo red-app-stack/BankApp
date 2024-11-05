@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import '../services/dio_helper.dart';
+import '../services/server_check_helper.dart';
 import '../services/user_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
@@ -12,6 +13,7 @@ import '../views/shared/secure_store.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
+  final ServerHealthService serverHealthService = Get.find();
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
 
@@ -106,7 +108,6 @@ class AuthController extends GetxController {
       await userService.logout();
     } catch (e) {
       print('Auth check error: $e');
-      await userService.logout();
     } finally {
       isCheckingAuth = false;
       if (displayStatus) {
@@ -122,24 +123,12 @@ class AuthController extends GetxController {
     setStatus(true);
 
     try {
-      if (_availableBaseUrl.value.isEmpty) {
-        await findServer();
-      }
-
-      if (_availableBaseUrl.value.isNotEmpty) {
-        await DioRetryHelper.retryRequest(() async {
-          dio.options.baseUrl = apiBaseUrl;
-          dio.options.connectTimeout = const Duration(seconds: 10);
-          dio.options.receiveTimeout = const Duration(seconds: 10);
-          dio.interceptors.add(AuthInterceptor());
-          return dio.get('/'); // Health check request
-        });
-      }
+      final baseUrl = await serverHealthService.findFastestServer();
+      dio.options.baseUrl = baseUrl;
     } catch (e) {
       print('Error during server check: $e');
     } finally {
       setStatus(false);
-      print('Server check completed');
       _isCheckingServer.value = false;
     }
   }
@@ -187,45 +176,6 @@ class AuthController extends GetxController {
 
   Timer? _healthCheckTimer;
 
-  void startServerHealthCheck() {
-    _healthCheckTimer?.cancel();
-    _healthCheckTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => verifyServerConnection(),
-    );
-  }
-
-  Future<void> verifyServerConnection() async {
-    print('Server health check!');
-    try {
-      if (_availableBaseUrl.value.isEmpty) {
-        print('No server available, skipping health check');
-        await checkServer();
-        return;
-      }
-
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '${_availableBaseUrl.value}/',
-            options: Options(
-              validateStatus: (status) => status == 999,
-              sendTimeout: const Duration(seconds: 5),
-            ),
-          ));
-
-      if (response.statusCode != 999) {
-        print('Server connection lost, finding new server');
-        _availableBaseUrl.value = '';
-        await checkServer();
-      } else {
-        print('Server connection is fine');
-      }
-    } catch (e) {
-      print('Server health check failed: $e');
-      _availableBaseUrl.value = '';
-      await checkServer();
-    }
-  }
-
   Future<void> login() async {
     if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
       Get.snackbar('Ошибка', 'Заполните все поля');
@@ -264,7 +214,6 @@ class AuthController extends GetxController {
   }
 
   Future<void> register() async {
-    await verifyServerConnection();
     try {
       setStatus(true);
 
@@ -439,7 +388,7 @@ class AuthController extends GetxController {
 
       final enteredHash = hashAccessCode(enteredCode);
       isLoggedIn = storedHash == enteredHash;
-      return storedHash == enteredHash;
+      return isLoggedIn;
     } catch (e) {
       print('Error validating access code: $e');
       isLoggedIn = false;
@@ -506,7 +455,6 @@ class AuthController extends GetxController {
 
   Future<void> verifyCode(String code) async {
     setStatus(true);
-    await verifyServerConnection();
     try {
       final response = await DioRetryHelper.retryRequest(
           () => dio.post('/auth/verify-code', data: {

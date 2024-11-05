@@ -10,6 +10,12 @@ class DioRetryHelper {
       try {
         return await request();
       } on DioException catch (e) {
+        print('DioException details:');
+        print('Status code: ${e.response?.statusCode}');
+        print('Response data: ${e.response?.data}');
+        print('Request path: ${e.requestOptions.path}');
+        print('Request data: ${e.requestOptions.data}');
+
         attempts++;
         if (attempts == maxRetries) rethrow;
         if (e.response?.statusCode == 502 ||

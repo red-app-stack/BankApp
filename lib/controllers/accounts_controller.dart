@@ -43,12 +43,6 @@ class AccountsController extends GetxController {
 
   AccountsController({required this.dio});
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchAccounts();
-  }
-
   Future<void> fetchAccounts() async {
     try {
       print('fetching.');
@@ -96,7 +90,7 @@ class AccountsController extends GetxController {
           ));
 
       if (response.statusCode == 201) {
-        await fetchAccounts(); // Refresh accounts list
+        await fetchAccounts();
         return true;
       }
       return false;
