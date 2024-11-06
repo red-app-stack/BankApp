@@ -393,8 +393,8 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           _authController.isAuthenticated = true;
           _authController.isLoggedIn = true;
           Get.back(); // Close code entering screen
-          Get.find<AccountsController>().fetchAccounts();
           Get.until((route) => Get.currentRoute == '/main');
+          Get.find<AccountsController>().fetchAccounts();
         }
       } else {
         final isValid = await _authController.validateAccessCode(_enteredCode);

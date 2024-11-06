@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:bank_app/services/interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -202,6 +201,39 @@ class AuthController extends GetxController {
         isPasswordCorrect.value = true;
         isCreatingCode = true;
         Get.offNamed('/codeEntering');
+      } else {
+        isPasswordCorrect.value = false;
+      }
+    } on DioException catch (e) {
+      isPasswordCorrect.value = false;
+      _handleApiError(e);
+    } finally {
+      setStatus(false);
+    }
+  }
+
+  Future<void> login2() async {
+    if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
+      Get.snackbar('Ошибка', 'Заполните все поля');
+      return;
+    }
+
+    try {
+      setStatus(true);
+      final response = await DioRetryHelper.retryRequest(
+          () => dio.post('/auth/login', data: {
+                'email': email.value.text.trim(),
+                'password': password.value.text.trim(),
+              }));
+
+      if (response.statusCode == 200) {
+        print('Got The Data, storing');
+        final token = response.data['token'];
+        final userData = response.data['user'];
+
+        print('Token: $token');
+        print('User Data: $userData');
+        await _securelyStoreCredentials(token, userData);
       } else {
         isPasswordCorrect.value = false;
       }

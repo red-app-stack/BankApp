@@ -44,7 +44,6 @@ class AccountsScreenController extends GetxController {
   void onInit() {
     super.onInit();
     ever(accountsController.accounts, (_) => updateBankCards());
-    fetchAndUpdateCards();
   }
 
   void fetchAndUpdateCards() async {
@@ -160,8 +159,6 @@ class AccountsScreen extends StatelessWidget {
                             const Spacer(),
                             _controller.bankCards.length > 1
                                 ? Obx(() => SizedBox(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.3, // Constrain width
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,

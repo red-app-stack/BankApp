@@ -1,7 +1,10 @@
+import 'package:bank_app/services/server_check_helper.dart';
 import 'package:dio/dio.dart';
+import 'package:get/instance_manager.dart';
 
 class DioRetryHelper {
   static const int maxRetries = 5;
+  static final ServerHealthService serverHealthService = Get.find();
 
   static Future<Response<T>> retryRequest<T>(
       Future<Response<T>> Function() request) async {
@@ -12,6 +15,7 @@ class DioRetryHelper {
       } on DioException catch (e) {
         print('DioException details:');
         print('Status code: ${e.response?.statusCode}');
+        if (e.response?.statusCode == null) {}
         print('Response data: ${e.response?.data}');
         print('Request path: ${e.requestOptions.path}');
         print('Request data: ${e.requestOptions.data}');
@@ -20,8 +24,10 @@ class DioRetryHelper {
         if (attempts == maxRetries) rethrow;
         if (e.response?.statusCode == 502 ||
             e.type == DioExceptionType.connectionTimeout) {
-          await Future.delayed(Duration(seconds: 1));
+          await serverHealthService.findFastestServer();
           continue;
+        } else if (e.response?.statusCode == null) {
+          await serverHealthService.findFastestServer();
         }
         rethrow;
       }
