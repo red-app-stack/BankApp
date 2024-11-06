@@ -42,7 +42,7 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
       useBiometrics: switchStates['assets/icons/ic_fingerprint.svg'] ?? false,
       screenProtection:
           switchStates['assets/icons/ic_screen_protect.svg'] ?? true,
-      biometricOperations: switchStates['assets/icons/ic_face.svg'] ?? true,
+      biometricOperations: switchStates['assets/icons/ic_face.svg'] ?? false,
     );
     await secureStore.saveSettings(settings);
   }

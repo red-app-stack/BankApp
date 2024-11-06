@@ -86,7 +86,7 @@ class AuthController extends GetxController {
     isCheckingAuth = true;
     try {
       bool tokenFound = await userService.tokenFound();
-      print('TOKEN FOUND: $tokenFound');
+      print('Auth token found: $tokenFound');
       if (tokenFound) {
         await checkServer();
         isAuthenticated = await userService.checkAuthentication();

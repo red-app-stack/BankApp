@@ -24,11 +24,12 @@ Future<void> main() async {
   final serverHealthService = ServerHealthService();
   Get.put(serverHealthService);
   final baseUrl = await serverHealthService.findFastestServer();
+  print('Fastest: $baseUrl');
   final dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: Duration(seconds: 15),
     receiveTimeout: Duration(seconds: 15),
-    validateStatus: (status) => true, // Accept all status codes initially
+    validateStatus: (status) => true,
   ));
   dio.interceptors.add(AuthInterceptor());
   
@@ -36,7 +37,10 @@ Future<void> main() async {
   final userService = UserService(dio: dio);
   Get.put(userService);
   Get.put(AccountsController(dio: dio));
-  AuthController authController = Get.put(AuthController());
+  Get.put(AuthController());
+
+  final themeController = Get.put(ThemeController());
+  await themeController.loadSavedSettings();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -44,16 +48,11 @@ Future<void> main() async {
     statusBarBrightness: Brightness.light,
   ));
 
-  await userService.fetchUserProfile();
-  await authController.checkAuthStatus();
   final endTime = DateTime.now();
   final timePassed = endTime.difference(startTime);
   if (timePassed.inSeconds < 2) {
     await Future.delayed(Duration(seconds: 2 - timePassed.inSeconds));
   }
-
-  final themeController = Get.put(ThemeController());
-  await themeController.loadSavedSettings();
 
   FlutterNativeSplash.remove();
 

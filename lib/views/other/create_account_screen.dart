@@ -236,4 +236,5 @@ class CreateAccountScreen extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -8,7 +8,7 @@ import 'dio_helper.dart';
 class UserService extends GetxController {
   final Dio dio;
   final secureStore = Get.find<SecureStore>();
-
+  bool? isTokenFound;
   // Observable user data
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
   UserModel? get currentUser => _currentUser.value;
@@ -17,6 +17,7 @@ class UserService extends GetxController {
   UserService({required this.dio});
 
   Future<UserModel?> fetchUserProfile() async {
+    print('Fetching user profile');
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token == null) {
@@ -34,14 +35,18 @@ class UserService extends GetxController {
       if (response.statusCode == 200) {
         final userData = response.data;
         final userModel = UserModel.fromJson(userData);
+        print('Got user: $userModel');
         await storeUserLocally(userModel); // Store user data locally
         return userModel; // Return the user model
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        await userLogout(); // Logout if token is invalid
+        print('Got error: $e');
+        await userLogout();
       }
       print('Error fetching user profile: ${e.message}');
+    } finally {
+      print('Done checking');
     }
     return null; // Return null if fetching fails
   }
@@ -114,8 +119,13 @@ class UserService extends GetxController {
 
   Future<bool> tokenFound() async {
     final token = await secureStore.secureStorage.read(key: 'auth_token');
-    if (token == null) return false;
-    return true;
+    if (token == null) {
+      isTokenFound = false;
+      return false;
+    } else {
+      isTokenFound = true;
+      return true;
+    }
   }
 
   // Check if user is authenticated
@@ -123,7 +133,13 @@ class UserService extends GetxController {
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       print('Token found: ${token != null}'); // Add this debug line
-      if (token == null) return false;
+
+      if (token == null) {
+        isTokenFound = false;
+        return false;
+      } else {
+        isTokenFound = true;
+      }
 
       final response = await DioRetryHelper.retryRequest(() => dio.get(
             '/auth/verify',
@@ -132,11 +148,15 @@ class UserService extends GetxController {
                 'Authorization': 'Bearer $token',
               },
             ),
-          ));
-      print('Auth response: ${response.statusCode}'); // Add this debug line
-      return response.statusCode == 200;
+          )
+          );
+      print('Auth response: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
     } catch (e) {
-      print('Auth check failed: $e'); // Add this debug line
+      print('Auth check failed: $e');
       return false;
     }
   }

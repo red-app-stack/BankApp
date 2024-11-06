@@ -1,11 +1,12 @@
 import 'package:bank_app/controllers/accounts_controller.dart';
+import 'package:bank_app/views/other/settings_screen.dart';
+import 'package:bank_app/views/shared/user_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
-
 import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
 import '../shared/widgets.dart';
@@ -32,9 +33,11 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   @override
   void initState() {
     //  Аутентификация при запуске по условию что пользователь ее включил
-    // Future.delayed(const Duration(seconds: 2), () {
-    //   _authenticateWithBiometrics();
-    // });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_authController.secureStore.currentSettings?.useBiometrics == true) {
+        _authenticateWithBiometrics();
+      }
+    });
     super.initState();
   }
 
@@ -329,6 +332,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Future<void> _authenticateWithBiometrics() async {
     bool authenticated = false;
+    if (_authController.secureStore.currentSettings?.useBiometrics != true) {
+      await _showBiometricDialog();
+    }
     try {
       bool canCheckBiometrics = await _auth.canCheckBiometrics;
       if (canCheckBiometrics) {
@@ -369,14 +375,61 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     if (authenticated) {
       _authController.isAuthenticated = true;
       _authController.isLoggedIn = true;
-      Get.back();
-      Get.until((route) => Get.currentRoute == '/main');
+      _handleMainNavigation();
       Get.find<AccountsController>().fetchAccounts();
       print("Authentication successful!");
     } else {
       _authController.isLoggedIn = false;
       print("Authentication failed.");
     }
+  }
+
+  Future<void> _showBiometricDialog() async {
+    final theme = Theme.of(Get.context!); // Access the theme
+
+    return showDialog<void>(
+      context: Get.context!,
+      barrierDismissible: false, // User must tap one of the buttons
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Biometric Authentication',
+            style: theme.textTheme.titleLarge, // Use theme text style
+          ),
+          content: Text(
+            'Do you want to use Biometric Authentication?',
+            style: theme.textTheme.bodyMedium, // Use theme text style
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: theme.textButtonTheme.style,
+              child: Text(
+                'No',
+                
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                final currentSettings =
+                    await _authController.secureStore.loadSettings() ??
+                        UserSettings.defaults();
+                final updatedSettings =
+                    currentSettings.copyWith(useBiometrics: true);
+                _authController.secureStore.saveSettings(updatedSettings);
+                Navigator.of(context).pop();
+              },
+              style: theme.textButtonTheme.style,
+              child: Text(
+                'Yes',
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _handleCodeEntry() async {
@@ -392,21 +445,27 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           _authController.isCreatingCode = false;
           _authController.isAuthenticated = true;
           _authController.isLoggedIn = true;
-          Get.back(); // Close code entering screen
-          Get.until((route) => Get.currentRoute == '/main');
+          _handleMainNavigation();
           Get.find<AccountsController>().fetchAccounts();
         }
       } else {
         final isValid = await _authController.validateAccessCode(_enteredCode);
         if (isValid) {
-          Get.back();
-          Get.until((route) => Get.currentRoute == '/main');
+          _handleMainNavigation();
           Get.find<AccountsController>().fetchAccounts();
         } else {
           setState(() => _enteredCode = '');
           Get.snackbar('Ошибка', 'Неверный код доступа');
         }
       }
+    }
+  }
+
+  void _handleMainNavigation() {
+    if (Get.currentRoute != '/main') {
+      Get.offNamed('/main');
+    } else {
+      Get.offAllNamed('/main');
     }
   }
 

@@ -307,10 +307,16 @@ class AccountsScreen extends StatelessWidget {
                   height: size.height * 0.02,
                 ),
                 Center(
-                  child: SvgPicture.asset(
-                    'assets/icons/illustration_accounts.svg',
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: MediaQuery.of(context).size.height * 0.4,
+                  child: SizedBox(
+                    height: size.height * 0.3,
+                    child: (theme.brightness == Brightness.dark)
+                        ? Container()
+                        : SvgPicture.asset(
+                            'assets/icons/illustration_accounts.svg',
+                            width: MediaQuery.of(context).size.width * 0.85,
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            fit: BoxFit.contain, // old, do i remove it?
+                          ),
                   ),
                 ),
                 SizedBox(

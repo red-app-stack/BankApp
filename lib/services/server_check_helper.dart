@@ -45,7 +45,7 @@ class ServerHealthService {
           .key;
       return _currentBaseUrl != ''
           ? _currentBaseUrl
-          : dotenv.env['API_URL_2'] ?? '';
+          : dotenv.env['API_URL_1'] ?? '';
     }
 
     return urls[0];

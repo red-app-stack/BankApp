@@ -296,10 +296,12 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                     tag: 'ic_login',
                     child: SizedBox(
                       height: size.height * 0.3,
-                      child: SvgPicture.asset(
-                        'assets/icons/illustration_login.svg',
-                        fit: BoxFit.contain,
-                      ),
+                      child: (theme.brightness == Brightness.dark)
+                          ? Container()
+                          : SvgPicture.asset(
+                              'assets/icons/illustration_login.svg',
+                              fit: BoxFit.contain,
+                            ),
                     ),
                   ),
                 ),

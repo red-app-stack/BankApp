@@ -6,6 +6,7 @@ import 'user_settings.dart';
 class SecureStore extends GetxController {
   static const String settingsKey = 'user_settings';
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+  UserSettings? currentSettings;
 
   @override
   void onInit() {
@@ -27,14 +28,21 @@ class SecureStore extends GetxController {
 
   Future<void> saveSettings(UserSettings settings) async {
     final settingsJson = jsonEncode(settings.toJson());
+    currentSettings = settings;
     await secureStore(settingsKey, settingsJson);
   }
 
   Future<UserSettings?> loadSettings() async {
-    final settingsJson = await secureRead(settingsKey);
-    if (settingsJson != null) {
-      return UserSettings.fromJson(jsonDecode(settingsJson));
+    if (currentSettings == null) {
+      final settingsJson = await secureRead(settingsKey);
+      if (settingsJson != null) {
+        currentSettings = UserSettings.fromJson(jsonDecode(settingsJson));
+        return currentSettings;
+      }
+      currentSettings = null;
+      return null;
+    } else {
+      return currentSettings;
     }
-    return null;
   }
 }

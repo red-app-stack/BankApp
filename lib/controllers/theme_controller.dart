@@ -7,7 +7,7 @@ import '../views/shared/user_settings.dart';
 class ThemeController extends GetxController {
   final secureStore = Get.find<SecureStore>();
   var themeMode = ThemeMode.system.obs;
-
+  
   @override
   void onInit() {
     super.onInit();

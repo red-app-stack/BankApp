@@ -83,11 +83,14 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SizedBox(height: size.height * 0.08),
                 Center(
-                  child: SvgPicture.asset(
-                    'assets/icons/illustration_home.svg',
-                    height: size.height * 0.4,
-                    width: size.width * 0.8,
-                  ),
+                  child: (theme.brightness == Brightness.dark)
+                      ? Container()
+                      : SvgPicture.asset(
+                          'assets/icons/illustration_home.svg',
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          fit: BoxFit.contain, // old, do i remove it?
+                        ),
                 ),
               ],
             ),
@@ -111,9 +114,9 @@ class HomeScreen extends StatelessWidget {
             svgPath == 'assets/icons/installment.svg'
                 ? {
                     controller._authController.email.value.text =
-                        '1234@gmail.com',
+                        'redapp.stack@gmail.com',
                     controller._authController.password.value.text =
-                        '1234',
+                        'vd500713044_B',
                     controller._authController.login(),
                   }
                 : null;
