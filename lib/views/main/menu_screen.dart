@@ -95,16 +95,18 @@ class MenuScreen extends StatelessWidget {
                                   item: item,
                                   theme: theme,
                                   isLast: section.items.last == item,
-                                  onDoubleTap: (item.icon ==
-                                          'assets/icons/ic_phone.svg')
-                                      ? () {
-                                          _authController.email.value.text =
-                                              'redapp.stack@gmail.com';
-                                          _authController.password.value.text =
-                                              'vd500713044_B';
-                                          _authController.login();
-                                        }
-                                      : (item.icon ==
+                                  onDoubleTap: 
+                                  
+                                  // (item.icon ==
+                                  //         'assets/icons/ic_phone.svg')
+                                  //     ? () {
+                                  //         _authController.email.value.text =
+                                  //             'redapp.stack@gmail.com';
+                                  //         _authController.password.value.text =
+                                  //             'vd500713044_B';
+                                  //         _authController.login();
+                                  //       }: 
+                                        (item.icon ==
                                               'assets/icons/ic_branch.svg')
                                           ? () {
                                               Get.find<AccountsController>()
