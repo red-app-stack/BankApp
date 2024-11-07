@@ -134,11 +134,6 @@ class HomeScreen extends StatelessWidget {
                           }
                         : svgPath == 'assets/icons/installment.svg'
                             ? {
-                                // controller._authController.email.value.text =
-                                //     'redapp.stack@gmail.com',
-                                // controller._authController.password.value.text =
-                                //     'vd500713044_B',
-                                // controller._authController.login(),
                               }
                             : null;
           },
