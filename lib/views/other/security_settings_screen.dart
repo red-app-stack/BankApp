@@ -86,7 +86,9 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: SafeArea(
+        body: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Card(
@@ -165,7 +167,7 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildMenuItem({
