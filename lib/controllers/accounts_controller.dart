@@ -98,6 +98,9 @@ class AccountsController extends GetxController {
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
   final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
+  final Rx<List<Transaction>?> transactionHistory =
+      Rx<List<Transaction>?>(null);
+
   RxList<AccountModel> accounts = <AccountModel>[].obs;
   RxBool isLoading = false.obs;
 
@@ -338,34 +341,36 @@ class AccountsController extends GetxController {
     }
   }
 
-  Future<List<Transaction>> fetchTransactionHistory(String accountId) async {
+  Future<List<Transaction>> fetchTransactionHistory(
+      String accountNumber) async {
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token == null) return [];
 
       final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '/transactions/history/$accountId',
+            '/transactions/history/$accountNumber',
             options: Options(
               headers: {'Authorization': 'Bearer $token'},
             ),
           ));
 
-      if (response.statusCode == 200) {
-        return (response.data as List)
-            .map((transaction) => Transaction(
-                  id: (response.data as List).indexOf(transaction),
-                  fromAccount: transaction['from_account_number'] ?? '',
-                  toAccount: transaction['to_account_number'] ?? '',
-                  reference: transaction['transaction_reference'],
-                  amount: double.parse(transaction['amount'].toString()),
-                  currency: transaction['currency'],
-                  type: transaction['transaction_type'],
-                  status: transaction['status'],
-                  createdAt: DateTime.parse(transaction['created_at']),
-                  fromUserName: transaction['from_user_name'],
-                  toUserName: transaction['to_user_name'],
-                ))
-            .toList();
+      if (response.statusCode == 200 && response.data is List) {
+        transactionHistory.value = (response.data as List).map((transaction) {
+          return Transaction(
+            id: (response.data as List).indexOf(transaction),
+            fromAccount: transaction['from_account_number'] ?? '',
+            toAccount: transaction['to_account_number'] ?? '',
+            reference: transaction['transaction_reference'],
+            amount: double.parse(transaction['amount'].toString()),
+            currency: transaction['currency'],
+            type: transaction['transaction_type'],
+            status: transaction['status'],
+            createdAt: DateTime.parse(transaction['created_at']),
+            fromUserName: transaction['from_user_name'] ?? '',
+            toUserName: transaction['to_user_name'] ?? '',
+          );
+        }).toList();
+        return transactionHistory.value!;
       }
       return [];
     } catch (e) {
