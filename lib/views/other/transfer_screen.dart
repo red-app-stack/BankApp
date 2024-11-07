@@ -197,7 +197,7 @@ class PhoneTransferScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 32),
+              SizedBox(height: size.height * 0.05),
               _buildCardSelector(theme),
               SizedBox(height: size.height * 0.02),
               _buildPhoneInput(theme),

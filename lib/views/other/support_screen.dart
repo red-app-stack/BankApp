@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -25,6 +27,17 @@ class SupportScreen extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
+                child: RefreshIndicator(
+              onRefresh: () async {
+                try {
+                  await Future.delayed(const Duration(milliseconds: 500));
+                } on TimeoutException {
+                  print('Refresh operation timed out');
+                } catch (e) {
+                  print('Error during refresh: $e');
+                }
+                return Future.value();
+              },
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -51,7 +64,7 @@ class SupportScreen extends StatelessWidget {
                   ])),
                 ),
               ),
-            ),
+            )),
             Padding(
               padding: const EdgeInsets.only(bottom: 48, left: 16, right: 16),
               child: _buildTextBarIcons(theme),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -35,69 +37,80 @@ class HomeScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Главная',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[0],
-                            label: 'Карты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[1],
-                            label: 'Депозиты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[2],
-                            label: 'Кредиты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[3],
-                            label: 'Рассрочка',
-                            theme: theme),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.08),
-                Center(
-                  child: (theme.brightness == Brightness.dark)
-                      ? Container()
-                      : SvgPicture.asset(
-                          'assets/icons/illustration_home.svg',
-                          fit: BoxFit.contain,
+        backgroundColor: colorScheme.surface,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              try {
+                await Future.delayed(const Duration(milliseconds: 500));
+              } on TimeoutException {
+                print('Refresh operation timed out');
+              } catch (e) {
+                print('Error during refresh: $e');
+              }
+              return Future.value();
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Главная',
+                              style: theme.textTheme.titleLarge,
+                            )
+                          ],
                         ),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildServiceItem(
+                                svgPath: controller.homeIconPaths[0],
+                                label: 'Карты',
+                                theme: theme),
+                            _buildServiceItem(
+                                svgPath: controller.homeIconPaths[1],
+                                label: 'Депозиты',
+                                theme: theme),
+                            _buildServiceItem(
+                                svgPath: controller.homeIconPaths[2],
+                                label: 'Кредиты',
+                                theme: theme),
+                            _buildServiceItem(
+                                svgPath: controller.homeIconPaths[3],
+                                label: 'Рассрочка',
+                                theme: theme),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.08),
+                    Center(
+                      child: (theme.brightness == Brightness.dark)
+                          ? Container()
+                          : SvgPicture.asset(
+                              'assets/icons/illustration_home.svg',
+                              fit: BoxFit.contain,
+                            ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildServiceItem({
@@ -133,8 +146,7 @@ class HomeScreen extends StatelessWidget {
                             )
                           }
                         : svgPath == 'assets/icons/installment.svg'
-                            ? {
-                              }
+                            ? {}
                             : null;
           },
           borderRadius: BorderRadius.circular(12),

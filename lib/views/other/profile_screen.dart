@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -101,64 +103,75 @@ class ProfileScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-            child: Center(
-                child: Column(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Профиль',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                buildUserCard(_userService, theme, size),
-                SizedBox(height: size.height * 0.02),
-                ...sections.map((section) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Card(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (section.title != null)
-                                Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Text(
-                                    section.title!,
-                                    style: theme.textTheme.bodyLarge,
-                                  ),
-                                ),
-                              ...section.items.map((item) => _buildMenuItem(
-                                    item: item,
-                                    theme: theme,
-                                    isLast: section.items.last == item,
-                                  ))
-                            ],
-                          ),
+        backgroundColor: colorScheme.surface,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              try {
+                await Future.delayed(const Duration(milliseconds: 500));
+              } on TimeoutException {
+                print('Refresh operation timed out');
+              } catch (e) {
+                print('Error during refresh: $e');
+              }
+              return Future.value();
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                child: Center(
+                    child: Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Профиль',
+                              style: theme.textTheme.titleLarge,
+                            )
+                          ],
                         ),
-                        SizedBox(height: size.height * 0.02),
-                      ],
-                    )),
-                SizedBox(height: size.height * 0.03),
-              ],
-            )),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    buildUserCard(_userService, theme, size),
+                    SizedBox(height: size.height * 0.02),
+                    ...sections.map((section) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (section.title != null)
+                                    Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Text(
+                                        section.title!,
+                                        style: theme.textTheme.bodyLarge,
+                                      ),
+                                    ),
+                                  ...section.items.map((item) => _buildMenuItem(
+                                        item: item,
+                                        theme: theme,
+                                        isLast: section.items.last == item,
+                                      ))
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: size.height * 0.02),
+                          ],
+                        )),
+                    SizedBox(height: size.height * 0.03),
+                  ],
+                )),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildMenuItem({

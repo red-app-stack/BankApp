@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -32,121 +34,130 @@ class PaymentsScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Платежи',
-                          style: theme.textTheme.titleLarge,
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text('История',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.primary) ??
-                                  theme.textTheme.bodyMedium),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Row(
+        backgroundColor: colorScheme.surface,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              try {
+                await Future.delayed(const Duration(milliseconds: 500));
+              } on TimeoutException {
+                print('Refresh operation timed out');
+              } catch (e) {
+                print('Error during refresh: $e');
+              }
+              return Future.value();
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Популярное',
+                              'Платежи',
+                              style: theme.textTheme.titleLarge,
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: Text('История',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.primary) ??
+                                      theme.textTheme.bodyMedium),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Популярное',
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                                Text(
+                                  'г. Тараз',
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: size.height * 0.02),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildServiceItem(
+                                    svgPath: controller.popularIconPaths[0],
+                                    label: 'Связь',
+                                    theme: theme),
+                                _buildServiceItem(
+                                    svgPath: controller.popularIconPaths[1],
+                                    label: 'Интернет',
+                                    theme: theme),
+                                _buildServiceItem(
+                                    svgPath: controller.popularIconPaths[2],
+                                    label: 'Транспорт',
+                                    theme: theme),
+                                _buildServiceItem(
+                                    svgPath: controller.popularIconPaths[3],
+                                    label: 'Ком. услуги',
+                                    theme: theme),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Избранное',
                               style: theme.textTheme.titleMedium,
                             ),
-                            Text(
-                              'г. Тараз',
-                              style: theme.textTheme.bodyMedium,
+                            SizedBox(height: size.height * 0.02),
+                            _buildFavoriteItem(
+                              svgPath: controller.popularIconPaths[0],
+                              title: 'Мобильная связь',
+                              subtitle: 'Beeline, +7 777 123 45 67',
+                              theme: theme,
+                            ),
+                            _buildFavoriteItem(
+                              svgPath: controller.popularIconPaths[1],
+                              title: 'Домашний интернет',
+                              subtitle: 'ID: 123456789',
+                              theme: theme,
+                            ),
+                            _buildFavoriteItem(
+                              svgPath: controller.popularIconPaths[3],
+                              title: 'Коммунальные услуги',
+                              subtitle: 'Лицевой счет: 987654321',
+                              theme: theme,
                             ),
                           ],
                         ),
-                        SizedBox(height: size.height * 0.02),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildServiceItem(
-                                svgPath: controller.popularIconPaths[0],
-                                label: 'Связь',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.popularIconPaths[1],
-                                label: 'Интернет',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.popularIconPaths[2],
-                                label: 'Транспорт',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.popularIconPaths[3],
-                                label: 'Ком. услуги',
-                                theme: theme),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(height: size.height * 0.02),
-
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Избранное',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        SizedBox(height: size.height * 0.02),
-                        _buildFavoriteItem(
-                          svgPath: controller.popularIconPaths[0],
-                          title: 'Мобильная связь',
-                          subtitle: 'Beeline, +7 777 123 45 67',
-                          theme: theme,
-                        ),
-                        _buildFavoriteItem(
-                          svgPath: controller.popularIconPaths[1],
-                          title: 'Домашний интернет',
-                          subtitle: 'ID: 123456789',
-                          theme: theme,
-                        ),
-                        _buildFavoriteItem(
-                          svgPath: controller.popularIconPaths[3],
-                          title: 'Коммунальные услуги',
-                          subtitle: 'Лицевой счет: 987654321',
-                          theme: theme,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildServiceItem({

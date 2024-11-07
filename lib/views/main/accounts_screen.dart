@@ -58,14 +58,13 @@ class AccountsScreenController extends GetxController {
   void updateBankCards() {
     print(
         'Updating bank cards with ${accountsController.accounts.length} accounts');
-    if (accountsController.accounts.isEmpty) return;
+    if (accountsController.accounts.isEmpty) {
+      debits.clear();
+      deposits.clear();
+      credits.clear();
+      return;
+    }
 
-    // Clear existing lists
-    debits.clear();
-    deposits.clear();
-    credits.clear();
-
-    // Sort accounts into appropriate lists
     for (AccountModel account in accountsController.accounts) {
       final bankCard = BankCard(
         name: userService.currentUser?.fullName ?? '',
@@ -158,18 +157,9 @@ class AccountsScreen extends StatelessWidget {
               const timeout = Duration(seconds: 10);
               try {
                 await Future.any([
-                  _controller.debits.stream
-                      .where((list) => list != null)
-                      .timeout(timeout)
-                      .first,
-                  _controller.credits.stream
-                      .where((list) => list != null)
-                      .timeout(timeout)
-                      .first,
-                  _controller.deposits.stream
-                      .where((list) => list != null)
-                      .timeout(timeout)
-                      .first,
+                  _controller.debits.stream.timeout(timeout).first,
+                  _controller.credits.stream.timeout(timeout).first,
+                  _controller.deposits.stream.timeout(timeout).first,
                 ]).timeout(timeout);
 
                 await Future.delayed(const Duration(milliseconds: 300));
