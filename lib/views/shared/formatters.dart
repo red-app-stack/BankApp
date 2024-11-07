@@ -16,6 +16,19 @@ String formatCurrency(double amount, String currencyCode, String locale) {
   return formatter.format(amount);
 }
 
+String formatAccountType(String type) {
+  switch (type.toLowerCase()) {
+    case 'card':
+      return 'карта';
+    case 'deposit':
+      return 'депозит';
+    case 'credit':
+      return 'кредит';
+    default:
+      return type;
+  }
+}
+
 String getCurrencySymbol(String currencyCode) {
   switch (currencyCode) {
     case 'USD':
@@ -27,4 +40,11 @@ String getCurrencySymbol(String currencyCode) {
     default:
       return currencyCode;
   }
+}
+
+String censorCardNumber(String cardNumber) {
+  if (cardNumber.length < 8) {
+    return cardNumber; // Fallback if the card number is too short
+  }
+  return '${cardNumber.substring(0, 4)} •••• •••• ${cardNumber.substring(cardNumber.length - 4)}';
 }

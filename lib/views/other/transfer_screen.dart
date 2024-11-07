@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
@@ -5,10 +6,8 @@ import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
-import '../shared/formatters.dart';
 
 class CardModel {
   final String icon;
@@ -29,18 +28,19 @@ class CardModel {
 class PhoneTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
-  final RxList<CardModel> cards = <CardModel>[].obs;
+  // final RxList<CardModel> cards = <CardModel>[].obs;
 
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
 
-  final Rx<CardModel?> selectedCard = Rx<CardModel?>(null);
+  final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
+  final Rx<AccountModel?> recipientAccount = Rx<AccountModel?>(null);
   final RxString phoneNumber = ''.obs;
   final RxString formattedPhoneNumber = ''.obs;
   final RxString amount = ''.obs;
   String previousNumber = '';
   final RxString formattedAmount = ''.obs;
-  final RxBool isCardDropdownExpanded = false.obs;
+  final RxBool isAccountDropdownExpanded = false.obs;
 
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -51,33 +51,25 @@ class PhoneTransferController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadCards();
+    _initializeSelectedAccount();
     amountController.text = '0';
     updateAmount('0');
   }
 
-  void _loadCards() {
-    cards.clear();
-    for (var account in accountsController.accounts) {
-      cards.add(CardModel(
-        icon: 'assets/icons/card.svg',
-        title: '${account.accountType.capitalizeFirst} счет',
-        balance: formatCurrency(account.balance, account.currency, 'ru_RU'),
-        cardNumber: account.accountNumber,
-        altBalances: [], // Can be expanded to show other currency balances
-      ));
-    }
-    if (cards.isNotEmpty) {
-      selectedCard.value = cards.first;
+  void _initializeSelectedAccount() {
+    if (accountsController.accounts.isNotEmpty) {
+      selectedAccount.value = accountsController.accounts.first;
     }
   }
 
   void refreshCards() {
-    accountsController.fetchAccounts().then((_) => _loadCards());
+    accountsController
+        .fetchAccounts()
+        .then((_) => _initializeSelectedAccount());
   }
 
   void updatePhoneNumber(String value) {
-    int cursorPosition = phoneController.selection.start;
+    int cursorPosition = phoneController.value.selection.start;
 
     String oldDigits =
         _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
@@ -90,12 +82,9 @@ class PhoneTransferController extends GetxController {
         formatted = '($newDigits';
       } else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
-      } else if (newDigits.length <= 8) {
-        formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6)}';
       } else {
         formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, min(10, newDigits.length))}';
+            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, min(10, newDigits.length))}';
       }
     }
 
@@ -110,7 +99,10 @@ class PhoneTransferController extends GetxController {
       text: formatted,
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
-
+    if (formatted.length == 7) {
+      print(formatted.length);
+    }
+    print(formatted);
     _previousPhoneValue = int.tryParse(formatted) ?? 0;
   }
 
@@ -190,54 +182,133 @@ class PhoneTransferScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: size.height * 0.05),
-              _buildCardSelector(theme),
-              SizedBox(height: size.height * 0.02),
-              _buildPhoneInput(theme),
-              SizedBox(height: size.height * 0.02),
-              _buildAmountInput(theme),
-              SizedBox(height: size.height * 0.02),
-              Obx(() {
-                final amount = controller.amount.value.isEmpty
-                    ? 0
-                    : int.parse(controller.amount.value);
+        backgroundColor: theme.colorScheme.surface,
+        body: SafeArea(
+            child: RefreshIndicator(
+          onRefresh: () async {
+            try {
+              await Future.delayed(const Duration(milliseconds: 500));
+            } on TimeoutException {
+              print('Refresh operation timed out');
+            } catch (e) {
+              print('Error during refresh: $e');
+            }
+            return Future.value();
+          },
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  SizedBox(height: size.height * 0.02),
+                  _buildCardSelector(theme),
+                  SizedBox(height: size.height * 0.02),
+                  _buildPhoneInput(theme),
+                  SizedBox(height: size.height * 0.02),
+                  _buildAmountInput(theme),
+                  SizedBox(height: size.height * 0.02),
+                  Obx(() {
+                    final amount = controller.amount.value.isEmpty
+                        ? 0
+                        : int.parse(controller.amount.value);
 
-                final formattedAmount = amount.toString().replaceAllMapped(
-                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                      (Match m) => '${m[1]} ',
+                    final formattedAmount = amount.toString().replaceAllMapped(
+                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                          (Match m) => '${m[1]} ',
+                        );
+
+                    return ElevatedButton(
+                      onPressed: () async {
+                        if (controller.selectedAccount.value == null) {
+                          Get.snackbar('Error', 'Please select a card');
+                          return;
+                        }
+
+                        String phoneNumber = controller.phoneController.text
+                            .replaceAll(RegExp(r'\D'), '');
+                        if (phoneNumber.isEmpty) {
+                          Get.snackbar('Error', 'Please enter phone number');
+                          return;
+                        }
+
+                        if (controller.amount.value.isEmpty ||
+                            controller.amount.value == '0') {
+                          Get.snackbar('Error', 'Please enter amount');
+                          return;
+                        }
+
+                        // First lookup recipient account by phone
+                        if (controller.recipientAccount.value == null) {
+                          Get.snackbar('Error', 'Recipient account not found');
+                          return;
+                        }
+
+                        // Proceed with transfer using found account
+                        final success = await controller.accountsController
+                            .createTransaction(
+                                controller.selectedAccount.value!.accountNumber,
+                                controller
+                                    .recipientAccount.value!.accountNumber,
+                                double.parse(controller.amount.value),
+                                controller.selectedAccount.value!.currency);
+
+                        if (success) {
+                          Get.snackbar('Success', 'Transfer completed');
+                          controller.refreshCards();
+                        } else {
+                          Get.snackbar('Error', 'Transfer failed');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                      ),
+                      child: Text('Перевести $formattedAmount ₸',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: theme.colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontFamily: 'Roboto',
+                          )),
                     );
+                  })
+                ],
+              ),
+            ),
+          ),
+        )));
+  }
 
-                return ElevatedButton(
-                  onPressed: () async {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text('Перевести $formattedAmount ₸',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        fontFamily: 'Roboto',
-                      )),
-                );
-              })
-            ],
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        IconButton(
+            icon: SvgPicture.asset(
+              'assets/icons/ic_back.svg',
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.primary,
+                BlendMode.srcIn,
+              ),
+            ),
+            onPressed: () => {
+                  FocusScope.of(context).unfocus(),
+                  Get.back(),
+                }),
+        Expanded(
+          child: Text(
+            'Перевод по номеру телефона',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildCardSelector(ThemeData theme) {
     return Obx(() {
-      if (controller.cards.isEmpty) {
+      if (controller.accountsController.accounts.isEmpty) {
         return Card(
           child: Padding(
             padding: EdgeInsets.all(16),
@@ -249,14 +320,14 @@ class PhoneTransferScreen extends StatelessWidget {
         );
       }
       return AnimatedCardDropdown(
-        cards: controller.cards,
-        selectedCard: controller.selectedCard.value,
-        isExpanded: controller.isCardDropdownExpanded.value,
-        onCardSelected: (card) {
-          controller.selectedCard.value = card;
-          controller.isCardDropdownExpanded.value = false;
+        accounts: controller.accountsController.accounts,
+        selectedAccount: controller.selectedAccount.value,
+        isExpanded: controller.isAccountDropdownExpanded.value,
+        onAccountSelected: (account) {
+          controller.selectedAccount.value = account;
+          controller.isAccountDropdownExpanded.value = false;
         },
-        onToggle: () => controller.isCardDropdownExpanded.toggle(),
+        onToggle: () => controller.isAccountDropdownExpanded.toggle(),
       );
     });
   }
@@ -294,7 +365,7 @@ class PhoneTransferScreen extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 style: theme.textTheme.titleMedium,
                 decoration: InputDecoration(
-                  hintText: '(000) 000-00-00',
+                  hintText: '(000) 000-0000',
                   border: InputBorder.none,
                 ),
                 onChanged: controller.updatePhoneNumber,

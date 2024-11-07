@@ -88,7 +88,7 @@ class CreateAccountScreenState extends State<CreateAccountScreen> {
                 }),
         Expanded(
           child: Text(
-            'Открыть ${formatAccountType(controller.accountType.value)}',
+            'Открыть ${_formatAccountType(controller.accountType.value)}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
@@ -96,7 +96,7 @@ class CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  String formatAccountType(String type) {
+  String _formatAccountType(String type) {
     switch (type.toLowerCase()) {
       case 'card':
         return 'карту';
@@ -382,7 +382,7 @@ class CreateAccountScreenState extends State<CreateAccountScreen> {
                       ),
                     )
                   : Text(
-                      'Открыть ${formatAccountType(controller.accountType.value)}'),
+                      'Открыть ${_formatAccountType(controller.accountType.value)}'),
             ),
           ),
         ],

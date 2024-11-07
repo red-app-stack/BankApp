@@ -1,21 +1,22 @@
+import 'package:bank_app/views/shared/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import '../other/transfer_screen.dart';
+import 'package:get/get.dart';
+import '../../controllers/accounts_controller.dart';
 
 class AnimatedCardDropdown extends StatelessWidget {
-  final List<CardModel> cards;
-  final CardModel? selectedCard;
+  final List<AccountModel> accounts;
+  final AccountModel? selectedAccount;
   final bool isExpanded;
-  final Function(CardModel) onCardSelected;
+  final Function(AccountModel) onAccountSelected;
   final VoidCallback onToggle;
 
   const AnimatedCardDropdown({
     super.key,
-    required this.cards,
-    required this.selectedCard,
+    required this.accounts,
+    required this.selectedAccount,
     required this.isExpanded,
-    required this.onCardSelected,
+    required this.onAccountSelected,
     required this.onToggle,
   });
 
@@ -55,24 +56,23 @@ class AnimatedCardDropdown extends StatelessWidget {
               ),
             ),
           ),
-
           ClipRRect(
             child: AnimatedCrossFade(
-              firstChild: selectedCard != null
-                  ? _CardItem(
-                      card: selectedCard!,
+              firstChild: selectedAccount != null
+                  ? _AccountItem(
+                      account: selectedAccount!,
                       theme: theme,
                       isSelected: true,
                       onTap: onToggle,
                     )
                   : const SizedBox.shrink(),
               secondChild: Column(
-                children: cards
-                    .map((card) => _CardItem(
-                          card: card,
+                children: accounts
+                    .map((account) => _AccountItem(
+                          account: account,
                           theme: theme,
-                          isSelected: card == selectedCard,
-                          onTap: () => onCardSelected(card),
+                          isSelected: account == selectedAccount,
+                          onTap: () => onAccountSelected(account),
                         ))
                     .toList(),
               ),
@@ -88,14 +88,14 @@ class AnimatedCardDropdown extends StatelessWidget {
   }
 }
 
-class _CardItem extends StatelessWidget {
-  final CardModel card;
+class _AccountItem extends StatelessWidget {
+  final AccountModel account;
   final ThemeData theme;
   final bool isSelected;
   final VoidCallback? onTap;
 
-  const _CardItem({
-    required this.card,
+  const _AccountItem({
+    required this.account,
     required this.theme,
     required this.isSelected,
     this.onTap,
@@ -104,86 +104,64 @@ class _CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.1)
-            : null,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(
-            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-            width: 4,
-          ),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          splashFactory: InkRipple.splashFactory,
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 12,
-              right: 16,
-              top: 12,
-              bottom: 12,
-            ),
-            child: Row(
-              children: [
-                _buildCardIcon(theme),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        card.title,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        card.cardNumber,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      if (card.altBalances.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: card.altBalances
-                              .map(
-                                (balance) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: Text(
-                                    balance,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Text(
-                  card.balance,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.1)
+              : null,
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color:
+                  isSelected ? theme.colorScheme.primary : Colors.transparent,
+              width: 4,
             ),
           ),
         ),
-      ),
-    );
+        child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(12),
+                splashFactory: InkRipple.splashFactory,
+                splashColor: theme.colorScheme.primary.withOpacity(0.08),
+                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      right: 16,
+                      top: 12,
+                      bottom: 12,
+                    ),
+                    child: Row(children: [
+                      _buildCardIcon(theme),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            formatAccountType(account.accountType),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            censorCardNumber(account.accountNumber),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      )),
+                      Text(
+                        formatCurrency(
+                            account.balance, account.currency, 'ru_RU'),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ])))));
   }
 
   Widget _buildCardIcon(ThemeData theme) {
@@ -194,7 +172,7 @@ class _CardItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: SvgPicture.asset(
-        card.icon,
+        'assets/icons/creditcard.svg',
         width: 24,
         height: 24,
         colorFilter: ColorFilter.mode(

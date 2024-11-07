@@ -71,14 +71,13 @@ class AuthController extends GetxController {
   void setCodeSent(bool value) => _isCodeSent.value = value;
   void setRole(String value) => _userRole.value = value;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // await checkServer();
-    // await checkAuthStatus();
-    // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
-    // startServerHealthCheck();
-  }
+  // @override
+  // void onInit() async {
+  //   super.onInit();
+  //   await checkServer();
+  //   await checkAuthStatus();
+  //   // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
+  // }
 
   Future<void> checkAuthStatus() async {
     if (isCheckingAuth) return;
@@ -201,39 +200,6 @@ class AuthController extends GetxController {
         isPasswordCorrect.value = true;
         isCreatingCode = true;
         Get.offNamed('/codeEntering');
-      } else {
-        isPasswordCorrect.value = false;
-      }
-    } on DioException catch (e) {
-      isPasswordCorrect.value = false;
-      _handleApiError(e);
-    } finally {
-      setStatus(false);
-    }
-  }
-
-  Future<void> login2() async {
-    if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
-      Get.snackbar('Ошибка', 'Заполните все поля');
-      return;
-    }
-
-    try {
-      setStatus(true);
-      final response = await DioRetryHelper.retryRequest(
-          () => dio.post('/auth/login', data: {
-                'email': email.value.text.trim(),
-                'password': password.value.text.trim(),
-              }));
-
-      if (response.statusCode == 200) {
-        print('Got The Data, storing');
-        final token = response.data['token'];
-        final userData = response.data['user'];
-
-        print('Token: $token');
-        print('User Data: $userData');
-        await _securelyStoreCredentials(token, userData);
       } else {
         isPasswordCorrect.value = false;
       }

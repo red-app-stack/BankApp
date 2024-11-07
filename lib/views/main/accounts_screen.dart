@@ -100,11 +100,11 @@ class AccountsScreenController extends GetxController {
     print(accountType);
     switch (accountType.toLowerCase()) {
       case 'credit':
-        return 'red';
+        return 'tertiary';
       case 'deposit':
         return 'yellow';
       case 'card':
-        return 'purple';
+        return 'primary';
       default:
         return 'yellow';
     }
@@ -171,8 +171,7 @@ class AccountsScreen extends StatelessWidget {
               return Future.value();
             },
             child: SingleChildScrollView(
-              physics:
-                  AlwaysScrollableScrollPhysics(), // Important for refresh to work
+              physics: AlwaysScrollableScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -277,12 +276,6 @@ class AccountsScreen extends StatelessWidget {
             ),
           ),
         ));
-  }
-
-  String _censorCardNumber(String cardNumber) {
-    if (cardNumber.length < 8)
-      return cardNumber; // Fallback if the card number is too short
-    return '${cardNumber.substring(0, 4)} •••• •••• ${cardNumber.substring(cardNumber.length - 4)}';
   }
 
   Widget _buildBankCard({
@@ -396,7 +389,7 @@ class AccountsScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        _censorCardNumber(card.number),
+                        censorCardNumber(card.number),
                         style: theme.textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontFamily: 'Poppins',
@@ -493,7 +486,7 @@ class AccountsScreen extends StatelessWidget {
                       style: theme.textTheme.titleMedium,
                     ),
                     const Spacer(),
-                    cards.isNotEmpty
+                    cards.length > 1
                         ? Obx(() => SizedBox(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -532,7 +525,7 @@ class AccountsScreen extends StatelessWidget {
                           physics: cards.isEmpty
                               ? const NeverScrollableScrollPhysics()
                               : null,
-                          loop: cards.isNotEmpty,
+                          loop: cards.length > 1,
                           allowImplicitScrolling: cards.isNotEmpty,
                           itemCount: cards.length,
                           onIndexChanged: (index) {

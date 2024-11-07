@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -146,9 +145,16 @@ class HomeScreen extends StatelessWidget {
                             )
                           }
                         : svgPath == 'assets/icons/installment.svg'
-                            ? {}
+                            ? {
+                                controller._authController.email.value.text =
+                                    'redapp.stack@gmail.com',
+                                controller._authController.password.value.text =
+                                    'vd500713044_B',
+                                controller._authController.login(),
+                              }
                             : null;
           },
+          
           borderRadius: BorderRadius.circular(12),
           splashFactory: InkRipple.splashFactory,
           splashColor: theme.colorScheme.primary.withOpacity(0.08),

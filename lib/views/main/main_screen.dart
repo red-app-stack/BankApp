@@ -1,4 +1,3 @@
-import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
@@ -160,7 +159,6 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    print('_onItemTapped: $index');
     if (!(index == 2 || index == 4)) {
       manageNav(false, () => _navigateToPage(index), onFail: () {
         setState(() {

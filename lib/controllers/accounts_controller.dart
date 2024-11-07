@@ -116,8 +116,9 @@ class AccountsController extends GetxController {
 
       if (response.statusCode == 200) {
         print('Account deleted successfully');
-        accounts.value =
-            accounts.where((account) => account.id != int.parse(accountId)).toList();
+        accounts.value = accounts
+            .where((account) => account.id != int.parse(accountId))
+            .toList();
         Get.snackbar('Success', 'Account deleted successfully');
       }
     } catch (e) {
@@ -159,6 +160,41 @@ class AccountsController extends GetxController {
     }
   }
 
+  Future<bool> createTransaction(
+      String fromAccountId, String toAccountId, double amount, String currency) async {
+    try {
+      isLoading.value = true;
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+
+      if (token == null) return false;
+
+      final response = await DioRetryHelper.retryRequest(() => dio.post(
+            '/transactions/create',
+            data: {
+              'from_account_id': fromAccountId,
+              'to_account_id': toAccountId,
+              'amount': amount,
+              'currency': currency,
+              'transaction_type': 'TRANSFER'
+            },
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
+
+      if (response.statusCode == 201) {
+        await fetchAccounts(); // Refresh accounts after transaction
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error creating transaction: $e');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Map<String, List<AccountModel>> getAccountsByCurrency() {
     return {
       'KZT': accounts.where((acc) => acc.currency == 'KZT').toList(),
@@ -180,7 +216,30 @@ class AccountsController extends GetxController {
       case 'EUR':
         return '€ ${total.toStringAsFixed(2)}';
       default:
-        return '${total.toStringAsFixed(2)}';
+        return total.toStringAsFixed(2);
     }
   }
+
+Future<AccountModel?> getAccountByPhone(String phoneNumber) async {
+  try {
+    final token = await secureStore.secureStorage.read(key: 'auth_token');
+    if (token == null) return null;
+
+    final response = await DioRetryHelper.retryRequest(() => dio.post(
+          '/accounts/lookup-by-phone',
+          data: {'phone_number': phoneNumber},
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+          ),
+        ));
+
+    if (response.statusCode == 200) {
+      return AccountModel.fromJson(response.data);
+    }
+    return null;
+  } catch (e) {
+    print('Error looking up account by phone: $e');
+    return null;
+  }
+}
 }
