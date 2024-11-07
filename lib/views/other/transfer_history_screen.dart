@@ -20,7 +20,8 @@ class TransferHistoryController extends GetxController {
   }
 
   Future<void> loadTransactions() async {
-    final transactionsList = await accountsController.fetchTransactionHistory(accountId.value);
+    final transactionsList =
+        await accountsController.fetchTransactionHistory(accountId.value);
     transactions.value = transactionsList;
   }
 }
@@ -34,6 +35,7 @@ class TransferHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SafeArea(
@@ -45,9 +47,34 @@ class TransferHistoryScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildFilterCard(theme),
               const SizedBox(height: 16),
-              Expanded(
-                child: _buildTransactionsList(theme),
-              ),
+              controller.transactions.isNotEmpty
+                  ? Expanded(
+                      child: _buildTransactionsList(theme),
+                    )
+                  : Center(
+                      child: Column(children: [
+                      SizedBox(height: size.height * 0.15),
+                      SvgPicture.asset(
+                        'assets/icons/ic_empty_list.svg',
+                        height: size.width > size.height
+                            ? size.height * 0.3
+                            : size.width * 0.3,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.secondaryContainer,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      Text('Здесь будет отображаться \nистория ваших переводов',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: theme.colorScheme.secondaryContainer,
+                              fontFamily: 'OpenSans',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              height: 1.1)),
+                      SizedBox(height: size.height * 0.02),
+                    ])),
             ],
           ),
         ),
