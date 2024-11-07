@@ -28,8 +28,6 @@ class CardModel {
 class PhoneTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
-  // final RxList<CardModel> cards = <CardModel>[].obs;
-
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
 
@@ -169,6 +167,7 @@ class PhoneTransferController extends GetxController {
     phoneController.dispose();
     amountController.dispose();
     amountFocusNode.dispose();
+    accountsController.recipientAccount.value = null;
     super.onClose();
   }
 }

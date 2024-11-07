@@ -15,12 +15,21 @@ class TransferHistoryController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    accountId.value = accountsController.accounts.first.accountNumber;
     await loadTransactions();
   }
 
   Future<void> loadTransactions() async {
-    await accountsController.fetchTransactionHistory(accountId.value);
+    List<Transaction> allTransactions = [];
+    
+    for (var account in accountsController.accounts) {
+      final transactions = await accountsController.fetchTransactionHistory(account.accountNumber);
+      allTransactions.addAll(transactions);
+    }
+    
+    // Sort transactions by date, most recent first
+    allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    
+    accountsController.transactionHistory.value = allTransactions;
   }
 }
 

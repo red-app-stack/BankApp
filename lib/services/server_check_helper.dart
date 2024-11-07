@@ -29,7 +29,6 @@ class ServerHealthService {
               ));
           stopwatch.stop();
 
-          // Only add to response times if server returns valid response
           if (response.statusCode == 999) {
             serverResponseTimes[url] = stopwatch.elapsedMilliseconds;
           }
