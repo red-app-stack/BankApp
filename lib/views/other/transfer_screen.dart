@@ -34,7 +34,6 @@ class PhoneTransferController extends GetxController {
       FlutterNativeContactPicker();
 
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
-  final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
   final RxString phoneNumber = ''.obs;
   final RxString formattedPhoneNumber = ''.obs;
   final RxString amount = ''.obs;
@@ -101,6 +100,8 @@ class PhoneTransferController extends GetxController {
     );
     if (formatted.length == 14) {
       accountsController.getAccountByPhone(formatted);
+    } else {
+      accountsController.recipientAccount.value = null;
     }
     print(formatted.length);
     print(formatted);
@@ -181,35 +182,45 @@ class PhoneTransferScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+    final botomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-        backgroundColor: theme.colorScheme.surface,
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
-            child: RefreshIndicator(
-          onRefresh: () async {
-            try {
-              await Future.delayed(const Duration(milliseconds: 500));
-            } on TimeoutException {
-              print('Refresh operation timed out');
-            } catch (e) {
-              print('Error during refresh: $e');
-            }
-            return Future.value();
-          },
-          child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                padding: const EdgeInsets.all(16.0),
+                child: Column(children: [
                   _buildHeader(context),
-                  SizedBox(height: size.height * 0.02),
-                  _buildCardSelector(theme),
-                  SizedBox(height: size.height * 0.02),
-                  _buildPhoneInput(theme),
-                  SizedBox(height: size.height * 0.02),
-                  _buildAmountInput(theme),
-                  SizedBox(height: size.height * 0.02),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        try {
+                          await Future.delayed(
+                              const Duration(milliseconds: 500));
+                        } on TimeoutException {
+                          print('Refresh operation timed out');
+                        } catch (e) {
+                          print('Error during refresh: $e');
+                        }
+                        return Future.value();
+                      },
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCardSelector(theme),
+                            SizedBox(height: size.height * 0.02),
+                            _buildPhoneInput(theme),
+                            SizedBox(height: size.height * 0.02),
+                            _buildAmountInput(theme),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   Obx(() {
                     final amount = controller.amount.value.isEmpty
                         ? 0
@@ -220,90 +231,104 @@ class PhoneTransferScreen extends StatelessWidget {
                           (Match m) => '${m[1]} ',
                         );
 
-                    return ElevatedButton(
-                      onPressed: () async {
-                        if (controller.selectedAccount.value == null) {
-                          Get.snackbar('Error', 'Please select a card');
-                          return;
-                        }
+                    return AnimatedPadding(
+                        duration: const Duration(milliseconds: 50),
+                        curve: Curves.easeInOut,
+                        padding: EdgeInsets.only(bottom: botomInset),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (controller.selectedAccount.value == null) {
+                              Get.snackbar('Error', 'Please select a card');
+                              return;
+                            }
 
-                        String phoneNumber = controller.phoneController.text
-                            .replaceAll(RegExp(r'\D'), '');
-                        if (phoneNumber.isEmpty) {
-                          Get.snackbar('Error', 'Please enter phone number');
-                          return;
-                        }
+                            String phoneNumber = controller.phoneController.text
+                                .replaceAll(RegExp(r'\D'), '');
+                            if (phoneNumber.isEmpty) {
+                              Get.snackbar(
+                                  'Error', 'Please enter phone number');
+                              return;
+                            }
 
-                        if (controller.amount.value.isEmpty ||
-                            controller.amount.value == '0') {
-                          Get.snackbar('Error', 'Please enter amount');
-                          return;
-                        }
+                            if (controller.amount.value.isEmpty ||
+                                controller.amount.value == '0') {
+                              Get.snackbar('Error', 'Please enter amount');
+                              return;
+                            }
 
-                        // First lookup recipient account by phone
-                        if (controller.recipientAccount.value == null) {
-                          Get.snackbar('Error', 'Recipient account not found');
-                          return;
-                        }
+                            // First lookup recipient account by phone
+                            if (controller.accountsController.recipientAccount
+                                    .value ==
+                                null) {
+                              Get.snackbar(
+                                  'Error', 'Recipient account not found');
+                              return;
+                            }
 
-                        // Proceed with transfer using found account
-                        final success = await controller.accountsController
-                            .createTransaction(
-                                controller.selectedAccount.value!.accountNumber,
-                                controller
-                                    .recipientAccount.value!.accountNumber,
-                                double.parse(controller.amount.value),
-                                controller.selectedAccount.value!.currency);
+                            // Proceed with transfer using found account
+                            final success = await controller.accountsController
+                                .createTransaction(
+                                    controller
+                                        .selectedAccount.value!.accountNumber,
+                                    controller.accountsController
+                                        .recipientAccount.value!.accountNumber,
+                                    double.parse(controller.amount.value),
+                                    controller.selectedAccount.value!.currency);
 
-                        if (success) {
-                          Get.snackbar('Success', 'Transfer completed');
-                          controller.refreshCards();
-                        } else {
-                          Get.snackbar('Error', 'Transfer failed');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                      ),
-                      child: Text('Перевести $formattedAmount ₸',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: theme.colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            fontFamily: 'Roboto',
-                          )),
-                    );
-                  })
-                ],
-              ),
-            ),
-          ),
-        )));
+                            if (success) {
+                              Get.snackbar('Success', 'Transfer completed');
+                              controller.refreshCards();
+                            } else {
+                              Get.snackbar('Error', 'Transfer failed');
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                          ),
+                          child: Text('Перевести $formattedAmount ₸',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: theme.colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                fontFamily: 'Roboto',
+                              )),
+                        ));
+                  }),
+                  SizedBox(
+                    height: size.height * 0.015,
+                  ),
+                ]))));
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/ic_back.svg',
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.primary,
-                BlendMode.srcIn,
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(6),
+        child: Row(
+          children: [
+            IconButton(
+              icon: SvgPicture.asset(
+                'assets/icons/ic_back.svg',
+                width: 32,
+                height: 32,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: Text(
+                'По номеру телефона',
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
               ),
             ),
-            onPressed: () => {
-                  FocusScope.of(context).unfocus(),
-                  Get.back(),
-                }),
-        Expanded(
-          child: Text(
-            'Перевод по номеру телефона',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+            const SizedBox(width: 32),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -337,7 +362,7 @@ class PhoneTransferScreen extends StatelessWidget {
     return Card(
         child: Padding(
       padding: EdgeInsets.all(16),
-      child: Column(children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(
           children: [
             Container(
@@ -404,8 +429,16 @@ class PhoneTransferScreen extends StatelessWidget {
             ),
           ],
         ),
-        Text(controller.recipientAccount.value?.fullName ??
-            'Получатель не найден')
+        Padding(
+          padding: const EdgeInsets.only(left: 16, top: 12),
+          child: Obx(() => Text(
+                controller
+                        .accountsController.recipientAccount.value?.fullName ??
+                    'Получатель не найден',
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(color: theme.colorScheme.onSurface),
+              )),
+        )
       ]),
     ));
   }
