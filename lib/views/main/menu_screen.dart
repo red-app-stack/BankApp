@@ -104,21 +104,23 @@ class MenuScreen extends StatelessWidget {
                                               'vd500713044_B';
                                           _authController.login();
                                         }
-                                      : null,
+                                      : (item.icon ==
+                                              'assets/icons/ic_branch.svg')
+                                          ? () {
+                                              Get.find<AccountsController>()
+                                                  .deleteTransactionHistory(
+                                                      Get.find<
+                                                              AccountsController>()
+                                                          .accounts
+                                                          .first
+                                                          .accountNumber);
+                                            }
+                                          : null,
                                   onTap: () {
                                     (item.icon ==
                                             'assets/icons/ic_settings.svg')
                                         ? Get.toNamed('/securitySettings')
-                                        : (item.icon ==
-                                                'assets/icons/ic_settings.svg')
-                                            ? Get.find<AccountsController>()
-                                                .deleteTransactionHistory(
-                                                    Get.find<
-                                                            AccountsController>()
-                                                        .accounts
-                                                        .first
-                                                        .accountNumber)
-                                            : null;
+                                        : null;
                                   }))
                             ],
                           ),
