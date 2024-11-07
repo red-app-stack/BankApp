@@ -264,6 +264,13 @@ class PhoneTransferScreen extends StatelessWidget {
                                   'Error', 'Recipient account not found');
                               return;
                             }
+                            print(
+                                'From account: ${controller.selectedAccount.value!.accountNumber}');
+                            print(
+                                'To account: ${controller.accountsController.recipientAccount.value!.accountNumber}');
+                            print('Amount: ${controller.amount.value}');
+                            print(
+                                'Currency: ${controller.selectedAccount.value!.currency}');
 
                             // Proceed with transfer using found account
                             final success = await controller.accountsController

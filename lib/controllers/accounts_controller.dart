@@ -207,7 +207,7 @@ class AccountsController extends GetxController {
               'to_account_id': toAccountId,
               'amount': amount,
               'currency': currency,
-              'transaction_type': 'TRANSFER'
+              'transaction_type': 'transfer'
             },
             options: Options(
               headers: {'Authorization': 'Bearer $token'},
@@ -285,7 +285,7 @@ class AccountsController extends GetxController {
       if (token == null) return false;
 
       final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/accounts/add-test-money',
+            '/transactions/add-test-money',
             data: {
               'account_number': accountNumber,
               'amount': amount,
