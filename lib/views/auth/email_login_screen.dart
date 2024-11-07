@@ -86,7 +86,10 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
+    final botomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
+      resizeToAvoidBottomInset:
+          false,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -113,239 +116,232 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                 height: size.height * 0.02,
               ),
               Expanded(
-                  flex: 3,
                   child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            fakeHero(
-                                tag: 'text_info',
-                                child: Text(
-                                  _authController.obfuscatedEmail == null
-                                      ? "Введите Ваш личный адрес gmail почты. Другие пока что не поддерживаются."
-                                      : 'Аккаунт с данным телефоном уже зарегистрирован. Введите почту чтобы продолжить.',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: theme.colorScheme.outline,
-                                    fontSize: 14,
-                                    fontFamily: 'OpenSans',
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                )),
-                            SizedBox(height: size.height * 0.02),
-                            fakeHero(
-                                tag: 'text_input1',
-                                child: TextFormField(
-                                  controller: _authController.email.value,
-                                  focusNode: emailFocus,
-                                  enabled: !_authController.isCodeSent ||
-                                      _authController.allowResend,
-                                  textInputAction: TextInputAction.send,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: InputDecoration(
-                                    labelText: _authController
-                                                .obfuscatedEmail !=
-                                            null
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        fakeHero(
+                            tag: 'text_info',
+                            child: Text(
+                              _authController.obfuscatedEmail == null
+                                  ? "Введите Ваш личный адрес gmail почты. Другие пока что не поддерживаются."
+                                  : 'Аккаунт с данным телефоном уже зарегистрирован. Введите почту чтобы продолжить.',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.outline,
+                                fontSize: 14,
+                                fontFamily: 'OpenSans',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            )),
+                        SizedBox(height: size.height * 0.02),
+                        fakeHero(
+                            tag: 'text_input1',
+                            child: TextFormField(
+                              controller: _authController.email.value,
+                              focusNode: emailFocus,
+                              enabled: !_authController.isCodeSent ||
+                                  _authController.allowResend,
+                              textInputAction: TextInputAction.send,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                labelText:
+                                    _authController.obfuscatedEmail != null
                                         ? '${_authController.obfuscatedEmail}'
                                         : 'Email',
-                                    prefixIcon: Icon(Icons.email_outlined),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                prefixIcon: Icon(Icons.email_outlined),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Пожалуйста, введите email';
+                                }
+                                if (!GetUtils.isEmail(value)) {
+                                  return 'Введите корректный email адрес';
+                                }
+                                if (_isEmailMismatch) {
+                                  return 'Введенный email не совпадает с существующим';
+                                }
+                                return null;
+                              },
+                              onFieldSubmitted: (_) {
+                                codeFocus.requestFocus();
+                                sendVerificationCode();
+                              },
+                            )),
+                        Obx(() {
+                          if (_authController.isCodeSent) {
+                            return SizeTransition(
+                              sizeFactor: _secondFieldAnimation,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: size.height * 0.02),
+                                  fakeHero(
+                                    tag: 'text_info2',
+                                    child: Text(
+                                      'Введите код подтверждения',
+                                      style:
+                                          theme.textTheme.titleMedium?.copyWith(
+                                        color: theme.colorScheme.outline,
+                                        fontSize: 14,
+                                        fontFamily: 'OpenSans',
+                                        fontWeight: FontWeight.w400,
+                                      ),
                                     ),
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Пожалуйста, введите email';
-                                    }
-                                    if (!GetUtils.isEmail(value)) {
-                                      return 'Введите корректный email адрес';
-                                    }
-                                    if (_isEmailMismatch) {
-                                      return 'Введенный email не совпадает с существующим';
-                                    }
-                                    return null;
-                                  },
-                                  onFieldSubmitted: (_) {
-                                    codeFocus.requestFocus();
-                                    sendVerificationCode();
-                                  },
-                                )),
-                            Obx(() {
-                              if (_authController.isCodeSent) {
-                                return SizeTransition(
-                                  sizeFactor: _secondFieldAnimation,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: size.height * 0.02),
-                                      fakeHero(
-                                        tag: 'text_info2',
-                                        child: Text(
-                                          'Введите код подтверждения',
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                            color: theme.colorScheme.outline,
-                                            fontSize: 14,
-                                            fontFamily: 'OpenSans',
-                                            fontWeight: FontWeight.w400,
-                                          ),
+                                  SizedBox(height: size.height * 0.02),
+                                  fakeHero(
+                                    tag: 'text_input2',
+                                    child: TextFormField(
+                                      controller:
+                                          _authController.verification.value,
+                                      focusNode: codeFocus,
+                                      maxLength: 6,
+                                      textInputAction: TextInputAction.done,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        labelText: 'Код подтверждения',
+                                        prefixIcon:
+                                            Icon(Icons.security_outlined),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
-                                      ),
-                                      SizedBox(height: size.height * 0.02),
-                                      fakeHero(
-                                        tag: 'text_input2',
-                                        child: TextFormField(
-                                          controller: _authController
-                                              .verification.value,
-                                          focusNode: codeFocus,
-                                          maxLength: 6,
-                                          textInputAction: TextInputAction.done,
-                                          keyboardType: TextInputType.number,
-                                          decoration: InputDecoration(
-                                            labelText: 'Код подтверждения',
-                                            prefixIcon:
-                                                Icon(Icons.security_outlined),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            errorText: validateVerificationCode(
-                                                _authController
-                                                    .verification.value.text),
-                                          ),
-                                          onChanged: (value) => {
-                                            _formKey.currentState!.validate(),
+                                        errorText: validateVerificationCode(
                                             _authController
-                                                .setIsCodeCorrect(true),
-                                          },
-                                          onFieldSubmitted: (_) {
-                                            _formKey.currentState!.validate();
-                                          },
-                                          validator: validateVerificationCode,
-                                        ),
+                                                .verification.value.text),
                                       ),
-                                      fakeHero(
-                                          tag: 'sub_button',
-                                          child: Align(
-                                            alignment: Alignment.center,
-                                            child: TextButton(
-                                              onPressed:
-                                                  _authController.allowResend
-                                                      ? () {
-                                                          if (_authController
-                                                                  .email
-                                                                  .value
-                                                                  .text
-                                                                  .isNotEmpty &&
-                                                              GetUtils.isEmail(
-                                                                  _authController
-                                                                      .email
-                                                                      .value
-                                                                      .text)) {
-                                                            _authController
-                                                                .sendVerificationCode(
-                                                                    _authController
-                                                                        .email
-                                                                        .value
-                                                                        .text);
-                                                          }
-                                                        }
-                                                      : null,
-                                              style: theme.textButtonTheme.style
-                                                  ?.copyWith(
-                                                foregroundColor:
-                                                    WidgetStateProperty
-                                                        .all<Color>(theme
-                                                            .colorScheme
-                                                            .primary),
-                                              ),
-                                              child: Text(
-                                                _authController
-                                                            .countdownTimer ==
-                                                        0
-                                                    ? 'Отправить код повторно'
-                                                    : 'Повторная отправка через ${_authController.countdownTimer} сек',
-                                                style: theme.textTheme.bodyLarge
-                                                    ?.copyWith(
-                                                  color:
-                                                      theme.colorScheme.primary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          )),
-                                    ],
+                                      onChanged: (value) => {
+                                        _formKey.currentState!.validate(),
+                                        _authController.setIsCodeCorrect(true),
+                                      },
+                                      onFieldSubmitted: (_) {
+                                        _formKey.currentState!.validate();
+                                      },
+                                      validator: validateVerificationCode,
+                                    ),
                                   ),
-                                );
-                              }
-                              return SizedBox.shrink();
-                            }),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )),
-              Expanded(
-                flex: 2,
-                child: Center(
-                  child: fakeHero(
-                    tag: 'ic_login',
-                    child: SizedBox(
-                      height: size.height * 0.3,
-                      child: (theme.brightness == Brightness.dark)
-                          ? Container()
-                          : SvgPicture.asset(
-                              'assets/icons/illustration_login.svg',
-                              fit: BoxFit.contain,
+                                  fakeHero(
+                                      tag: 'sub_button',
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: TextButton(
+                                          onPressed: _authController.allowResend
+                                              ? () {
+                                                  if (_authController
+                                                          .email
+                                                          .value
+                                                          .text
+                                                          .isNotEmpty &&
+                                                      GetUtils.isEmail(
+                                                          _authController.email
+                                                              .value.text)) {
+                                                    _authController
+                                                        .sendVerificationCode(
+                                                            _authController
+                                                                .email
+                                                                .value
+                                                                .text);
+                                                  }
+                                                }
+                                              : null,
+                                          style: theme.textButtonTheme.style
+                                              ?.copyWith(
+                                            foregroundColor:
+                                                WidgetStateProperty.all<Color>(
+                                                    theme.colorScheme.primary),
+                                          ),
+                                          child: Text(
+                                            _authController.countdownTimer == 0
+                                                ? 'Отправить код повторно'
+                                                : 'Повторная отправка через ${_authController.countdownTimer} сек',
+                                            style: theme.textTheme.bodyLarge
+                                                ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      )),
+                                ],
+                              ),
+                            );
+                          }
+                          return SizedBox.shrink();
+                        }),
+                        Center(
+                          child: fakeHero(
+                            tag: 'ic_login',
+                            child: SizedBox(
+                              height: size.width <= size.height
+                                  ? size.height * 0.3
+                                  : size.width * 0.3,
+                              child: (theme.brightness == Brightness.dark)
+                                  ? Container()
+                                  : SvgPicture.asset(
+                                      'assets/icons/illustration_login.svg',
+                                      fit: BoxFit.contain,
+                                    ),
                             ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Obx(() => ElevatedButton(
-                  onPressed: _authController.isCodeSent
-                      ? () {
-                          if (_formKey.currentState!.validate()) {
-                            _authController.verifyCode(
-                                _authController.verification.value.text);
-                          }
-                        }
-                      : sendVerificationCode,
-                  style: theme.elevatedButtonTheme.style?.copyWith(
-                    backgroundColor: WidgetStateProperty.all(
-                      theme.colorScheme.secondaryContainer,
-                    ),
-                  ),
-                  child: fakeHero(
-                    tag: 'main_button',
-                    child: _authController.status
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            _authController.isCodeSent
-                                ? "Подтвердить"
-                                : "Отправить код",
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontFamily: 'OpenSans',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ))),
-              SizedBox(height: size.height * 0.02),
+              )),
+              Obx(() => AnimatedPadding(
+                  duration: const Duration(milliseconds: 50),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.only(bottom: botomInset),
+                  child: ElevatedButton(
+                      onPressed: _authController.isCodeSent
+                          ? () {
+                              if (_formKey.currentState!.validate()) {
+                                _authController.verifyCode(
+                                    _authController.verification.value.text);
+                              }
+                            }
+                          : sendVerificationCode,
+                      style: theme.elevatedButtonTheme.style?.copyWith(
+                        backgroundColor: WidgetStateProperty.all(
+                          theme.colorScheme.secondaryContainer,
+                        ),
+                      ),
+                      child: fakeHero(
+                        tag: 'main_button',
+                        child: _authController.status
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Text(
+                                _authController.isCodeSent
+                                    ? "Подтвердить"
+                                    : "Отправить код",
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.onSurface,
+                                  fontFamily: 'OpenSans',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      )))),
+              SizedBox(
+                  height: botomInset <= size.height * 0.02
+                      ? size.height * 0.02
+                      : 0),
             ],
           ),
         ),

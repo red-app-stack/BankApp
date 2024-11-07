@@ -14,6 +14,7 @@ class DioRetryHelper {
         return await request();
       } on DioException catch (e) {
         print('DioException details:');
+        print('Server: ${e.response?.realUri}');
         print('Status code: ${e.response?.statusCode}');
         if (e.response?.statusCode == null) {}
         print('Response data: ${e.response?.data}');

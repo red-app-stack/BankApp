@@ -10,7 +10,6 @@ import 'controllers/accounts_controller.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'services/server_check_helper.dart';
-import 'views/shared/static_background.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -32,13 +31,13 @@ Future<void> main() async {
     validateStatus: (status) => true,
   ));
   dio.interceptors.add(AuthInterceptor());
-  
+
   Get.put(SecureStore());
   final userService = UserService(dio: dio);
   Get.put(userService);
   Get.put(AccountsController(dio: dio));
-  Get.put(AuthController());
-
+  AuthController authController = Get.put(AuthController());
+  await authController.checkAuthStatus();
   final themeController = Get.put(ThemeController());
   await themeController.loadSavedSettings();
 
@@ -81,9 +80,7 @@ class MyApp extends StatelessWidget {
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        return StaticBackgroundWrapper(
-          child: child ?? Container(),
-        );
+        return child ?? Container();
       },
     );
   }

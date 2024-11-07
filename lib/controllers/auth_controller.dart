@@ -72,10 +72,10 @@ class AuthController extends GetxController {
   void setRole(String value) => _userRole.value = value;
 
   @override
-  void onInit() async {
+  void onInit() {
     super.onInit();
     // await checkServer();
-    await checkAuthStatus();
+    // await checkAuthStatus();
     // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
     // startServerHealthCheck();
   }

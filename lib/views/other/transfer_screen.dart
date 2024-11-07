@@ -6,7 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
+import '../shared/formatters.dart';
 
 class CardModel {
   final String icon;
@@ -25,22 +27,9 @@ class CardModel {
 }
 
 class PhoneTransferController extends GetxController {
-  final RxList<CardModel> cards = <CardModel>[
-    CardModel(
-      icon: 'assets/icons/card.svg',
-      title: 'Дебетовая карта',
-      balance: '458 932.00 ₸',
-      cardNumber: '**** 1234',
-      altBalances: ['1 254.32 \$', '1 023.45 €'],
-    ),
-    CardModel(
-      icon: 'assets/icons/card.svg',
-      title: 'Кредитная карта',
-      balance: '125 450.00 ₸',
-      cardNumber: '**** 5678',
-      altBalances: ['458.75 \$'],
-    ),
-  ].obs;
+  final AccountsController accountsController = Get.find<AccountsController>();
+
+  final RxList<CardModel> cards = <CardModel>[].obs;
 
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
@@ -62,9 +51,29 @@ class PhoneTransferController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    selectedCard.value = cards.first;
+    _loadCards();
     amountController.text = '0';
     updateAmount('0');
+  }
+
+  void _loadCards() {
+    cards.clear();
+    for (var account in accountsController.accounts) {
+      cards.add(CardModel(
+        icon: 'assets/icons/card.svg',
+        title: '${account.accountType.capitalizeFirst} счет',
+        balance: formatCurrency(account.balance, account.currency, 'ru_RU'),
+        cardNumber: account.accountNumber,
+        altBalances: [], // Can be expanded to show other currency balances
+      ));
+    }
+    if (cards.isNotEmpty) {
+      selectedCard.value = cards.first;
+    }
+  }
+
+  void refreshCards() {
+    accountsController.fetchAccounts().then((_) => _loadCards());
   }
 
   void updatePhoneNumber(String value) {
@@ -79,15 +88,12 @@ class PhoneTransferController extends GetxController {
     if (newDigits.isNotEmpty) {
       if (newDigits.length <= 3) {
         formatted = '($newDigits';
-      }
-      else if (newDigits.length <= 6) {
+      } else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
-      }
-      else if (newDigits.length <= 8) {
+      } else if (newDigits.length <= 8) {
         formatted =
             '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6)}';
-      }
-      else {
+      } else {
         formatted =
             '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, 8)}-${newDigits.substring(8, min(10, newDigits.length))}';
       }
@@ -110,7 +116,7 @@ class PhoneTransferController extends GetxController {
 
   void updateAmount(String value) {
     String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-    const int maxTransferAmount = 999999999;
+    const int maxTransferAmount = 2000000;
 
     if (digitsOnly.isEmpty) {
       amount.value = '';
@@ -230,16 +236,29 @@ class PhoneTransferScreen extends StatelessWidget {
   }
 
   Widget _buildCardSelector(ThemeData theme) {
-    return Obx(() => AnimatedCardDropdown(
-          cards: controller.cards,
-          selectedCard: controller.selectedCard.value,
-          isExpanded: controller.isCardDropdownExpanded.value,
-          onCardSelected: (card) {
-            controller.selectedCard.value = card;
-            controller.isCardDropdownExpanded.value = false;
-          },
-          onToggle: () => controller.isCardDropdownExpanded.toggle(),
-        ));
+    return Obx(() {
+      if (controller.cards.isEmpty) {
+        return Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'У вас нет доступных счетов',
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+        );
+      }
+      return AnimatedCardDropdown(
+        cards: controller.cards,
+        selectedCard: controller.selectedCard.value,
+        isExpanded: controller.isCardDropdownExpanded.value,
+        onCardSelected: (card) {
+          controller.selectedCard.value = card;
+          controller.isCardDropdownExpanded.value = false;
+        },
+        onToggle: () => controller.isCardDropdownExpanded.toggle(),
+      );
+    });
   }
 
   Widget _buildPhoneInput(ThemeData theme) {

@@ -4,6 +4,7 @@ import 'package:bank_app/views/other/create_account_screen.dart';
 import 'package:bank_app/views/other/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../controllers/create_account_controller.dart';
 import '../views/auth/password_entering_screen.dart';
 import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
@@ -86,6 +87,9 @@ class AppRoutes {
     GetPage(
       name: Routes.createAccount,
       page: () => CreateAccountScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => CreateAccountController());
+      }),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

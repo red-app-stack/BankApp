@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+import '../../routes/manage_auth_nav.dart';
+
 class HomeScreenController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
 
@@ -87,9 +89,7 @@ class HomeScreen extends StatelessWidget {
                       ? Container()
                       : SvgPicture.asset(
                           'assets/icons/illustration_home.svg',
-                          width: MediaQuery.of(context).size.width * 0.85,
-                          height: MediaQuery.of(context).size.height * 0.4,
-                          fit: BoxFit.contain, // old, do i remove it?
+                          fit: BoxFit.contain,
                         ),
                 ),
               ],
@@ -111,15 +111,36 @@ class HomeScreen extends StatelessWidget {
       child: Ink(
         child: InkWell(
           onTap: () {
-            svgPath == 'assets/icons/installment.svg'
+            svgPath == 'assets/icons/creditcard.svg'
                 ? {
-                    controller._authController.email.value.text =
-                        'redapp.stack@gmail.com',
-                    controller._authController.password.value.text =
-                        'vd500713044_B',
-                    controller._authController.login(),
+                    manageNav(false,
+                        () => Get.toNamed('/createAccount', arguments: 'card')),
                   }
-                : null;
+                : svgPath == 'assets/icons/deposit.svg'
+                    ? {
+                        manageNav(
+                          false,
+                          () => Get.toNamed('/createAccount',
+                              arguments: 'deposit'),
+                        )
+                      }
+                    : svgPath == 'assets/icons/credit.svg'
+                        ? {
+                            manageNav(
+                              false,
+                              () => Get.toNamed('/createAccount',
+                                  arguments: 'credit'),
+                            )
+                          }
+                        : svgPath == 'assets/icons/installment.svg'
+                            ? {
+                                // controller._authController.email.value.text =
+                                //     'redapp.stack@gmail.com',
+                                // controller._authController.password.value.text =
+                                //     'vd500713044_B',
+                                // controller._authController.login(),
+                              }
+                            : null;
           },
           borderRadius: BorderRadius.circular(12),
           splashFactory: InkRipple.splashFactory,

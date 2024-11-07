@@ -71,6 +71,63 @@ class AccountsController extends GetxController {
     }
   }
 
+  Future<void> deleteAccounts() async {
+    try {
+      print('Deleting all accounts...');
+      isLoading.value = true;
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+
+      if (token == null) return;
+
+      final response = await DioRetryHelper.retryRequest(() => dio.delete(
+            '/accounts/delete-all',
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
+
+      if (response.statusCode == 200) {
+        print('Successfully deleted ${response.data['count']} accounts');
+        accounts.value = []; // Clear the accounts list
+        Get.snackbar('Success', 'All accounts deleted successfully');
+      }
+    } catch (e) {
+      print('Error deleting accounts: $e');
+      Get.snackbar('Error', 'Failed to delete accounts');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteSingleAccount(String accountId) async {
+    try {
+      print('Deleting account $accountId...');
+      isLoading.value = true;
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+
+      if (token == null) return;
+
+      final response = await DioRetryHelper.retryRequest(() => dio.delete(
+            '/accounts/delete/$accountId',
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
+
+      if (response.statusCode == 200) {
+        print('Account deleted successfully');
+        accounts.value =
+            accounts.where((account) => account.id != int.parse(accountId)).toList();
+        Get.snackbar('Success', 'Account deleted successfully');
+      }
+    } catch (e) {
+      print('Error deleting account: $e');
+      Get.snackbar('Error', 'Failed to delete account');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<bool> createAccount(String accountType, String currency) async {
     try {
       isLoading.value = true;

@@ -77,8 +77,10 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+    final botomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -112,7 +114,7 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                 height: size.height * 0.02,
               ),
               Expanded(
-                flex: 3,
+                  child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Form(
@@ -208,20 +210,13 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                                 return null;
                               },
                             )),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Center(
-                    child: fakeHero(
-                        tag: 'ic_login',
-                        child: SizedBox(
-                          height: size.height * 0.3,
+                        Center(
+                            child: fakeHero(
+                          tag: 'ic_login',
                           child: SizedBox(
-                            height: size.height * 0.3,
+                            height: size.width <= size.height
+                                ? size.height * 0.3
+                                : size.width * 0.3,
                             child: (theme.brightness == Brightness.dark)
                                 ? Container()
                                 : SvgPicture.asset(
@@ -229,53 +224,61 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                                     fit: BoxFit.contain,
                                   ),
                           ),
-                        ))),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Obx(() => ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate() &&
-                        !_authController.status) {
-                      print(_authController.phone.value.text.trim());
-                      // Лишняя проверка, ведь оно не асинхронно.
-                      // authController.verifyServerConnection();
-                      _authController.checkUserPhone();
-                      _authController.email.value.text = '';
-                      _authController.password.value.text = '';
-                      _authController.verification.value.text = '';
-                      _authController.setCodeSent(false);
-                    }
-                  },
-                  style: theme.elevatedButtonTheme.style?.copyWith(
-                    backgroundColor: WidgetStateProperty.all(
-                      theme.colorScheme.secondaryContainer,
+                        )),
+                      ],
                     ),
                   ),
-                  child: fakeHero(
-                    tag: 'main_button',
-                    child: _authController.status
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            "Далее",
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontFamily: 'OpenSans',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ))),
+                ),
+              )),
+              Obx(() => AnimatedPadding(
+                  duration: const Duration(milliseconds: 50),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.only(bottom: botomInset),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate() &&
+                            !_authController.status) {
+                          print(_authController.phone.value.text.trim());
+                          // Лишняя проверка, ведь оно не асинхронно.
+                          // authController.verifyServerConnection();
+                          _authController.checkUserPhone();
+                          _authController.email.value.text = '';
+                          _authController.password.value.text = '';
+                          _authController.verification.value.text = '';
+                          _authController.setCodeSent(false);
+                        }
+                      },
+                      style: theme.elevatedButtonTheme.style?.copyWith(
+                        backgroundColor: WidgetStateProperty.all(
+                          theme.colorScheme.secondaryContainer,
+                        ),
+                      ),
+                      child: fakeHero(
+                        tag: 'main_button',
+                        child: _authController.status
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Text(
+                                "Далее",
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.onSurface,
+                                  fontFamily: 'OpenSans',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      )))),
               SizedBox(
-                height: size.height * 0.02,
-              ),
+                  height: botomInset <= size.height * 0.02
+                      ? size.height * 0.02
+                      : 0),
             ],
           ),
         ),

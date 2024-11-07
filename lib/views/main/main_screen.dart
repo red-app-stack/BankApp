@@ -4,6 +4,7 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../../routes/manage_auth_nav.dart';
 import '../../utils/themes/theme_extension.dart';
 import '../other/profile_screen.dart';
 import '../other/support_screen.dart';
@@ -15,7 +16,6 @@ import 'transfers_screen.dart';
 
 class MainScreenController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final AuthController _authController = Get.find<AuthController>();
   late AnimationController overlayAnimationController;
   late Animation<double> overlayAnimation;
   final Rx<Widget?> overlayScreen = Rx<Widget?>(null);
@@ -26,7 +26,7 @@ class MainScreenController extends GetxController
   void onInit() {
     super.onInit();
     overlayAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     overlayAnimation = CurvedAnimation(
@@ -124,102 +124,52 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _handleProfileTap() {
-    if (!_controller._authController.isAuthenticated) {
-      if (_controller._authController.isCheckingAuth) {
-        Get.snackbar('Подождите', 'Идет проверка авторизации');
-        return;
-      } else {
-        Get.toNamed('/phoneLogin');
-        return;
-      }
-    }
-
-    if (!_controller._authController.isLoggedIn) {
-      Get.toNamed('/codeEntering');
-      return;
-    }
-
-    if (_controller.isProfileOpen.value) {
-      _controller.hideOverlay();
-    } else {
-      _controller.showOverlay(
-        ProfileScreen(
-          onBack: () => _controller.hideOverlay(),
-        ),
-        isProfile: true,
-      );
-    }
+    manageNav(
+        false,
+        () => {
+              if (_controller.isProfileOpen.value)
+                {_controller.hideOverlay()}
+              else
+                {
+                  _controller.showOverlay(
+                    ProfileScreen(
+                      onBack: () => _controller.hideOverlay(),
+                    ),
+                    isProfile: true,
+                  )
+                }
+            });
   }
 
   void _handleSupportTap() {
-    if (!_controller._authController.isAuthenticated) {
-      if (_controller._authController.isCheckingAuth) {
-        Get.snackbar('Подождите', 'Идет проверка авторизации');
-        return;
-      } else {
-        Get.toNamed('/phoneLogin');
-        return;
-      }
-    }
-
-    if (!_controller._authController.isLoggedIn) {
-      Get.toNamed('/codeEntering');
-      return;
-    }
-
-    if (_controller.isSupportOpen.value) {
-      _controller.hideOverlay();
-    } else {
-      _controller.showOverlay(
-        SupportScreen(
-          onBack: () => _controller.hideOverlay(),
-        ),
-        isSupport: true,
-      );
-    }
+    manageNav(
+        false,
+        () => {
+              if (_controller.isSupportOpen.value)
+                {_controller.hideOverlay()}
+              else
+                {
+                  _controller.showOverlay(
+                    SupportScreen(
+                      onBack: () => _controller.hideOverlay(),
+                    ),
+                    isSupport: true,
+                  )
+                }
+            });
   }
 
   void _onItemTapped(int index) {
-    if (_controller._authController.isCheckingAuth && !(index == 2 ||
-        index == 4)) {
-          _controller._authController.displayStatus = true;
-      Get.snackbar('Подождите', 'Идет проверка авторизации');
-      setState(() {
-        _selectedIndex = _pageController.page!.round();
+    print('_onItemTapped: $index');
+    if (!(index == 2 || index == 4)) {
+      manageNav(false, () => _navigateToPage(index), onFail: () {
+        setState(() {
+          _selectedIndex = _pageController.page!.round();
+        });
       });
-      return;
+    } else {
+      _navigateToPage(index);
     }
-
-    if (!_controller._authController.isAuthenticated) {
-      if (index == 2 || index == 4) {
-        // Allow access to Home and Menu
-        _navigateToPage(index);
-      } else {
-        Get.toNamed('/phoneLogin');
-        setState(() {
-          // Force index back to previous selection
-          _selectedIndex = _pageController.page!.round();
-        });
-        return;
-      }
-    }
-
-    if (!_controller._authController.isLoggedIn) {
-      if (index == 2 || index == 4) {
-        // Allow access to Home and Menu
-        _navigateToPage(index);
-      } else {
-        Get.toNamed('/codeEntering');
-        setState(() {
-          // Force index back to previous selection
-          _selectedIndex = _pageController.page!.round();
-        });
-        return;
-      }
-    }
-
-    // User is authenticated, handle all navigation
-    _navigateToPage(index);
   }
 
   void _navigateToPage(int index) {
@@ -443,31 +393,14 @@ class MainScreenState extends State<MainScreen> {
             (index) => _buildIcon(index),
           ),
           letIndexChange: (index) {
-            if (index == 2 || index == 4) {
+            if (index == 2 || index == 4) return true;
+
+            return manageNav(false, () {
               return true;
-            }
-            
-            if (_controller._authController.isCheckingAuth &&
-                index != 2 &&
-                index != 4) {
-              Get.snackbar('Сообщение', 'Подождите, идет проверка авторизации');
+            }, onFail: () {
+              print('failed');
               return false;
-            } else if (!_controller._authController.isCheckingAuth &&
-                !_controller._authController.isAuthenticated &&
-                !_controller._authController.isLoggedIn &&
-                index != 2 &&
-                index != 4) {
-              Get.toNamed('/phoneLogin');
-              return false;
-            } else if (!_controller._authController.isCheckingAuth &&
-                _controller._authController.isAuthenticated &&
-                !_controller._authController.isLoggedIn &&
-                index != 2 &&
-                index != 4) {
-              Get.toNamed('/codeEntering');
-              return false;
-            }
-            return true;
+            });
           },
           onTap: _onItemTapped,
           animationDuration: Duration(milliseconds: 500),

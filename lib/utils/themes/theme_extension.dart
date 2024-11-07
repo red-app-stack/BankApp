@@ -14,6 +14,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
   final Color? tertiaryCardFg;
   final Color? grayCardBg;
   final Color? grayCardFg;
+  final Color? yellowCardBg;
+  final Color? yellowCardFg;
+  final Color? purpleCardBg;
+  final Color? purpleCardFg;
+  final Color? goldCardBg;
+  final Color? goldCardFg;
+  final Color? redCardBg;
+  final Color? redCardFg;
 
   CustomColors({
     required this.backgroundGradientStart,
@@ -29,6 +37,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
     required this.tertiaryCardFg,
     required this.grayCardBg,
     required this.grayCardFg,
+    required this.yellowCardBg,
+    required this.yellowCardFg,
+    required this.purpleCardBg,
+    required this.purpleCardFg,
+    required this.goldCardBg,
+    required this.goldCardFg,
+    required this.redCardBg,
+    required this.redCardFg,
   });
 
   @override
@@ -49,6 +65,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
       tertiaryCardFg: tertiaryCardFg ?? tertiaryCardFg,
       grayCardBg: grayCardBg ?? grayCardBg,
       grayCardFg: grayCardFg ?? grayCardFg,
+      yellowCardBg: yellowCardBg ?? yellowCardBg,
+      yellowCardFg: yellowCardFg ?? yellowCardFg,
+      purpleCardBg: purpleCardBg ?? purpleCardBg,
+      purpleCardFg: purpleCardFg ?? purpleCardFg,
+      goldCardBg: goldCardBg ?? goldCardBg,
+      goldCardFg: goldCardFg ?? goldCardFg,
+      redCardBg: redCardBg ?? redCardBg,
+      redCardFg: redCardFg ?? redCardFg,
     );
   }
 
@@ -71,6 +95,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
       tertiaryCardFg: Color.lerp(tertiaryCardBg, other.tertiaryCardFg, t),
       grayCardBg: Color.lerp(grayCardBg, other.grayCardBg, t),
       grayCardFg: Color.lerp(grayCardFg, other.grayCardFg, t),
+      yellowCardBg: Color.lerp(yellowCardBg, other.yellowCardBg, t),
+      yellowCardFg: Color.lerp(yellowCardFg, other.yellowCardFg, t),
+      purpleCardBg: Color.lerp(purpleCardBg, other.purpleCardBg, t),
+      purpleCardFg: Color.lerp(purpleCardFg, other.purpleCardFg, t),
+      goldCardBg: Color.lerp(goldCardBg, other.goldCardBg, t),
+      goldCardFg: Color.lerp(goldCardFg, other.goldCardFg, t),
+      redCardBg: Color.lerp(redCardBg, other.redCardBg, t),
+      redCardFg: Color.lerp(redCardFg, other.redCardFg, t),
     );
   }
 }

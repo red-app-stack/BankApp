@@ -1,5 +1,4 @@
 import 'package:bank_app/controllers/accounts_controller.dart';
-import 'package:bank_app/views/other/settings_screen.dart';
 import 'package:bank_app/views/shared/user_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -32,7 +31,6 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-    //  Аутентификация при запуске по условию что пользователь ее включил
     Future.delayed(const Duration(milliseconds: 500), () {
       if (_authController.secureStore.currentSettings?.useBiometrics == true) {
         _authenticateWithBiometrics();
@@ -332,36 +330,41 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Future<void> _authenticateWithBiometrics() async {
     bool authenticated = false;
-    if (_authController.secureStore.currentSettings?.useBiometrics != true) {
-      await _showBiometricDialog();
-    }
     try {
       bool canCheckBiometrics = await _auth.canCheckBiometrics;
       if (canCheckBiometrics) {
-        authenticated = await _auth.authenticate(
-          localizedReason: 'Используйте Touch ID для входа в суперприложение',
-          options: const AuthenticationOptions(
-            stickyAuth: true,
-            useErrorDialogs: true,
-            biometricOnly: true,
-            sensitiveTransaction: true,
-          ),
-          authMessages: <AuthMessages>[
-            AndroidAuthMessages(
-              signInTitle: 'Вход в суперприложение',
-              cancelButton: 'Отмена',
-              biometricHint: ' ',
-              biometricNotRecognized: 'Отпечаток не распознан',
-              biometricSuccess: 'Успешно',
+        if (_authController.secureStore.currentSettings?.useBiometrics !=
+            true) {
+          await _showBiometricDialog();
+        }
+
+        if (_authController.secureStore.currentSettings?.useBiometrics ==
+            true) {
+          authenticated = await _auth.authenticate(
+            localizedReason: 'Используйте Touch ID для входа в суперприложение',
+            options: const AuthenticationOptions(
+              stickyAuth: true,
+              useErrorDialogs: true,
+              biometricOnly: true,
+              sensitiveTransaction: true,
             ),
-            IOSAuthMessages(
-              cancelButton: 'Отмена',
-              goToSettingsButton: 'Настройки',
-              goToSettingsDescription: 'Настройте биометрию',
-              lockOut: 'Включите биометрию',
-            ),
-          ],
-        );
+            authMessages: <AuthMessages>[
+              AndroidAuthMessages(
+                signInTitle: 'Вход в суперприложение',
+                cancelButton: 'Отмена',
+                biometricHint: ' ',
+                biometricNotRecognized: 'Отпечаток не распознан',
+                biometricSuccess: 'Успешно',
+              ),
+              IOSAuthMessages(
+                cancelButton: 'Отмена',
+                goToSettingsButton: 'Настройки',
+                goToSettingsDescription: 'Настройте биометрию',
+                lockOut: 'Включите биометрию',
+              ),
+            ],
+          );
+        }
       } else {
         Get.snackbar(
             'Сообщение', 'Touch ID не поддерживается на этом устройстве');
@@ -385,51 +388,51 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   }
 
   Future<void> _showBiometricDialog() async {
-    final theme = Theme.of(Get.context!); // Access the theme
+    final theme = Theme.of(context);
 
-    return showDialog<void>(
-      context: Get.context!,
-      barrierDismissible: false, // User must tap one of the buttons
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Biometric Authentication',
-            style: theme.textTheme.titleLarge, // Use theme text style
+    return Get.dialog<void>(AlertDialog(
+      title: Text(
+        'Биометрическая Аутентификация',
+        style: theme.textTheme.titleLarge,
+      ),
+      content: Text(
+        'Вы хотите использовать биометрическую аутентификацию?',
+        style: theme.textTheme.bodyMedium,
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          style: theme.textButtonTheme.style,
+          child: Text(
+            'Нет',
+            style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.error, fontWeight: FontWeight.bold),
           ),
-          content: Text(
-            'Do you want to use Biometric Authentication?',
-            style: theme.textTheme.bodyMedium, // Use theme text style
+        ),
+        TextButton(
+          onPressed: () async {
+            try {
+              final currentSettings =
+                  await _authController.secureStore.loadSettings() ??
+                      UserSettings.defaults();
+              final updatedSettings =
+                  currentSettings.copyWith(useBiometrics: true);
+              _authController.secureStore.saveSettings(updatedSettings);
+            } finally {
+              Get.back();
+            }
+          },
+          style: theme.textButtonTheme.style,
+          child: Text(
+            'Да',
+            style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: theme.textButtonTheme.style,
-              child: Text(
-                'No',
-                
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                final currentSettings =
-                    await _authController.secureStore.loadSettings() ??
-                        UserSettings.defaults();
-                final updatedSettings =
-                    currentSettings.copyWith(useBiometrics: true);
-                _authController.secureStore.saveSettings(updatedSettings);
-                Navigator.of(context).pop();
-              },
-              style: theme.textButtonTheme.style,
-              child: Text(
-                'Yes',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+        ),
+      ],
+    ));
   }
 
   void _handleCodeEntry() async {
