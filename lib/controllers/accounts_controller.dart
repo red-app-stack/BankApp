@@ -276,4 +276,37 @@ class AccountsController extends GetxController {
       return null;
     }
   }
+
+  Future<bool> addTestMoney(String accountNumber, double amount) async {
+    try {
+      isLoading.value = true;
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+
+      if (token == null) return false;
+
+      final response = await DioRetryHelper.retryRequest(() => dio.post(
+            '/accounts/add-test-money',
+            data: {
+              'account_number': accountNumber,
+              'amount': amount,
+            },
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
+
+      if (response.statusCode == 200) {
+        await fetchAccounts(); // Refresh accounts after adding test money
+        Get.snackbar('Success', 'Test money added successfully');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error adding test money: $e');
+      Get.snackbar('Error', 'Failed to add test money');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

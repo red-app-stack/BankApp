@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+import '../../controllers/accounts_controller.dart';
 import '../../utils/themes/theme_extension.dart';
 
 class TransfersController extends GetxController {
@@ -20,12 +21,17 @@ class TransfersController extends GetxController {
 
 class TransfersScreen extends StatelessWidget {
   final TransfersController controller = Get.put(TransfersController());
+  final AccountsController accountsController = Get.find<AccountsController>();
 
   TransfersScreen({super.key});
   void _handleTransferItemTap(BuildContext context, String type) {
     switch (type) {
       case 'phone':
         Get.toNamed('/phoneTransfer');
+        break;
+      case 'world':
+        accountsController.addTestMoney(
+            accountsController.accounts.first.accountNumber, 1000);
         break;
     }
   }
