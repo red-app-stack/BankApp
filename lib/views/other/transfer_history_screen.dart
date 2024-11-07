@@ -188,7 +188,7 @@ class TransferHistoryScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Перевод #${transaction.reference}',
+                            'Перевод',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           Text(
@@ -203,12 +203,15 @@ class TransferHistoryScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      (transaction.fromUserName == null ||
+                              transaction.fromAccount == '')
+                          ? Container()
+                          : Text(
+                              'От: ${transaction.fromUserName ?? transaction.fromAccount}',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                       Text(
-                        'От: ${transaction.fromAccount}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      Text(
-                        'Кому: ${transaction.toAccount}',
+                        'Кому: ${transaction.toUserName ?? transaction.toAccount}',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 8),
