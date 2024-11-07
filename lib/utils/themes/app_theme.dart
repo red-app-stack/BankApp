@@ -20,6 +20,14 @@ class AppTheme {
         tertiaryCardFg: AppColorsLight.tertiaryCardFg,
         grayCardBg: AppColorsLight.grayCardBg,
         grayCardFg: AppColorsLight.grayCardFg,
+        yellowCardBg: AppColorsLight.yellowCardBg,
+        yellowCardFg: AppColorsLight.yellowCardFg,
+        purpleCardBg: AppColorsLight.purpleCardBg,
+        purpleCardFg: AppColorsLight.purpleCardFg,
+        goldCardBg: AppColorsLight.goldCardBg,
+        goldCardFg: AppColorsLight.goldCardFg,
+        redCardBg: AppColorsLight.redCardBg,
+        redCardFg: AppColorsLight.redCardFg,
       ),
     ],
     brightness: Brightness.light,
@@ -178,8 +186,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
-        foregroundColor:
-            WidgetStateProperty.all(AppColorsLight.onPrimary),
+        foregroundColor: WidgetStateProperty.all(AppColorsLight.onPrimary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -189,10 +196,9 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-        side: WidgetStateProperty.all(
-            BorderSide(color: AppColorsLight.primary)),
-        foregroundColor:
-            WidgetStateProperty.all(AppColorsLight.primary),
+        side:
+            WidgetStateProperty.all(BorderSide(color: AppColorsLight.primary)),
+        foregroundColor: WidgetStateProperty.all(AppColorsLight.primary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -219,6 +225,14 @@ class AppTheme {
         tertiaryCardFg: AppColorsDark.tertiaryCardFg,
         grayCardBg: AppColorsDark.grayCardBg,
         grayCardFg: AppColorsDark.grayCardFg,
+        yellowCardBg: AppColorsDark.yellowCardBg,
+        yellowCardFg: AppColorsDark.yellowCardFg,
+        purpleCardBg: AppColorsDark.purpleCardBg,
+        purpleCardFg: AppColorsDark.purpleCardFg,
+        goldCardBg: AppColorsDark.goldCardBg,
+        goldCardFg: AppColorsDark.goldCardFg,
+        redCardBg: AppColorsDark.redCardBg,
+        redCardFg: AppColorsDark.redCardFg,
       ),
     ],
     brightness: Brightness.dark,
@@ -373,8 +387,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
-        foregroundColor:
-            WidgetStateProperty.all(AppColorsDark.onPrimary),
+        foregroundColor: WidgetStateProperty.all(AppColorsDark.onPrimary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,
@@ -384,10 +397,8 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-        side: WidgetStateProperty.all(
-            BorderSide(color: AppColorsDark.primary)),
-        foregroundColor:
-            WidgetStateProperty.all(AppColorsDark.primary),
+        side: WidgetStateProperty.all(BorderSide(color: AppColorsDark.primary)),
+        foregroundColor: WidgetStateProperty.all(AppColorsDark.primary),
         textStyle: WidgetStateProperty.all(TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16.0,

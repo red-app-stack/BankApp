@@ -6,7 +6,7 @@ import '../../controllers/auth_controller.dart';
 import 'package:flutter/foundation.dart';
 
 class RegisterPage extends StatelessWidget {
-  final AuthController authController = Get.find<AuthController>();
+  final AuthController _authController = Get.find<AuthController>();
   final FocusNode fullNameFocus = FocusNode();
   final FocusNode emailFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
@@ -48,7 +48,7 @@ class RegisterPage extends StatelessWidget {
                       fakeHero(
                         tag: 'fullname_input',
                         child: buildTextInput(
-                          authController.fullName.value,
+                          _authController.fullName.value,
                           "Введите ФИО",
                           iconType: 'profile',
                           context: context,
@@ -59,7 +59,7 @@ class RegisterPage extends StatelessWidget {
                       fakeHero(
                         tag: 'email_input',
                         child: buildTextInput(
-                          authController.email.value,
+                          _authController.email.value,
                           "Введите почту",
                           iconType: 'email',
                           context: context,
@@ -71,7 +71,7 @@ class RegisterPage extends StatelessWidget {
                       fakeHero(
                         tag: 'password_input',
                         child: buildTextInput(
-                          authController.password.value,
+                          _authController.password.value,
                           "Введите пароль",
                           iconType: 'password',
                           isPassword: true,
@@ -87,10 +87,10 @@ class RegisterPage extends StatelessWidget {
                       fakeHero(
                         tag: 'main_button',
                         child: ElevatedButton(
-                          onPressed: authController.status
+                          onPressed: _authController.status
                               ? null
-                              : () => authController.register(),
-                          child: authController.status
+                              : () => _authController.register(),
+                          child: _authController.status
                               ? SizedBox(
                                   width: 24,
                                   height: 24,
@@ -121,7 +121,7 @@ class RegisterPage extends StatelessWidget {
             ),
           ),
           Obx(() {
-            if (authController.status) {
+            if (_authController.status) {
               return Container(
                 color: Colors.black54,
                 child: Center(
@@ -156,7 +156,7 @@ class RegisterPage extends StatelessWidget {
                 child: Stack(
                   children: [
                     AnimatedAlign(
-                      alignment: authController.userRole == 'teacher'
+                      alignment: _authController.userRole == 'teacher'
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
                       duration: Duration(milliseconds: 200),
@@ -176,24 +176,24 @@ class RegisterPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => authController.setRole('student'),
+                            onTap: () => _authController.setRole('student'),
                             behavior: HitTestBehavior.opaque,
                             child: _buildToggleOption(
                                 context: context,
                                 title: "Студент",
                                 isSelected:
-                                    authController.userRole != 'teacher'),
+                                    _authController.userRole != 'teacher'),
                           ),
                         ),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => authController.setRole('teacher'),
+                            onTap: () => _authController.setRole('teacher'),
                             behavior: HitTestBehavior.opaque,
                             child: _buildToggleOption(
                                 context: context,
                                 title: "Преподаватель",
                                 isSelected:
-                                    authController.userRole == 'teacher'),
+                                    _authController.userRole == 'teacher'),
                           ),
                         ),
                       ],

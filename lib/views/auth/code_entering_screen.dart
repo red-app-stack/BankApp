@@ -1,12 +1,14 @@
+import 'package:bank_app/controllers/accounts_controller.dart';
+import 'package:bank_app/views/shared/user_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
-
 import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
+import '../shared/widgets.dart';
 
 class CodeEnteringScreen extends StatefulWidget {
   const CodeEnteringScreen({super.key});
@@ -29,10 +31,11 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-    //  Аутентификация при запуске по условию что пользователь ее включил
-    // Future.delayed(const Duration(seconds: 2), () {
-    //   _authenticateWithBiometrics();
-    // });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_authController.secureStore.currentSettings?.useBiometrics == true) {
+        _authenticateWithBiometrics();
+      }
+    });
     super.initState();
   }
 
@@ -60,7 +63,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
       children: [
         _buildBackButton(theme),
         SizedBox(height: size.height * 0.02),
-        _buildUserCard(theme, size),
+        buildUserCard(_userService, theme, size),
         SizedBox(height: size.height * 0.02),
         _buildAccessCodeLabel(theme),
         SizedBox(height: size.height * 0.02),
@@ -82,7 +85,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _buildBackButton(theme),
-              _buildUserCard(theme, size),
+              buildUserCard(_userService, theme, size),
               SizedBox(height: size.height * 0.02),
               _buildForgotCodeButton(theme),
             ],
@@ -107,53 +110,24 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   Widget _buildBackButton(ThemeData theme) {
     return Align(
-      alignment: Alignment.topLeft,
-      child: IconButton(
-        icon: SvgPicture.asset(
-          'assets/icons/ic_back.svg',
-          width: 32,
-          height: 32,
-          colorFilter: ColorFilter.mode(
-            theme.colorScheme.primary,
-            BlendMode.srcIn,
-          ),
-        ),
-        onPressed: () => Get.toNamed('/phoneLogin'),
-      ),
-    );
-  }
-
-  Widget _buildUserCard(ThemeData theme, Size size) {
-    return Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                child: Text(
-                  _userService
-                      .getInitials(_userService.currentUser?.fullName ?? ''),
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        alignment: Alignment.topLeft,
+        child: fakeHero(
+          tag: 'ic_back',
+          child: IconButton(
+            icon: SvgPicture.asset(
+              'assets/icons/ic_back.svg',
+              width: 32,
+              height: 32,
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary,
+                BlendMode.srcIn,
               ),
-              SizedBox(height: size.height * 0.02),
-              Text(
-                _userService.currentUser?.fullName ?? '...',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
+            onPressed: _authController.isCreatingCode
+                ? () => Navigator.of(context).pop()
+                : _authController.isAuthenticated
+                    ? () => Navigator.of(context).pop()
+                    : () => Get.toNamed('/phoneLogin'),
           ),
         ));
   }
@@ -251,9 +225,25 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: () {},
+      onPressed: !_authController.isCreatingCode
+          ? () {}
+          : creationStage == 0
+              ? () {}
+              : creationStage == 1
+                  ? () {
+                      _enteredCode = '';
+                      createdCode = '';
+                      setState(() {
+                        creationStage = 0;
+                      });
+                    }
+                  : () {},
       child: Text(
-        'Забыли код доступа?',
+        !_authController.isCreatingCode
+            ? 'Забыли код доступа?'
+            : creationStage == 0
+                ? ''
+                : 'Сбросить код доступа',
         style: theme.textTheme.bodyLarge?.copyWith(
           color: theme.colorScheme.primary,
           fontWeight: FontWeight.w600,
@@ -343,30 +333,38 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     try {
       bool canCheckBiometrics = await _auth.canCheckBiometrics;
       if (canCheckBiometrics) {
-        authenticated = await _auth.authenticate(
-          localizedReason: 'Используйте Touch ID для входа в суперприложение',
-          options: const AuthenticationOptions(
-            stickyAuth: true,
-            useErrorDialogs: true,
-            biometricOnly: true,
-            sensitiveTransaction: true,
-          ),
-          authMessages: <AuthMessages>[
-            AndroidAuthMessages(
-              signInTitle: 'Вход в суперприложение',
-              cancelButton: 'Отмена',
-              biometricHint: ' ',
-              biometricNotRecognized: 'Отпечаток не распознан',
-              biometricSuccess: 'Успешно',
+        if (_authController.secureStore.currentSettings?.useBiometrics !=
+            true) {
+          await _showBiometricDialog();
+        }
+
+        if (_authController.secureStore.currentSettings?.useBiometrics ==
+            true) {
+          authenticated = await _auth.authenticate(
+            localizedReason: 'Используйте Touch ID для входа в суперприложение',
+            options: const AuthenticationOptions(
+              stickyAuth: true,
+              useErrorDialogs: true,
+              biometricOnly: true,
+              sensitiveTransaction: true,
             ),
-            IOSAuthMessages(
-              cancelButton: 'Отмена',
-              goToSettingsButton: 'Настройки',
-              goToSettingsDescription: 'Настройте биометрию',
-              lockOut: 'Включите биометрию',
-            ),
-          ],
-        );
+            authMessages: <AuthMessages>[
+              AndroidAuthMessages(
+                signInTitle: 'Вход в суперприложение',
+                cancelButton: 'Отмена',
+                biometricHint: ' ',
+                biometricNotRecognized: 'Отпечаток не распознан',
+                biometricSuccess: 'Успешно',
+              ),
+              IOSAuthMessages(
+                cancelButton: 'Отмена',
+                goToSettingsButton: 'Настройки',
+                goToSettingsDescription: 'Настройте биометрию',
+                lockOut: 'Включите биометрию',
+              ),
+            ],
+          );
+        }
       } else {
         Get.snackbar(
             'Сообщение', 'Touch ID не поддерживается на этом устройстве');
@@ -378,11 +376,63 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     }
 
     if (authenticated) {
-      Get.offAllNamed('/main');
+      _authController.isAuthenticated = true;
+      _authController.isLoggedIn = true;
+      _handleMainNavigation();
+      Get.find<AccountsController>().fetchAccounts();
       print("Authentication successful!");
     } else {
+      _authController.isLoggedIn = false;
       print("Authentication failed.");
     }
+  }
+
+  Future<void> _showBiometricDialog() async {
+    final theme = Theme.of(context);
+
+    return Get.dialog<void>(AlertDialog(
+      title: Text(
+        'Биометрическая Аутентификация',
+        style: theme.textTheme.titleLarge,
+      ),
+      content: Text(
+        'Вы хотите использовать биометрическую аутентификацию?',
+        style: theme.textTheme.bodyMedium,
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          style: theme.textButtonTheme.style,
+          child: Text(
+            'Нет',
+            style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.error, fontWeight: FontWeight.bold),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            try {
+              final currentSettings =
+                  await _authController.secureStore.loadSettings() ??
+                      UserSettings.defaults();
+              final updatedSettings =
+                  currentSettings.copyWith(useBiometrics: true);
+              _authController.secureStore.saveSettings(updatedSettings);
+            } finally {
+              Get.back();
+            }
+          },
+          style: theme.textButtonTheme.style,
+          child: Text(
+            'Да',
+            style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ));
   }
 
   void _handleCodeEntry() async {
@@ -392,15 +442,20 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
           creationStage = 1;
           createdCode = _enteredCode;
           setState(() => _enteredCode = '');
-        } else {
-          await _authController.storeAccessCode(_enteredCode);
-          Get.offAllNamed('/main');
+        } else if (creationStage == 1) {
+          await _authController.secureStore.secureStore(
+              'access_code', _authController.hashAccessCode(_enteredCode));
+          _authController.isCreatingCode = false;
+          _authController.isAuthenticated = true;
+          _authController.isLoggedIn = true;
+          _handleMainNavigation();
+          Get.find<AccountsController>().fetchAccounts();
         }
       } else {
-        // Validate existing code
         final isValid = await _authController.validateAccessCode(_enteredCode);
         if (isValid) {
-          Get.offAllNamed('/main');
+          _handleMainNavigation();
+          Get.find<AccountsController>().fetchAccounts();
         } else {
           setState(() => _enteredCode = '');
           Get.snackbar('Ошибка', 'Неверный код доступа');
@@ -409,10 +464,17 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     }
   }
 
+  void _handleMainNavigation() {
+    if (Get.currentRoute != '/main') {
+      Get.offNamed('/main');
+    } else {
+      Get.offAllNamed('/main');
+    }
+  }
+
   @override
   void dispose() {
     _codeFocusNode.dispose();
-    _authController.code.value.dispose();
     super.dispose();
   }
 }

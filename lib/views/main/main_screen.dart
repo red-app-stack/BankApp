@@ -1,8 +1,10 @@
+import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../../routes/manage_auth_nav.dart';
 import '../../utils/themes/theme_extension.dart';
 import '../other/profile_screen.dart';
 import '../other/support_screen.dart';
@@ -24,7 +26,7 @@ class MainScreenController extends GetxController
   void onInit() {
     super.onInit();
     overlayAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     overlayAnimation = CurvedAnimation(
@@ -43,12 +45,11 @@ class MainScreenController extends GetxController
   void showOverlay(Widget screen,
       {bool isProfile = false, bool isSupport = false}) {
     if (hasOverlay) {
-      overlayAnimationController.reverse(from: 0.001).whenComplete(() {
+      overlayAnimationController.reverse(from: 0.003).whenComplete(() {
         overlayScreen.value = screen;
         isProfileOpen.value = isProfile;
         isSupportOpen.value = isSupport;
-        overlayAnimationController.forward(
-            from: 0.001);
+        overlayAnimationController.forward(from: 0.003);
       });
     } else {
       overlayScreen.value = screen;
@@ -75,88 +76,9 @@ class MainScreen extends StatefulWidget {
   MainScreenState createState() => MainScreenState();
 }
 
-class ZoomFadeTransition extends StatelessWidget {
-  final Widget child;
-  final Animation<double> animation;
-
-  const ZoomFadeTransition({
-    required this.child,
-    required this.animation,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final zoomCurve = CurvedAnimation(
-      parent: animation,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
-    );
-
-    final fadeCurve = CurvedAnimation(
-      parent: animation,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-    );
-
-    return FadeTransition(
-      opacity: fadeCurve,
-      child: ScaleTransition(
-        alignment: Alignment.center,
-        scale: Tween<double>(
-          begin: 0.85,
-          end: 1.0,
-        ).animate(zoomCurve),
-        child: child,
-      ),
-    );
-  }
-}
-
-class SlideOverlayTransition extends StatelessWidget {
-  final Widget child;
-  final Animation<double> animation;
-  final bool fromRight;
-
-  const SlideOverlayTransition({
-    required this.child,
-    required this.animation,
-    this.fromRight = true,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: Offset(fromRight ? 1.0 : -1.0, 0.0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          )),
-          child: FadeTransition(
-            opacity: Tween<double>(
-              begin: 0.0,
-              end: 1.0,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-            )),
-            child: child,
-          ),
-        );
-      },
-      child: child,
-    );
-  }
-}
-
 class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 2;
-
+  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   late PageController _pageController;
   final MainScreenController _controller = Get.put(MainScreenController());
 
@@ -202,32 +124,55 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _handleProfileTap() {
-    if (_controller.isProfileOpen.value) {
-      _controller.hideOverlay();
-    } else {
-      _controller.showOverlay(
-        ProfileScreen(
-          onBack: () => _controller.hideOverlay(),
-        ),
-        isProfile: true,
-      );
-    }
+    manageNav(
+        false,
+        () => {
+              if (_controller.isProfileOpen.value)
+                {_controller.hideOverlay()}
+              else
+                {
+                  _controller.showOverlay(
+                    ProfileScreen(
+                      onBack: () => _controller.hideOverlay(),
+                    ),
+                    isProfile: true,
+                  )
+                }
+            });
   }
 
   void _handleSupportTap() {
-    if (_controller.isSupportOpen.value) {
-      _controller.hideOverlay();
-    } else {
-      _controller.showOverlay(
-        SupportScreen(
-          onBack: () => _controller.hideOverlay(),
-        ),
-        isSupport: true,
-      );
-    }
+    manageNav(
+        false,
+        () => {
+              if (_controller.isSupportOpen.value)
+                {_controller.hideOverlay()}
+              else
+                {
+                  _controller.showOverlay(
+                    SupportScreen(
+                      onBack: () => _controller.hideOverlay(),
+                    ),
+                    isSupport: true,
+                  )
+                }
+            });
   }
 
   void _onItemTapped(int index) {
+    print('_onItemTapped: $index');
+    if (!(index == 2 || index == 4)) {
+      manageNav(false, () => _navigateToPage(index), onFail: () {
+        setState(() {
+          _selectedIndex = _pageController.page!.round();
+        });
+      });
+    } else {
+      _navigateToPage(index);
+    }
+  }
+
+  void _navigateToPage(int index) {
     if (_controller.hasOverlay) {
       _controller.hideOverlay();
     }
@@ -438,6 +383,7 @@ class MainScreenState extends State<MainScreen> {
           canvasColor: Colors.transparent,
         ),
         child: CurvedNavigationBar(
+          key: _bottomNavigationKey,
           color: Theme.of(context).colorScheme.surfaceContainer,
           buttonBackgroundColor: Theme.of(context).colorScheme.primary,
           backgroundColor: Colors.transparent,
@@ -446,11 +392,100 @@ class MainScreenState extends State<MainScreen> {
             _iconPaths.length,
             (index) => _buildIcon(index),
           ),
+          letIndexChange: (index) {
+            if (index == 2 || index == 4) return true;
+
+            return manageNav(false, () {
+              return true;
+            }, onFail: () {
+              print('failed');
+              return false;
+            });
+          },
           onTap: _onItemTapped,
           animationDuration: Duration(milliseconds: 500),
           animationCurve: Curves.easeInOut,
         ),
       ),
+    );
+  }
+}
+
+class ZoomFadeTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+
+  const ZoomFadeTransition({
+    required this.child,
+    required this.animation,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final zoomCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+    );
+
+    final fadeCurve = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+    );
+
+    return FadeTransition(
+      opacity: fadeCurve,
+      child: ScaleTransition(
+        alignment: Alignment.center,
+        scale: Tween<double>(
+          begin: 0.85,
+          end: 1.0,
+        ).animate(zoomCurve),
+        child: child,
+      ),
+    );
+  }
+}
+
+class SlideOverlayTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+  final bool fromRight;
+
+  const SlideOverlayTransition({
+    required this.child,
+    required this.animation,
+    this.fromRight = true,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: Offset(fromRight ? 1.0 : -1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          )),
+          child: FadeTransition(
+            opacity: Tween<double>(
+              begin: 0.0,
+              end: 1.0,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+            )),
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 }

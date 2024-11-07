@@ -43,6 +43,10 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
     _fullNameFocusNode.dispose();
     _passwordFocusNode.dispose();
     _passwordValidityWorker.dispose();
+    // _authController.password.value.dispose();
+    // _authController.email.value.dispose();
+    // _authController.phone.value.dispose();
+    // _authController.verification.value.dispose();
     super.dispose();
   }
 
@@ -50,8 +54,10 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+    final botomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -75,8 +81,8 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                     ),
                   )),
               SizedBox(height: size.height * 0.02),
-              Align(
-                alignment: Alignment.centerLeft,
+              Expanded(
+                  child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Form(
@@ -235,8 +241,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                                     _isPasswordVisible = !_isPasswordVisible;
                                   });
                                 },
-                                tooltip:
-                                    'Пароль должен содержать заглавные и строчные буквы, цифры и спец. символы',
+                                tooltip: 'Пароль должен содержать заглавные и строчные буквы, цифры и спец. символы',
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -329,74 +334,78 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                                 )
                               : Container(),
                         ),
+                        Center(
+                          child: fakeHero(
+                            tag: 'ic_login',
+                            child: SizedBox(
+                              height: size.width <= size.height
+                                  ? size.height * 0.3
+                                  : size.width * 0.3,
+                              child: (theme.brightness == Brightness.dark)
+                                  ? Container()
+                                  : SvgPicture.asset(
+                                      'assets/icons/illustration_login.svg',
+                                      fit: BoxFit.contain,
+                                    ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Center(
-                  child: fakeHero(
-                    tag: 'ic_login',
-                    child: SizedBox(
-                      height: size.height * 0.3,
-                      child: SvgPicture.asset(
-                        'assets/icons/illustration_login.svg',
-                        fit: BoxFit.contain,
+              )),
+              Obx(() => AnimatedPadding(
+                    duration: const Duration(milliseconds: 50),
+                    curve: Curves.easeInOut,
+                    padding: EdgeInsets.only(bottom: botomInset),
+                    child: ElevatedButton(
+                      onPressed: _authController.status
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                if (!_authController.isLoggingIn) {
+                                  _authController.register();
+                                } else {
+                                  setState(() {
+                                    _attempts++;
+                                  });
+                                  _authController.login();
+                                }
+                              }
+                            },
+                      style: theme.elevatedButtonTheme.style?.copyWith(
+                        backgroundColor: WidgetStateProperty.all(
+                          theme.colorScheme.secondaryContainer,
+                        ),
                       ),
+                      child: _authController.status
+                          ? SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : fakeHero(
+                              tag: 'main_button',
+                              child: Text(
+                                'Продолжить',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.onSurface,
+                                  fontFamily: 'OpenSans',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )),
                     ),
-                  ),
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Obx(
-                () => ElevatedButton(
-                  onPressed: _authController.status
-                      ? null
-                      : () {
-                          if (_formKey.currentState!.validate()) {
-                            if (!_authController.isLoggingIn) {
-                              _authController.register();
-                            } else {
-                              setState(() {
-                                _attempts++;
-                              });
-                              _authController.login();
-                            }
-                          }
-                        },
-                  style: theme.elevatedButtonTheme.style?.copyWith(
-                    backgroundColor: WidgetStateProperty.all(
-                      theme.colorScheme.secondaryContainer,
-                    ),
-                  ),
-                  child: _authController.status
-                      ? SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : fakeHero(
-                          tag: 'main_button',
-                          child: Text(
-                            'Продолжить',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontFamily: 'OpenSans',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          )),
-                ),
-              ),
+                  )),
               SizedBox(
-                height: size.height * 0.02,
-              ),
+                  height: botomInset <= size.height * 0.02
+                      ? size.height * 0.02
+                      : 0),
             ],
           ),
         ),

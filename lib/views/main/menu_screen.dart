@@ -1,17 +1,12 @@
+import 'dart:async';
+
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../shared/shared_classes.dart';
 
-class MenuController extends GetxController {
-  final RxDouble scrollOffset = 0.0.obs;
-  final double collapsedHeight = 60.0;
-  final double expandedHeight = 120.0;
-}
-
 class MenuScreen extends StatelessWidget {
-  final MenuController controller = Get.put(MenuController());
   final AuthController _authController = Get.find<AuthController>();
 
   MenuScreen({super.key});
@@ -50,12 +45,16 @@ class MenuScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (scrollNotification) {
-            if (scrollNotification is ScrollUpdateNotification) {
-              controller.scrollOffset.value = scrollNotification.metrics.pixels;
+        child: RefreshIndicator(
+          onRefresh: () async {
+            try {
+              await Future.delayed(const Duration(milliseconds: 500));
+            } on TimeoutException {
+              print('Refresh operation timed out');
+            } catch (e) {
+              print('Error during refresh: $e');
             }
-            return true;
+            return Future.value();
           },
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 16),

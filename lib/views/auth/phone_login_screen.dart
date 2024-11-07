@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../controllers/auth_controller.dart';
+import '../shared/formatters.dart';
 import '../shared/widgets.dart';
 
 class PhoneLoginPage extends StatefulWidget {
@@ -13,7 +14,7 @@ class PhoneLoginPage extends StatefulWidget {
 }
 
 class PhoneLoginPageState extends State<PhoneLoginPage> {
-  final AuthController authController = Get.find<AuthController>();
+  final AuthController _authController = Get.find<AuthController>();
 
   final _formKey = GlobalKey<FormState>();
   bool _isPhoneValid = true;
@@ -24,7 +25,7 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
   int _previousPhoneValue = 0;
 
   void updatePhoneNumber(String value) {
-    int cursorPosition = authController.phone.value.selection.start;
+    int cursorPosition = _authController.phone.value.selection.start;
 
     String oldDigits =
         _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
@@ -50,12 +51,20 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
       newCursorPosition = formatted.length;
     }
 
-    authController.phone.value.value = TextEditingValue(
+    _authController.phone.value.value = TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
 
     _previousPhoneValue = int.tryParse(formatted) ?? 0;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      currentLocale = Localizations.localeOf(context);
+    });
   }
 
   @override
@@ -68,8 +77,10 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+    final botomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -79,16 +90,31 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                 alignment: Alignment.topLeft,
                 child: fakeHero(
                     tag: 'ic_back',
-                    child: SizedBox(
-                      height: 32,
-                      width: 32,
-                    )),
+                    child: (1 == 1)
+                        ? IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/icons/ic_back.svg',
+                              width: 32,
+                              height: 32,
+                              colorFilter: ColorFilter.mode(
+                                theme.colorScheme.primary,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            onPressed: (1 == 1)
+                                ? () => Navigator.of(context).pop()
+                                : () => Get.toNamed('/main'),
+                          )
+                        : SizedBox(
+                            height: 32,
+                            width: 32,
+                          )),
               ),
               SizedBox(
                 height: size.height * 0.02,
               ),
               Expanded(
-                flex: 3,
+                  child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Form(
@@ -112,7 +138,7 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                         fakeHero(
                             tag: 'text_input1',
                             child: TextFormField(
-                              controller: authController.phone.value,
+                              controller: _authController.phone.value,
                               focusNode: phoneFocus,
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -184,68 +210,75 @@ class PhoneLoginPageState extends State<PhoneLoginPage> {
                                 return null;
                               },
                             )),
+                        Center(
+                            child: fakeHero(
+                          tag: 'ic_login',
+                          child: SizedBox(
+                            height: size.width <= size.height
+                                ? size.height * 0.3
+                                : size.width * 0.3,
+                            child: (theme.brightness == Brightness.dark)
+                                ? Container()
+                                : SvgPicture.asset(
+                                    'assets/icons/illustration_login.svg',
+                                    fit: BoxFit.contain,
+                                  ),
+                          ),
+                        )),
                       ],
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Center(
-                    child: fakeHero(
-                        tag: 'ic_login',
-                        child: SizedBox(
-                          height: size.height * 0.3,
-                          child: SvgPicture.asset(
-                            'assets/icons/illustration_login.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ))),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Obx(() => ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate() &&
-                        !authController.status) {
-                      print(authController.phone.value.text.trim());
-                      authController.verifyServerConnection();
-                      authController.checkUserPhone();
-                      authController.email.value.text = '';
-                      authController.password.value.text = '';
-                      authController.verification.value.text = '';
-                      authController.setCodeSent(false);
-                    }
-                  },
-                  style: theme.elevatedButtonTheme.style?.copyWith(
-                    backgroundColor: WidgetStateProperty.all(
-                      theme.colorScheme.secondaryContainer,
-                    ),
-                  ),
-                  child: fakeHero(
-                    tag: 'main_button',
-                    child: authController.status
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            "Далее",
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontFamily: 'OpenSans',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ))),
+              )),
+              Obx(() => AnimatedPadding(
+                  duration: const Duration(milliseconds: 50),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.only(bottom: botomInset),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate() &&
+                            !_authController.status) {
+                          print(_authController.phone.value.text.trim());
+                          // Лишняя проверка, ведь оно не асинхронно.
+                          // authController.verifyServerConnection();
+                          _authController.checkUserPhone();
+                          _authController.email.value.text = '';
+                          _authController.password.value.text = '';
+                          _authController.verification.value.text = '';
+                          _authController.setCodeSent(false);
+                        }
+                      },
+                      style: theme.elevatedButtonTheme.style?.copyWith(
+                        backgroundColor: WidgetStateProperty.all(
+                          theme.colorScheme.secondaryContainer,
+                        ),
+                      ),
+                      child: fakeHero(
+                        tag: 'main_button',
+                        child: _authController.status
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Text(
+                                "Далее",
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.onSurface,
+                                  fontFamily: 'OpenSans',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      )))),
               SizedBox(
-                height: size.height * 0.02,
-              ),
+                  height: botomInset <= size.height * 0.02
+                      ? size.height * 0.02
+                      : 0),
             ],
           ),
         ),

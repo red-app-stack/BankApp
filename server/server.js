@@ -10,19 +10,31 @@ const path = require('path');
 require('dotenv').config();
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const emailService = require('./emailService');
 
 const app = express();
-app.use(cors());
+const requestIdMiddleware = require('./middleware/requestId');
+
+app.use(cors({
+  exposedHeaders: ['x-request-id'],
+  allowedHeaders: ['x-request-id', 'content-type', 'authorization']
+}));
+
 app.use(bodyParser.json());
+app.use(morgan('dev'));
+app.use(requestIdMiddleware);
+
 
 // Настройки логов сервера
-const logDirectory = path.join(__dirname, process.env.LOG_DIR);
-const logFilePath = path.join(logDirectory, process.env.LOG_FILE);
+const logDirectory = path.join(__dirname, process.env.LOG_DIR || 'logs');
+const logFilePath = path.join(logDirectory, process.env.LOG_FILE || 'server.log');
 
-// Убедиться что папка логов сервера существует
+// Ensure the log directory exists
 if (!fs.existsSync(logDirectory)) {
-  fs.mkdirSync(logDirectory);
+  fs.mkdirSync(logDirectory, { recursive: true });
 }
+
+console.log(`Logging to: ${logFilePath}`);
 
 const accessLogStream = fs.createWriteStream(logFilePath, { flags: 'a' });
 
@@ -33,80 +45,52 @@ app.get('/', (req, res) => {
   res.status(999).send('');
 });
 
-function getTransporter(email) {
-  const domain = email.split('@')[1];
-  let transporter;
-  logEvent(`Fetching transporter for domain: ${domain}`);
-  logEvent(`Testing with${process.env.GMAIL_USER}`);
-  logEvent(`Testing with${process.env.GMAIL_PASS}`);
-
-  switch (domain) {
-    case 'gmail.com':
-      transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS,
-        },
-      });
-      break;
-    case 'yahoo.com':
-      transporter = nodemailer.createTransport({
-        service: 'Yahoo',
-        auth: {
-          user: process.env.YAHOO_USER,
-          pass: process.env.YAHOO_PASS,
-        },
-      });
-      break;
-    case 'mail.ru':
-      transporter = nodemailer.createTransport({
-        host: 'smtp.mail.ru',
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.MAILRU_USER,
-          pass: process.env.MAILRU_PASS,
-        },
-      });
-      break;
-    // Добавьте остальные службы почты
-    default:
-      throw new Error('Unsupported email provider');
-  }
-
-  return transporter;
-}
-
-// Функция кода подтверждения
-async function sendOTP(email, otp) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Код подтверждения',
-    text: `Ваш код подтверждения для входа: ${otp}`,
-  };
-
-  try {
-    const transporter = getTransporter(email);
-    await transporter.sendMail(mailOptions);
-    console.log(`OTP sent to ${email}`);
-    logEvent(`OTP sent to ${email}`);
-  } catch (error) {
-    console.error(`Failed to send OTP to ${email}:`, error);
-    logEvent(`Failed to send OTP to ${email}:`, error);
-    throw new Error('Failed to send OTP');
-  }
-}
-
 // Настройка PostgreSQL подключения
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASS,
   port: process.env.DB_PORT,
 });
+
+global.otpStore = {};
+const otpAttempts = {};
+const OTP_MAX_ATTEMPTS = 3;
+const OTP_EXPIRY_MINUTES = 10;
+
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+function isValidDate(dateString) {
+  const date = new Date(dateString);
+  return date instanceof Date && !isNaN(date) && date < new Date();
+}
+
+function isValidPhone(phone) {
+  // Разрешает форматы типа: (123) 456-78-90
+  const phoneRegex = /^\([0-9]{3}\)\s[0-9]{3}-[0-9]{4}$/;
+  return phoneRegex.test(phone);
+}
+
+  function obfuscateEmail(email) {
+    const [local, domain] = email.split('@');
+    const obfuscated = `${local.charAt(0)}${'*'.repeat(local.length - 2)}${local.charAt(local.length - 1)}@${domain}`;
+    return obfuscated;
+  }
+
+// Функция для скрытия номера телефона
+function obfuscatePhone(phone) {
+  return phone.slice(0, 2) + '*'.repeat(phone.length - 4) + phone.slice(-2);
+}
 
 // Генерация надежного токена
 function generateToken(user) {
@@ -230,29 +214,6 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-function isValidDate(dateString) {
-  const date = new Date(dateString);
-  return date instanceof Date && !isNaN(date) && date < new Date();
-}
-
-function isValidPhone(phone) {
-  // Разрешает форматы типа: (123) 456-78-90
-  const phoneRegex = /^\([0-9]{3}\)\s[0-9]{3}-[0-9]{4}$/;
-  return phoneRegex.test(phone);
-}
-
-function obfuscateEmail(email) {
-  const [name, domain] = email.split('@');
-  const obfuscatedName = name.slice(0, 2) + '*'.repeat(name.length - 4) + name.slice(-2);
-  const obfuscatedDomain = domain.slice(0, 1) + '*'.repeat(domain.length - 3) + domain.slice(-2);
-  return `${obfuscatedName}@${obfuscatedDomain}`;
-}
-
-// Функция для скрытия номера телефона
-function obfuscatePhone(phone) {
-  return phone.slice(0, 2) + '*'.repeat(phone.length - 4) + phone.slice(-2);
-}
-
 // Точка Входа
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
@@ -356,11 +317,33 @@ app.post('/auth/check-partial-email', async (req, res) => {
   }
 });
 
+app.get('/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, email, full_name, phone_number, role, created_at, is_verified FROM users WHERE id = $1',
+      [req.user.id]
+    );
 
-global.otpStore = {};
-const otpAttempts = {};
-const OTP_MAX_ATTEMPTS = 3;
-const OTP_EXPIRY_MINUTES = 10;
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+
+    return res.status(200).json({
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      phone_number: user.phone_number,
+      role: user.role,
+      is_verified: user.is_verified,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    logEvent(`Error fetching user profile: ${error.message}`);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.post('/auth/verify-code', async (req, res) => {
   const { code, email, exists } = req.body;
@@ -460,18 +443,20 @@ app.post('/auth/send-verification-code', async (req, res) => {
       global.otpStore = {};
     }
 
-    // Сохранить код с привязкой ко времени
+    // Save the OTP with timestamp
     global.otpStore[email] = otp;
     otpAttempts[email] = {
       count: 0,
       timestamp: Date.now()
     };
 
-    await sendOTP(email, otp);
+    // Use the emailService to send OTP
+    await emailService.sendOTP(email, otp);
+    
     logEvent(`Verification code sent to ${email}`);
     res.status(200).json({ message: 'Verification code sent' });
   } catch (error) {
-    // Очистка сохраненных кодов в случае ошибки
+    // Clean up stored codes in case of error
     if (global.otpStore && global.otpStore[email]) {
       delete global.otpStore[email];
     }
@@ -483,19 +468,6 @@ app.post('/auth/send-verification-code', async (req, res) => {
     res.status(500).json({ error: 'Failed to send verification code' });
   }
 });
-
-
-function authenticateToken(req, res, next) {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.sendStatus(401); // Нет токена
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403); // Неверный токен
-    req.user = user;
-    next();
-  });
-}
-
 // Точка выхода
 app.post('/auth/logout', authenticateToken, async (req, res) => {
   logEvent(`User logged out: ${req.user.email}`); // Use req.user set by authenticateToken

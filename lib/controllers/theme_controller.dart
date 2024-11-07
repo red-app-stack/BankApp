@@ -1,73 +1,41 @@
-import 'package:bank_app/utils/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../views/shared/secure_store.dart';
+import '../views/shared/user_settings.dart';
+
 
 class ThemeController extends GetxController {
-  Rx<ThemeMode> themeMode = ThemeMode.system.obs;
-  Rx<ThemeData> themeData = AppTheme.darkTheme.obs;
-  SharedPreferences? sp;
-
+  final secureStore = Get.find<SecureStore>();
+  var themeMode = ThemeMode.system.obs;
+  
   @override
-  Future<void> onInit() async {
-    sp = await SharedPreferences.getInstance();
+  void onInit() {
     super.onInit();
+    loadSavedSettings();
   }
 
-  Future<void> loadThemeMode() async {
-    String? savedTheme = sp!.getString('themeMode');
-    themeMode.value = _themeModeFromString(savedTheme ?? 'system');
-    _setTheme(themeMode.value);
+  Future<void> loadSavedSettings() async {
+    final settings = await secureStore.loadSettings();
+    if (settings != null) {
+      themeMode.value = settings.themeMode;
+    } else {
+      themeMode.value = ThemeMode.system;
+    }
   }
 
-  void toggleThisTheme(ThemeMode newThemeMode, BuildContext context) {
-    _setTheme(newThemeMode);
+  void setThemeMode(ThemeMode mode) {
+    themeMode.value = mode;
+    saveThemeSettings();
+  }
+
+  Future<void> saveThemeSettings() async {
+    final currentSettings = await secureStore.loadSettings() ?? UserSettings.defaults();
+    final updatedSettings = currentSettings.copyWith(themeMode: themeMode.value);
+    await secureStore.saveSettings(updatedSettings);
+    Get.changeThemeMode(themeMode.value);
   }
 
   void toggleTheme(BuildContext context) {
-    ThemeMode newThemeMode;
-
-    if (themeMode.value == ThemeMode.system) {
-      final brightness = MediaQuery.of(context).platformBrightness;
-      newThemeMode =
-          brightness == Brightness.light ? ThemeMode.dark : ThemeMode.light;
-    } else {
-      newThemeMode =
-          themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    }
-    _setTheme(newThemeMode);
-  }
-
-  void setSystemTheme(BuildContext context) {
-    _setTheme(ThemeMode.system);
-    themeMode.value = ThemeMode.system;
-    sp!.setBool('system', true);
-  }
-
-  void _setTheme(ThemeMode mode) {
-    themeMode.value = mode;
-    sp!.setString('themeMode', _themeModeToString(mode));
-  }
-
-  ThemeMode _themeModeFromString(String mode) {
-    switch (mode) {
-      case 'dark':
-        return ThemeMode.dark;
-      case 'light':
-        return ThemeMode.light;
-      default:
-        return ThemeMode.system;
-    }
-  }
-
-  String _themeModeToString(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.dark:
-        return 'dark';
-      case ThemeMode.light:
-        return 'light';
-      default:
-        return 'system';
-    }
+    setThemeMode(themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light);
   }
 }

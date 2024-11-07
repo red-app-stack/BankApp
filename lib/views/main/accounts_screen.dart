@@ -1,7 +1,17 @@
+import 'dart:async';
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:bank_app/utils/themes/theme_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:card_swiper/card_swiper.dart';
+
+import '../../controllers/accounts_controller.dart';
+import '../../controllers/auth_controller.dart';
+import '../../services/user_service.dart';
+import '../shared/formatters.dart';
 
 class BankCard {
   final String name;
@@ -23,93 +33,96 @@ class BankCard {
   });
 }
 
-class AccountsController extends GetxController {
-  late PageController pageController;
-  var currentPage = 0.obs;
+class AccountsScreenController extends GetxController {
+  final UserService userService = Get.find<UserService>();
+  final AccountsController accountsController = Get.find<AccountsController>();
+  final AuthController _authController = Get.find<AuthController>();
 
+  bool get isLoggedIn => _authController.isLoggedIn;
+  var currentDebitCard = 0.obs;
+  var currentDepositCard = 0.obs;
+  var currentCreditCard = 0.obs;
+  final RxList<BankCard> debits = <BankCard>[].obs;
+  final RxList<BankCard> deposits = <BankCard>[].obs;
+  final RxList<BankCard> credits = <BankCard>[].obs;
   @override
   void onInit() {
     super.onInit();
-    pageController = PageController(
-      viewportFraction: 0.85,
-      initialPage: bankCards.length * 500,
-    );
+    ever(accountsController.accounts, (_) => updateBankCards());
   }
 
-  @override
-  void onClose() {
-    pageController.dispose();
-    super.onClose();
+  void fetchAndUpdateCards() async {
+    await accountsController.fetchAccounts();
   }
 
-  void onPageChanged(int index) {
-    currentPage.value = index % bankCards.length;
+  void updateBankCards() {
+    print(
+        'Updating bank cards with ${accountsController.accounts.length} accounts');
+    if (accountsController.accounts.isEmpty) {
+      debits.clear();
+      deposits.clear();
+      credits.clear();
+      return;
+    }
+
+    for (AccountModel account in accountsController.accounts) {
+      final bankCard = BankCard(
+        name: userService.currentUser?.fullName ?? '',
+        type: 'VISA ${account.accountType}',
+        number: account.accountNumber,
+        tengeBalance: account.currency == 'KZT'
+            ? formatCurrency(account.balance, 'KZT', currentLocale.toString())
+            : null,
+        usdBalance: account.currency == 'USD'
+            ? formatCurrency(account.balance, 'USD', currentLocale.toString())
+            : null,
+        euroBalance: account.currency == 'EUR'
+            ? formatCurrency(account.balance, 'EUR', currentLocale.toString())
+            : null,
+        color: _getCardColor(account.accountType),
+      );
+
+      switch (account.accountType.toLowerCase()) {
+        case 'card':
+          debits.add(bankCard);
+          break;
+        case 'deposit':
+          deposits.add(bankCard);
+          break;
+        case 'credit':
+          credits.add(bankCard);
+          break;
+      }
+    }
   }
 
-  final List<String> cardActionIcons = [
-    'assets/icons/transfer.svg',
-    'assets/icons/payment.svg',
-    'assets/icons/qr.svg',
-    'assets/icons/history.svg',
-  ];
+  String _getCardColor(String accountType) {
+    print(accountType);
+    switch (accountType.toLowerCase()) {
+      case 'credit':
+        return 'red';
+      case 'deposit':
+        return 'yellow';
+      case 'card':
+        return 'purple';
+      default:
+        return 'yellow';
+    }
+  }
 
-  final String defaultName = 'Фамилия Имя';
-
-  final List<BankCard> bankCards = [
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '4829 •••• •••• 3078',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
-      color: 'primary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '9686 •••• •••• 2197',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
-      color: 'tertiary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '4386 •••• •••• 8921',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
-      color: 'secondary',
-    ),
-    BankCard(
-      name: 'Фамилия Имя',
-      type: 'VISA Мультивалютная',
-      number: '5829 •••• •••• 8764',
-      tengeBalance: '0.00 ₸',
-      usdBalance: '0.00 \$',
-      euroBalance: '0.00 €',
-      color: 'gray',
-    )
-  ];
-  final List<CardPromoItem> promoItems = [
-    CardPromoItem(
-      banner: 'assets/images/digital_bonus.svg',
-      title: 'Цифровая карта бонус',
-      info: 'Одна карта - тысяча возможностей',
-    ),
-    CardPromoItem(
-      banner: 'assets/images/credit_card.svg',
-      title: 'Кредитная карта',
-      info: 'Беспроцентный период до 55 дней',
-    ),
-    CardPromoItem(
-      banner: 'assets/images/debit_card.svg',
-      title: 'Дебетовая карта',
-      info: 'Кэшбэк до 5% на все покупки',
-    ),
-  ];
+  void onPageChanged(int index, String type) {
+    switch (type) {
+      case 'debit':
+        currentDebitCard.value = index % debits.length;
+        break;
+      case 'deposit':
+        currentDepositCard.value = index % deposits.length;
+        break;
+      case 'credit':
+        currentCreditCard.value = index % credits.length;
+        break;
+    }
+  }
 }
 
 class CardPromoItem {
@@ -125,179 +138,160 @@ class CardPromoItem {
 }
 
 class AccountsScreen extends StatelessWidget {
-  final AccountsController controller = Get.put(AccountsController());
+  final AccountsScreenController _controller =
+      Get.put(AccountsScreenController());
 
   AccountsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Счета',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
+        backgroundColor: theme.colorScheme.surface,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              _controller.fetchAndUpdateCards();
+              const timeout = Duration(seconds: 10);
+              try {
+                await Future.any([
+                  _controller.debits.stream.timeout(timeout).first,
+                  _controller.credits.stream.timeout(timeout).first,
+                  _controller.deposits.stream.timeout(timeout).first,
+                ]).timeout(timeout);
+
+                await Future.delayed(const Duration(milliseconds: 300));
+              } on TimeoutException {
+                print('Refresh operation timed out');
+              } catch (e) {
+                print('Error during refresh: $e');
+              }
+              return Future.value();
+            },
+            child: SingleChildScrollView(
+              physics:
+                  AlwaysScrollableScrollPhysics(), // Important for refresh to work
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Card(
+                      child: Padding(
                         padding: EdgeInsets.all(16),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Карты',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const Spacer(),
-                            Obx(() => Row(
-                                  children: List.generate(
-                                    controller.bankCards.length,
-                                    (index) => Container(
-                                      width: 8,
-                                      height: 8,
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 4),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: controller.currentPage.value ==
-                                                index
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.primary
-                                                .withOpacity(0.2),
-                                      ),
-                                    ),
-                                  ),
-                                )),
+                              'Счета',
+                              style: theme.textTheme.titleLarge,
+                            )
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: SizedBox(
-                          height: 220,
-                          child: PageView.builder(
-                            controller: controller.pageController,
-                            physics: const BouncingScrollPhysics(),
-                            onPageChanged: controller.onPageChanged,
-                            itemBuilder: (context, index) {
-                              final card = controller.bankCards[
-                                  index % controller.bankCards.length];
-                              return Container(
-                                margin: EdgeInsets.symmetric(horizontal: 8),
-                                child: _buildBankCard(
-                                  context: context,
-                                  card: card,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: size.height * 0.02),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    Obx(() => _buildCardSection(
                           context: context,
-                          icon: 'assets/icons/ic_add.svg',
-                          title: 'Открыть новую карту',
-                          description: null,
-                          onTap: () {}),
-                    ],
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Кредиты',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                      ),
-                      _buildCardItem(
+                          cards: _controller.debits,
+                          title: 'Дебетовые карты',
+                          size: size,
+                          type: 'debit',
+                          onCardTap: () {
+                            _controller.accountsController.deleteAccounts();
+                          },
+                          child: _buildCardItem(
+                              context: context,
+                              icon: 'assets/icons/ic_add.svg',
+                              title: 'Открыть новую карту',
+                              description: null,
+                              onTap: () {
+                                Get.toNamed('/createAccount',
+                                    arguments: 'card');
+                              }),
+                        )),
+                    SizedBox(height: size.height * 0.02),
+                    Obx(() => _buildCardSection(
                           context: context,
-                          icon: 'assets/icons/ic_add.svg',
-                          title: 'Оформить кредит наличными',
-                          description: 'Онлайн до 7 000 000 тенге',
-                          onTap: () {}),
-                    ],
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Депозиты',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                      ),
-                      _buildCardItem(
+                          cards: _controller.credits,
+                          title: 'Кредиты',
+                          size: size,
+                          type: 'credit',
+                          child: _buildCardItem(
+                              context: context,
+                              icon: 'assets/icons/ic_add.svg',
+                              title: 'Оформить кредит наличными',
+                              description: 'Онлайн до 7 000 000 тенге',
+                              onTap: () {
+                                Get.toNamed('/createAccount',
+                                    arguments: 'credit');
+                              }),
+                        )),
+                    SizedBox(height: size.height * 0.02),
+                    Obx(() => _buildCardSection(
                           context: context,
-                          icon: 'assets/icons/ic_add.svg',
-                          title: 'Открыть депозит',
-                          description: 'На выгодных условиях',
-                          onTap: () {}),
-                    ],
-                  ),
+                          cards: _controller.deposits,
+                          title: 'Депозиты',
+                          size: size,
+                          type: 'deposit',
+                          child: _buildCardItem(
+                              context: context,
+                              icon: 'assets/icons/ic_add.svg',
+                              title: 'Открыть депозит',
+                              description: 'На выгодных условиях',
+                              onTap: () {
+                                Get.toNamed('/createAccount',
+                                    arguments: 'deposit');
+                              }),
+                        )),
+                    SizedBox(
+                      height: size.height * 0.02,
+                    ),
+                    Center(
+                      child: SizedBox(
+                        height: size.height * 0.3,
+                        child: (theme.brightness == Brightness.dark)
+                            ? Container()
+                            : SvgPicture.asset(
+                                'assets/icons/illustration_accounts.svg',
+                                fit: BoxFit.contain,
+                              ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: size.height * 0.02,
+                    ),
+                    !_controller._authController.isLoggedIn
+                        ? BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ],
                 ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                Center(
-                  child: SvgPicture.asset(
-                    'assets/icons/illustration_accounts.svg',
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: MediaQuery.of(context).size.height * 0.4,
-                  ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
+  }
+
+  String _censorCardNumber(String cardNumber) {
+    if (cardNumber.length < 8)
+      return cardNumber; // Fallback if the card number is too short
+    return '${cardNumber.substring(0, 4)} •••• •••• ${cardNumber.substring(cardNumber.length - 4)}';
   }
 
   Widget _buildBankCard({
     required BuildContext context,
     required BankCard card,
+    Function()? onCardTap,
   }) {
+    final size = MediaQuery.of(context).size;
+    var width = (size.width > size.height) ? size.height : size.width;
     final theme = Theme.of(context);
     final Color colorBg = card.color == 'primary'
         ? theme.extension<CustomColors>()!.primaryCardBg!
@@ -305,131 +299,295 @@ class AccountsScreen extends StatelessWidget {
             ? theme.extension<CustomColors>()!.secondaryCardBg!
             : card.color == 'tertiary'
                 ? theme.extension<CustomColors>()!.tertiaryCardBg!
-                : theme.extension<CustomColors>()!.grayCardBg!;
+                : card.color == 'yellow'
+                    ? theme.extension<CustomColors>()!.yellowCardBg!
+                    : card.color == 'gold'
+                        ? theme.extension<CustomColors>()!.goldCardBg!
+                        : card.color == 'purple'
+                            ? theme.extension<CustomColors>()!.purpleCardBg!
+                            : card.color == 'red'
+                                ? theme.extension<CustomColors>()!.redCardBg!
+                                : theme.extension<CustomColors>()!.grayCardBg!;
+
     final Color colorFg = card.color == 'primary'
         ? theme.extension<CustomColors>()!.primaryCardFg!
         : card.color == 'secondary'
             ? theme.extension<CustomColors>()!.secondaryCardFg!
             : card.color == 'tertiary'
                 ? theme.extension<CustomColors>()!.tertiaryCardFg!
-                : theme.extension<CustomColors>()!.grayCardFg!;
-    return Container(
-      decoration: BoxDecoration(
-        color: colorBg,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned(
-            top: -60,
-            right: -90,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorFg,
-              ),
-            ),
+                : card.color == 'yellow'
+                    ? theme.extension<CustomColors>()!.yellowCardFg!
+                    : card.color == 'gold'
+                        ? theme.extension<CustomColors>()!.goldCardFg!
+                        : card.color == 'purple'
+                            ? theme.extension<CustomColors>()!.purpleCardFg!
+                            : card.color == 'red'
+                                ? theme.extension<CustomColors>()!.redCardFg!
+                                : theme.extension<CustomColors>()!.grayCardFg!;
+    return GestureDetector(
+      onTap: onCardTap,
+      child: Container(
+          decoration: BoxDecoration(
+            color: colorBg,
+            borderRadius: BorderRadius.circular(16),
           ),
-          Positioned(
-            top: -30,
-            left: -140,
-            child: Container(
-              width: 380,
-              height: 380,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorFg,
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          clipBehavior: Clip.antiAlias,
+          child: AspectRatio(
+            aspectRatio: 1.586,
+            child: Stack(
               children: [
-                Text(
-                  card.name,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
+                Positioned(
+                  top: -width * 0.136,
+                  right: -width * 0.19,
+                  child: Container(
+                    width: width * 0.4,
+                    height: width * 0.4,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorFg,
+                    ),
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  card.type,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
+                Positioned(
+                  top: -width * 0.057,
+                  left: -width * 0.296,
+                  child: Container(
+                    width: width * 0.808,
+                    height: width * 0.8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorFg,
+                    ),
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  card.number,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
-                    fontFamily: 'Monospace',
-                  ),
-                ),
-                const Spacer(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.end,
+                Positioned(
+                    bottom: 28,
+                    right: 28,
+                    child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: SvgPicture.asset(
+                          "assets/icons/visa.svg",
+                          width: 50,
+                          height: 16,
+                          colorFilter: ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ))),
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _controller.userService.currentUser?.fullName ?? '',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w400),
+                      ),
+                      const Spacer(flex: 5),
+                      Text(
+                        card.type,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w500),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _censorCardNumber(card.number),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          card.tengeBalance != null
-                              ? Text(
-                                  card.tengeBalance ?? '0.00 ₸',
+                          Expanded(
+                            child: Wrap(
+                              spacing: 10,
+                              runSpacing: 8,
+                              crossAxisAlignment: WrapCrossAlignment.end,
+                              children: [
+                                Text(
+                                  card.tengeBalance ?? '',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     fontFamily: 'Roboto',
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
                                   ),
-                                )
-                              : Container(),
-                          card.usdBalance != null
-                              ? Text(
-                                  card.usdBalance ?? '0.00 \$',
+                                ),
+                                Text(
+                                  card.usdBalance ?? '',
                                   style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontFamily: 'Roboto',
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
                                   ),
-                                )
-                              : Container(),
-                          card.euroBalance != null
-                              ? Text(
-                                  card.euroBalance ?? '0.00 €',
+                                ),
+                                Text(
+                                  card.euroBalance ?? '',
                                   style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontFamily: 'Roboto',
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
                                   ),
                                 )
-                              : Container(),
+                              ],
+                            ),
+                          )
                         ],
                       ),
-                    )
-                  ],
+                    ],
+                  ),
                 ),
-                Align(
-                    alignment: Alignment.bottomRight,
-                    child: SvgPicture.asset(
-                      "assets/icons/visa.svg",
-                      width: 50,
-                      height: 16,
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ))
               ],
             ),
+          )),
+    );
+  }
+
+  bool _getCurrentPage(String type, int index) {
+    switch (type) {
+      case 'debit':
+        return _controller.currentDebitCard.value == index;
+      case 'credit':
+        return _controller.currentCreditCard.value == index;
+      case 'deposit':
+        return _controller.currentDepositCard.value == index;
+      default:
+        return false;
+    }
+  }
+
+// Add this helper method to the AccountsScreen class
+  Widget _buildCardSection(
+      {required BuildContext context,
+      required List<BankCard> cards,
+      required String title,
+      required Size size,
+      required String type,
+      Function()? onCardTap,
+      Function(BankCard)? onCardLongPress,
+      Widget? child}) {
+    ThemeData theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const Spacer(),
+                    cards.isNotEmpty
+                        ? Obx(() => SizedBox(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  cards.length,
+                                  (index) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeInOut,
+                                    width:
+                                        _getCurrentPage(type, index) ? 16 : 8,
+                                    height: 8,
+                                    margin: EdgeInsets.symmetric(horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape
+                                          .circle, // Keep circle shape for inactive
+                                      color: _getCurrentPage(type, index)
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.primary
+                                              .withOpacity(0.2),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ))
+                        : Container(),
+                  ],
+                ),
+              ),
+              cards.isNotEmpty
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: SizedBox(
+                        height:
+                            size.width > size.height ? size.height * 0.6 : null,
+                        child: Swiper(
+                          physics: cards.isEmpty
+                              ? const NeverScrollableScrollPhysics()
+                              : null,
+                          loop: cards.isNotEmpty,
+                          allowImplicitScrolling: cards.isNotEmpty,
+                          itemCount: cards.length,
+                          onIndexChanged: (index) {
+                            _controller.onPageChanged(index, type);
+                          },
+                          itemBuilder: (context, index) {
+                            final card = cards[index];
+                            return LayoutBuilder(
+                              builder: (context, constraints) {
+                                double cardWidth = constraints.maxWidth;
+                                if (size.width > size.height) {
+                                  cardWidth = min(400, size.width * 0.7);
+                                }
+                                return Center(
+                                  child: SizedBox(
+                                    width: cardWidth,
+                                    child: AspectRatio(
+                                      aspectRatio: 1.586,
+                                      child: _buildBankCard(
+                                        context: context,
+                                        card: card,
+                                        onCardTap: onCardTap,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          layout: SwiperLayout.TINDER,
+                          itemWidth: size.width * 0.85,
+                          itemHeight: size.width * 0.85 / 1.586,
+                          scale: 0.5,
+                          viewportFraction: 0.5,
+                          curve: Curves.easeInOut,
+                          duration: 400,
+                        ),
+                      ),
+                    )
+                  : Container(),
+              cards.isNotEmpty
+                  ? SizedBox(height: size.height * 0.02)
+                  : Container(),
+              (child != null && cards.isNotEmpty)
+                  ? Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: theme.colorScheme.secondaryContainer)
+                  : Container(),
+              child ?? Container()
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

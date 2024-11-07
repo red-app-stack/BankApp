@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -20,16 +22,9 @@ class TransfersScreen extends StatelessWidget {
   final TransfersController controller = Get.put(TransfersController());
 
   TransfersScreen({super.key});
-
   void _handleTransferItemTap(BuildContext context, String type) {
     switch (type) {
       case 'phone':
-        Get.toNamed('/phoneTransfer');
-        break;
-      case 'self':
-        Get.toNamed('/phoneTransfer');
-        break;
-      case 'domestic':
         Get.toNamed('/phoneTransfer');
         break;
     }
@@ -42,139 +37,154 @@ class TransfersScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Переводы',
-                          style: theme.textTheme.titleLarge,
+        backgroundColor: colorScheme.surface,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              try {
+                await Future.delayed(const Duration(milliseconds: 500));
+              } on TimeoutException {
+                print('Refresh operation timed out');
+              } catch (e) {
+                print('Error during refresh: $e');
+              }
+              return Future.value();
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Переводы',
+                              style: theme.textTheme.titleLarge,
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: Text('История',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.primary) ??
+                                      theme.textTheme.bodyMedium),
+                            ),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text('История',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.primary) ??
-                                  theme.textTheme.bodyMedium),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[0],
-                        title: 'По номеру телефона',
-                        description:
-                            'Клиентам и предпринимателям, в другие банки',
-                        onTap: () => _handleTransferItemTap(context, 'phone'),
+                    SizedBox(height: size.height * 0.02),
+                    Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[0],
+                            title: 'По номеру телефона',
+                            description:
+                                'Клиентам и предпринимателям, в другие банки',
+                            onTap: () =>
+                                _handleTransferItemTap(context, 'phone'),
+                          ),
+                          Divider(
+                              height: 1,
+                              indent: 16,
+                              endIndent: 16,
+                              color: theme.colorScheme.secondaryContainer),
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[1],
+                            title: 'Между своими счетами',
+                            description: 'Картами, счетами, депозитами',
+                            onTap: () =>
+                                _handleTransferItemTap(context, 'self'),
+                          ),
+                          Divider(
+                              height: 1,
+                              indent: 16,
+                              endIndent: 16,
+                              color: theme.colorScheme.secondaryContainer),
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[2],
+                            title: 'Внутри Казахстана',
+                            description: 'На карту, на номер счёта',
+                            onTap: () => _handleTransferItemTap(context, 'kz'),
+                          ),
+                          Divider(
+                              height: 1,
+                              indent: 16,
+                              endIndent: 16,
+                              color: theme.colorScheme.secondaryContainer),
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[3],
+                            title: 'Международные переводы',
+                            description: 'В любую точку мира',
+                            onTap: () =>
+                                _handleTransferItemTap(context, 'world'),
+                          ),
+                          Divider(
+                              height: 1,
+                              indent: 16,
+                              endIndent: 16,
+                              color: theme.colorScheme.secondaryContainer),
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[4],
+                            title: 'Конвертация',
+                            description: 'Конвертация валют',
+                            onTap: () =>
+                                _handleTransferItemTap(context, 'convert'),
+                          ),
+                          Divider(
+                              height: 1,
+                              indent: 16,
+                              endIndent: 16,
+                              color: theme.colorScheme.secondaryContainer),
+                          _buildCardItem(
+                            context: context,
+                            icon: controller.transferIconPaths[5],
+                            title: 'Bank QR',
+                            description: 'Создайте QR для получения перевода',
+                            onTap: () => _handleTransferItemTap(context, 'qr'),
+                          ),
+                        ],
                       ),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[1],
-                        title: 'Между своими счетами',
-                        description: 'Картами, счетами, депозитами',
-                        onTap: () => _handleTransferItemTap(context, 'self'),
-                      ),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[2],
-                        title: 'Внутри Казахстана',
-                        description: 'На карту, на номер счёта',
-                        onTap: () => _handleTransferItemTap(context, 'kz'),
-                      ),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[3],
-                        title: 'Международные переводы',
-                        description: 'В любую точку мира',
-                        onTap: () => _handleTransferItemTap(context, 'world'),
-                      ),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[4],
-                        title: 'Конвертация',
-                        description: 'Конвертация валют',
-                        onTap: () => _handleTransferItemTap(context, 'convert'),
-                      ),
-                      Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: theme.colorScheme.secondaryContainer),
-                      _buildCardItem(
-                        context: context,
-                        icon: controller.transferIconPaths[5],
-                        title: 'Bank QR',
-                        description: 'Создайте QR для получения перевода',
-                        onTap: () => _handleTransferItemTap(context, 'qr'),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Избранное',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        SizedBox(height: size.height * 0.02),
-                        _buildSavedItem(
-                          svgPath: 'assets/icons/ic_bank.svg',
-                          svgPathSub: 'assets/icons/visa.svg',
-                          title: 'Bank',
-                          subtitle: '• 1488',
-                          theme: theme,
-                        )
-                      ],
                     ),
-                  ),
+                    SizedBox(height: size.height * 0.02),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Избранное',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            SizedBox(height: size.height * 0.02),
+                            _buildSavedItem(
+                              svgPath: 'assets/icons/ic_bank.svg',
+                              svgPathSub: 'assets/icons/visa.svg',
+                              title: 'Bank',
+                              subtitle: '• 1488',
+                              theme: theme,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildCardItem({

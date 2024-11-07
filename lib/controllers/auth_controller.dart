@@ -1,17 +1,20 @@
 import 'dart:async';
-import 'package:bank_app/services/interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import '../services/dio_helper.dart';
+import '../services/server_check_helper.dart';
 import '../services/user_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import '../views/shared/secure_store.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
+  final ServerHealthService serverHealthService = Get.find();
   final UserService userService = Get.find<UserService>();
+  final SecureStore secureStore = Get.find<SecureStore>();
 
   final dio = Dio();
 
@@ -50,6 +53,10 @@ class AuthController extends GetxController {
 
   final RxBool _status = false.obs;
   bool get status => _status.value;
+  bool isAuthenticated = false;
+  bool isLoggedIn = false;
+  bool isCheckingAuth = false;
+  bool displayStatus = false;
 
   final RxString _userRole = RxString('client');
   String get userRole => _userRole.value;
@@ -65,15 +72,49 @@ class AuthController extends GetxController {
   void setRole(String value) => _userRole.value = value;
 
   @override
-  void onInit() async {
+  void onInit() {
     super.onInit();
-    await checkServer();
-    await checkAuthStatus();
+    // await checkServer();
+    // await checkAuthStatus();
     // Регулярная проверка соединения выключена, лучше проверять соединение перед операциями чем постоянно.
     // startServerHealthCheck();
   }
 
-// First, add a helper method for retrying requests
+  Future<void> checkAuthStatus() async {
+    if (isCheckingAuth) return;
+
+    isCheckingAuth = true;
+    try {
+      bool tokenFound = await userService.tokenFound();
+      print('Auth token found: $tokenFound');
+      if (tokenFound) {
+        await checkServer();
+        isAuthenticated = await userService.checkAuthentication();
+      } else {
+        isAuthenticated = false;
+        isCheckingAuth = false;
+        await checkServer();
+      }
+
+      print('User is authenticated: $isAuthenticated');
+      if (isAuthenticated) {
+        final userProfile =
+            userService.currentUser ?? await userService.fetchUserProfile();
+        if (userProfile != null) {
+          return;
+        }
+      }
+      await userService.logout();
+    } catch (e) {
+      print('Auth check error: $e');
+    } finally {
+      isCheckingAuth = false;
+      if (displayStatus) {
+        Get.snackbar('Сообщение', 'Аутентификация проверена.');
+        displayStatus = false;
+      }
+    }
+  }
 
   Future<void> checkServer() async {
     if (_isCheckingServer.value) return;
@@ -81,31 +122,12 @@ class AuthController extends GetxController {
     setStatus(true);
 
     try {
-      if (_availableBaseUrl.value.isEmpty) {
-        await findServer();
-      }
-      Get.snackbar('Error', urls.join('\n'));
-      Get.snackbar('Selected', apiBaseUrl);
-
-      if (_availableBaseUrl.value.isNotEmpty) {
-        await DioRetryHelper.retryRequest(() async {
-          dio.options.baseUrl = apiBaseUrl;
-          dio.options.connectTimeout = const Duration(seconds: 10);
-          dio.options.receiveTimeout = const Duration(seconds: 10);
-          dio.interceptors.add(AuthInterceptor());
-          return dio.get('/'); // Health check request
-        });
-      } else {
-        print('Max retry attempts reached');
-        Get.snackbar('Error', 'Unable to connect to server');
-        Get.snackbar('Error', urls.join('\n'));
-        Get.snackbar('Selected', apiBaseUrl);
-      }
+      final baseUrl = await serverHealthService.findFastestServer();
+      dio.options.baseUrl = baseUrl;
     } catch (e) {
       print('Error during server check: $e');
     } finally {
       setStatus(false);
-      print('Server check completed');
       _isCheckingServer.value = false;
     }
   }
@@ -153,45 +175,6 @@ class AuthController extends GetxController {
 
   Timer? _healthCheckTimer;
 
-  void startServerHealthCheck() {
-    _healthCheckTimer?.cancel();
-    _healthCheckTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => verifyServerConnection(),
-    );
-  }
-
-  Future<void> verifyServerConnection() async {
-    print('Server health check!');
-    try {
-      if (_availableBaseUrl.value.isEmpty) {
-        print('No server available, skipping health check');
-        await checkServer();
-        return;
-      }
-
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '${_availableBaseUrl.value}/',
-            options: Options(
-              validateStatus: (status) => status == 999,
-              sendTimeout: const Duration(seconds: 5),
-            ),
-          ));
-
-      if (response.statusCode != 999) {
-        print('Server connection lost, finding new server');
-        _availableBaseUrl.value = '';
-        await checkServer();
-      } else {
-        print('Server connection is fine');
-      }
-    } catch (e) {
-      print('Server health check failed: $e');
-      _availableBaseUrl.value = '';
-      await checkServer();
-    }
-  }
-
   Future<void> login() async {
     if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
       Get.snackbar('Ошибка', 'Заполните все поля');
@@ -229,8 +212,40 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> login2() async {
+    if (email.value.text.trim().isEmpty || password.value.text.trim().isEmpty) {
+      Get.snackbar('Ошибка', 'Заполните все поля');
+      return;
+    }
+
+    try {
+      setStatus(true);
+      final response = await DioRetryHelper.retryRequest(
+          () => dio.post('/auth/login', data: {
+                'email': email.value.text.trim(),
+                'password': password.value.text.trim(),
+              }));
+
+      if (response.statusCode == 200) {
+        print('Got The Data, storing');
+        final token = response.data['token'];
+        final userData = response.data['user'];
+
+        print('Token: $token');
+        print('User Data: $userData');
+        await _securelyStoreCredentials(token, userData);
+      } else {
+        isPasswordCorrect.value = false;
+      }
+    } on DioException catch (e) {
+      isPasswordCorrect.value = false;
+      _handleApiError(e);
+    } finally {
+      setStatus(false);
+    }
+  }
+
   Future<void> register() async {
-    await verifyServerConnection();
     try {
       setStatus(true);
 
@@ -266,7 +281,6 @@ class AuthController extends GetxController {
       await userService.logout();
     } catch (e) {
       print('Logout error: $e');
-      Get.snackbar('Ошибка', 'Неудачная попытка выхода');
     } finally {
       tempUserData = null;
       tempUserToken = null;
@@ -334,9 +348,13 @@ class AuthController extends GetxController {
       print("Email: $obfuscatedEmail");
       print("Phone: $obfuscatedPhoneNumber");
     } else if (result['exists'] == false) {
+      obfuscatedEmail = null;
+      obfuscatedPhoneNumber = null;
       print(result['message']);
     } else {
       print("Error: ${result['error']}");
+      obfuscatedEmail = null;
+      obfuscatedPhoneNumber = null;
     }
     Get.toNamed('/emailLogin');
     setStatus(false);
@@ -383,69 +401,36 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> checkAuthStatus() async {
-    try {
-      final isAuthenticated = await userService.checkAuthentication();
-      print('User is authenticated: $isAuthenticated');
-      if (isAuthenticated) {
-        final userProfile = await userService.fetchUserProfile();
-        if (userProfile != null) {
-          Get.offAllNamed('/codeEntering');
-        } else {
-          await userService.logout();
-        }
-      } else {
-        Get.offAllNamed('/phoneLogin');
-      }
-    } catch (e) {
-      print('Auth check error: $e');
-      await userService.logout();
-      Get.offAllNamed('/phoneLogin');
-    }
-  }
-
   Future<void> _securelyStoreCredentials(
       String token, Map<String, dynamic> userData) async {
-    print('STORING DATA!');
-    await userService.secureStorage.write(key: 'auth_token', value: token);
+    await secureStore.secureStore('auth_token', token);
 
     final userModel = UserModel.fromJson(userData);
     await userService.storeUserLocally(userModel);
   }
 
-  Future<void> storeAccessCode(String code) async {
-    try {
-      setStatus(true);
-      final hashedCode = await _hashCode(code);
-      await userService.secureStorage
-          .write(key: 'access_code', value: hashedCode);
-      isCreatingCode = false;
-    } catch (e) {
-      print('Error storing access code: $e');
-      Get.snackbar('Ошибка', 'Не удалось сохранить код доступа');
-    } finally {
-      setStatus(false);
-    }
-  }
-
   Future<bool> validateAccessCode(String enteredCode) async {
     try {
       setStatus(true);
-      final storedHash =
-          await userService.secureStorage.read(key: 'access_code');
-      if (storedHash == null) return false;
+      final storedHash = await secureStore.secureRead('access_code');
+      if (storedHash == null) {
+        isLoggedIn = false;
+        return false;
+      }
 
-      final enteredHash = await _hashCode(enteredCode);
-      return storedHash == enteredHash;
+      final enteredHash = hashAccessCode(enteredCode);
+      isLoggedIn = storedHash == enteredHash;
+      return isLoggedIn;
     } catch (e) {
       print('Error validating access code: $e');
+      isLoggedIn = false;
       return false;
     } finally {
       setStatus(false);
     }
   }
 
-  Future<String> _hashCode(String code) async {
+  String hashAccessCode(String code) {
     final bytes = utf8.encode(code);
     final digest = sha256.convert(bytes);
     return digest.toString();
@@ -502,7 +487,6 @@ class AuthController extends GetxController {
 
   Future<void> verifyCode(String code) async {
     setStatus(true);
-    await verifyServerConnection();
     try {
       final response = await DioRetryHelper.retryRequest(
           () => dio.post('/auth/verify-code', data: {
@@ -538,12 +522,13 @@ class AuthController extends GetxController {
 
   @override
   void onClose() {
-    email.value.dispose();
-    phone.value.dispose();
     _healthCheckTimer?.cancel();
+    phone.value.dispose();
+    email.value.dispose();
     verification.value.dispose();
-    password.value.dispose();
     fullName.value.dispose();
+    password.value.dispose();
+    code.value.dispose();
     _timer?.cancel();
     super.onClose();
   }

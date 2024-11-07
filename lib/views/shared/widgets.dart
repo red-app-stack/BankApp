@@ -1,3 +1,4 @@
+import 'package:bank_app/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../utils/themes/theme_extension.dart';
@@ -32,9 +33,7 @@ Widget buildTextInput(
               fontWeight: FontWeight.normal,
             ),
             floatingLabelStyle: TextStyle(
-              color: Theme.of(context)
-                  .colorScheme
-                  .inverseSurface,
+              color: Theme.of(context).colorScheme.inverseSurface,
               fontWeight: FontWeight.bold,
             ),
             hintStyle: Theme.of(context).textTheme.bodyMedium,
@@ -280,4 +279,39 @@ Widget fakeHero({required String tag, required Widget child}) {
       );
     },
   );
+}
+
+Widget buildUserCard(UserService userService, ThemeData theme, Size size) {
+  return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 48,
+              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              child: Text(
+                userService
+                    .getInitials(userService.currentUser?.fullName ?? ''),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: size.height * 0.02),
+            Text(
+              userService.currentUser?.fullName ?? '',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ));
 }

@@ -54,4 +54,14 @@ class AppColorsLight {
   static var grayCardFg = Color(0xFF727784);
   
   static var background = Color(0xFF0066cc);
+
+
+  static var yellowCardBg = Color(0xFFFFE066);
+  static var yellowCardFg = Color(0xFFB39B47);
+  static var purpleCardBg = Color(0xFF9747FF);
+  static var purpleCardFg = Color(0xFF6B33B5);
+  static var goldCardBg = Color(0xFFFFD700);
+  static var goldCardFg = Color(0xFFB39B00);
+  static var redCardBg = Color(0xFFFF4747);
+  static var redCardFg = Color(0xFFB53333);
 }
