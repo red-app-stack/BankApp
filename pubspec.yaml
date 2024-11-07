@@ -53,6 +53,10 @@ dependencies:
   flutter_dotenv: ^5.2.1
   crypto: ^3.0.6
   card_swiper: ^3.0.1
+  qr_code_scanner_plus: ^2.0.6
+  mobile_scanner: ^6.0.2
+  pretty_qr_code: ^3.3.0
+  image_picker: ^1.1.2
 dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:

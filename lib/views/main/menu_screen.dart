@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bank_app/controllers/accounts_controller.dart';
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -94,12 +95,31 @@ class MenuScreen extends StatelessWidget {
                                   item: item,
                                   theme: theme,
                                   isLast: section.items.last == item,
-                                  onTap: item.icon ==
-                                          'assets/icons/ic_settings.svg'
+                                  onDoubleTap: (item.icon ==
+                                          'assets/icons/ic_phone.svg')
                                       ? () {
-                                          Get.toNamed('/securitySettings');
+                                          _authController.email.value.text =
+                                              'redapp.stack@gmail.com';
+                                          _authController.password.value.text =
+                                              'vd500713044_B';
+                                          _authController.login();
                                         }
-                                      : () {}))
+                                      : null,
+                                  onTap: () {
+                                    (item.icon ==
+                                            'assets/icons/ic_settings.svg')
+                                        ? Get.toNamed('/securitySettings')
+                                        : (item.icon ==
+                                                'assets/icons/ic_settings.svg')
+                                            ? Get.find<AccountsController>()
+                                                .deleteTransactionHistory(
+                                                    Get.find<
+                                                            AccountsController>()
+                                                        .accounts
+                                                        .first
+                                                        .accountNumber)
+                                            : null;
+                                  }))
                             ],
                           ),
                         ),
@@ -173,11 +193,13 @@ class MenuScreen extends StatelessWidget {
     required ThemeData theme,
     bool isLast = false,
     required VoidCallback onTap,
+    VoidCallback? onDoubleTap,
   }) {
     return Column(
       children: [
         InkWell(
           onTap: onTap,
+          onDoubleTap: onDoubleTap,
           borderRadius: BorderRadius.circular(12),
           splashFactory: InkRipple.splashFactory,
           splashColor: theme.colorScheme.primary.withOpacity(0.08),

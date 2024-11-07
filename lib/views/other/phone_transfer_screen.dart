@@ -210,7 +210,7 @@ class PhoneTransferScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildCardSelector(theme),
+                            buildCardSelector(theme),
                             SizedBox(height: size.height * 0.02),
                             _buildPhoneInput(theme),
                             SizedBox(height: size.height * 0.02),
@@ -237,21 +237,23 @@ class PhoneTransferScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (controller.selectedAccount.value == null) {
-                              Get.snackbar('Error', 'Please select a card');
+                              Get.snackbar(
+                                  'Ошибка', 'Пожалуйста, выберите карту');
                               return;
                             }
 
                             String phoneNumber = controller.phoneController.text
                                 .replaceAll(RegExp(r'\D'), '');
                             if (phoneNumber.isEmpty) {
-                              Get.snackbar(
-                                  'Error', 'Please enter phone number');
+                              Get.snackbar('Ошибка',
+                                  'Пожалуйста, введите номер телефона');
                               return;
                             }
 
                             if (controller.amount.value.isEmpty ||
                                 controller.amount.value == '0') {
-                              Get.snackbar('Error', 'Please enter amount');
+                              Get.snackbar(
+                                  'Ошибка', 'Пожалуйста, введите сумму');
                               return;
                             }
 
@@ -259,8 +261,7 @@ class PhoneTransferScreen extends StatelessWidget {
                             if (controller.accountsController.recipientAccount
                                     .value ==
                                 null) {
-                              Get.snackbar(
-                                  'Error', 'Recipient account not found');
+                              Get.snackbar('Ошибка', 'Получатель не найден');
                               return;
                             }
                             print(
@@ -282,10 +283,11 @@ class PhoneTransferScreen extends StatelessWidget {
                                     controller.selectedAccount.value!.currency);
 
                             if (success) {
-                              Get.snackbar('Success', 'Transfer completed');
+                              Get.snackbar('Успех', 'Перевод успешно выполнен');
                               controller.refreshCards();
+                              Navigator.of(Get.context!).pop();
                             } else {
-                              Get.snackbar('Error', 'Transfer failed');
+                              Get.snackbar('Ошибка', 'Перевод не выполнен');
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -338,7 +340,7 @@ class PhoneTransferScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCardSelector(ThemeData theme) {
+  Widget buildCardSelector(ThemeData theme) {
     return Obx(() {
       if (controller.accountsController.accounts.isEmpty) {
         return Card(
@@ -502,4 +504,5 @@ class PhoneTransferScreen extends StatelessWidget {
       ),
     );
   }
+  
 }

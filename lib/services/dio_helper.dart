@@ -25,10 +25,10 @@ class DioRetryHelper {
         if (attempts == maxRetries) rethrow;
         if (e.response?.statusCode == 502 ||
             e.type == DioExceptionType.connectionTimeout) {
-          await serverHealthService.findFastestServer();
+          await Future.delayed(const Duration(seconds: 1));
           continue;
         } else if (e.response?.statusCode == null) {
-          await serverHealthService.findFastestServer();
+          await Future.delayed(const Duration(seconds: 1));
         }
         rethrow;
       }

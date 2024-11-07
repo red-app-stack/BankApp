@@ -186,7 +186,10 @@ class TransferHistoryScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final transaction = controller
                   .accountsController.transactionHistory.value![index];
-              return Card(
+              return GestureDetector(
+                            onTap: () => {},
+                            behavior: HitTestBehavior.opaque,
+                            child: Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -255,7 +258,7 @@ class TransferHistoryScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              );
+              ));
             },
           )),
     );

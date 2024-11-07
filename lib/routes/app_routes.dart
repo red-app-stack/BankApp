@@ -2,13 +2,14 @@ import 'package:bank_app/views/auth/code_entering_screen.dart';
 import 'package:bank_app/views/auth/email_login_screen.dart';
 import 'package:bank_app/views/other/create_account_screen.dart';
 import 'package:bank_app/views/other/transfer_history_screen.dart';
-import 'package:bank_app/views/other/transfer_screen.dart';
+import 'package:bank_app/views/other/phone_transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/create_account_controller.dart';
 import '../views/auth/password_entering_screen.dart';
 import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
+import '../views/other/qr_transfer_screen.dart';
 import '../views/other/security_settings_screen.dart';
 import '/views/auth/register_screen.dart';
 import '/views/main/home_screen.dart';
@@ -27,6 +28,7 @@ class Routes {
 
   static const createAccount = '/createAccount';
   static const phoneTransfer = '/phoneTransfer';
+  static const qrTransfer = '/qrTransfer';
   static const securitySettings = '/securitySettings';
 }
 
@@ -83,6 +85,12 @@ class AppRoutes {
     GetPage(
       name: Routes.phoneTransfer,
       page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.qrTransfer,
+      page: () => QRTransferScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

@@ -121,54 +121,13 @@ class AuthController extends GetxController {
     setStatus(true);
 
     try {
-      final baseUrl = await serverHealthService.findFastestServer();
+      final baseUrl = await serverHealthService.findWorkingServer();
       dio.options.baseUrl = baseUrl;
     } catch (e) {
       print('Error during server check: $e');
     } finally {
       setStatus(false);
       _isCheckingServer.value = false;
-    }
-  }
-
-  Future<void> findServer() async {
-    Map<String, int> serverResponseTimes = {};
-
-    await Future.wait(
-      urls.map((url) async {
-        try {
-          final stopwatch = Stopwatch()..start();
-          final response = await DioRetryHelper.retryRequest(() => dio.get(
-                '$url/',
-                options: Options(
-                  headers: {'Connection': 'keep-alive'},
-                  validateStatus: (status) => status == 999,
-                  sendTimeout: const Duration(seconds: 8),
-                ),
-              ));
-          stopwatch.stop();
-          final responseTime = stopwatch.elapsedMilliseconds;
-          print('Response time for $url: ${responseTime}ms');
-
-          if (response.statusCode == 999) {
-            serverResponseTimes[url] = responseTime;
-          }
-        } catch (e) {
-          print('Failed to connect to $url: $e');
-        }
-      }),
-    );
-
-    if (serverResponseTimes.isNotEmpty) {
-      final fastestServer = serverResponseTimes.entries
-          .reduce((a, b) => a.value < b.value ? a : b)
-          .key;
-      _availableBaseUrl.value = fastestServer;
-      print(
-          'Selected fastest server: $fastestServer (${serverResponseTimes[fastestServer]}ms)');
-    } else {
-      _availableBaseUrl.value = '';
-      print('No working servers found');
     }
   }
 

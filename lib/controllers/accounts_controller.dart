@@ -378,4 +378,33 @@ class AccountsController extends GetxController {
       return [];
     }
   }
+
+  Future<bool> deleteTransactionHistory(String accountNumber) async {
+    print('DELETING');
+    try {
+      isLoading.value = true;
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+
+      if (token == null) return false;
+
+      final response = await DioRetryHelper.retryRequest(() => dio.delete(
+            '/transactions/history/$accountNumber',
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
+
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Transaction history deleted successfully');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error deleting transaction history: $e');
+      Get.snackbar('Error', 'Failed to delete transaction history');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

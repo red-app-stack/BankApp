@@ -22,8 +22,7 @@ Future<void> main() async {
   await dotenv.load();
   final serverHealthService = ServerHealthService();
   Get.put(serverHealthService);
-  print('LOADING');
-  final baseUrl = await serverHealthService.findFastestServer();
+  final baseUrl = await serverHealthService.findWorkingServer();
   print('Fastest: $baseUrl');
   final dio = Dio(BaseOptions(
     baseUrl: baseUrl,
@@ -31,7 +30,7 @@ Future<void> main() async {
     receiveTimeout: Duration(seconds: 15),
     validateStatus: (status) => true,
   ));
-  bool _secureMode = false;
+  // bool _secureMode = false;
 
   dio.interceptors.add(AuthInterceptor());
   Get.put(SecureStore());

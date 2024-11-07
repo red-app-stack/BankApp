@@ -13,40 +13,34 @@ class ServerHealthService {
 
   final dio = Dio();
 
-  Future<String> findFastestServer() async {
-    Map<String, int> serverResponseTimes = {};
+  Future<String> findWorkingServer() async {
+    print('Finding working server...');
 
-    await Future.wait(
-      urls.map((url) async {
-        try {
-          final stopwatch = Stopwatch()..start();
-          final response = await DioRetryHelper.retryRequest(() => dio.get(
-                '$url/', // Use a specific health check endpoint
-                options: Options(
-                  validateStatus: (status) => true,
-                  sendTimeout: const Duration(seconds: 8),
-                ),
-              ));
-          stopwatch.stop();
+    for (String url in urls) {
+      try {
+        final response = await DioRetryHelper.retryRequest(
+          () => dio.get(
+            '$url/',
+            options: Options(
+              validateStatus: (status) => true,
+              sendTimeout: const Duration(seconds: 20),
+              receiveTimeout: const Duration(seconds: 20),
+            ),
+          ),
+        );
 
-          if (response.statusCode == 999) {
-            serverResponseTimes[url] = stopwatch.elapsedMilliseconds;
-          }
-        } catch (e) {
-          print('Server $url check failed: $e');
+        if (response.statusCode == 999) {
+          _currentBaseUrl = url;
+          return url;
         }
-      }),
-    );
-
-    if (serverResponseTimes.isNotEmpty) {
-      _currentBaseUrl = serverResponseTimes.entries
-          .reduce((a, b) => a.value < b.value ? a : b)
-          .key;
-      return _currentBaseUrl != ''
-          ? _currentBaseUrl
-          : dotenv.env['API_URL_1'] ?? '';
+      } catch (e) {
+        print('Server $url not available: $e');
+        continue;
+      }
     }
 
+    // If no server responds, return the first URL as fallback
+    _currentBaseUrl = urls[0];
     return urls[0];
   }
 }
