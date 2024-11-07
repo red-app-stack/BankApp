@@ -195,8 +195,8 @@ class AccountsScreen extends StatelessWidget {
                           title: 'Дебетовые карты',
                           size: size,
                           type: 'debit',
-                          onCardTap: () {
-                            // _controller.accountsController.deleteAccounts();
+                          onCardLongPress: () {
+                            _controller.accountsController.deleteAccounts();
                           },
                           child: _buildCardItem(
                               context: context,
@@ -279,6 +279,7 @@ class AccountsScreen extends StatelessWidget {
     required BuildContext context,
     required BankCard card,
     Function()? onCardTap,
+    Function()? onCardLongPress,
   }) {
     final size = MediaQuery.of(context).size;
     var width = (size.width > size.height) ? size.height : size.width;
@@ -316,6 +317,7 @@ class AccountsScreen extends StatelessWidget {
                                 : theme.extension<CustomColors>()!.grayCardFg!;
     return GestureDetector(
       onTap: onCardTap,
+      onLongPress: onCardLongPress,
       child: Container(
           decoration: BoxDecoration(
             color: colorBg,
@@ -464,7 +466,7 @@ class AccountsScreen extends StatelessWidget {
       required Size size,
       required String type,
       Function()? onCardTap,
-      Function(BankCard)? onCardLongPress,
+      Function()? onCardLongPress,
       Widget? child}) {
     ThemeData theme = Theme.of(context);
     return Column(
@@ -545,6 +547,7 @@ class AccountsScreen extends StatelessWidget {
                                         context: context,
                                         card: card,
                                         onCardTap: onCardTap,
+                                        onCardLongPress: onCardLongPress,
                                       ),
                                     ),
                                   ),

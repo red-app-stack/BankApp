@@ -72,7 +72,9 @@ class TransfersScreen extends StatelessWidget {
                               style: theme.textTheme.titleLarge,
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.toNamed('/transferHistory');
+                              },
                               child: Text('История',
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                           color: theme.colorScheme.primary) ??
