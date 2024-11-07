@@ -34,7 +34,7 @@ class PhoneTransferController extends GetxController {
       FlutterNativeContactPicker();
 
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
-  final Rx<AccountModel?> recipientAccount = Rx<AccountModel?>(null);
+  final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
   final RxString phoneNumber = ''.obs;
   final RxString formattedPhoneNumber = ''.obs;
   final RxString amount = ''.obs;
@@ -99,9 +99,10 @@ class PhoneTransferController extends GetxController {
       text: formatted,
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
-    if (formatted.length == 7) {
-      print(formatted.length);
+    if (formatted.length == 14) {
+      accountsController.getAccountByPhone(formatted);
     }
+    print(formatted.length);
     print(formatted);
     _previousPhoneValue = int.tryParse(formatted) ?? 0;
   }
@@ -334,9 +335,10 @@ class PhoneTransferScreen extends StatelessWidget {
 
   Widget _buildPhoneInput(ThemeData theme) {
     return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
+        child: Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(children: [
+        Row(
           children: [
             Container(
               padding: EdgeInsets.all(8),
@@ -402,8 +404,10 @@ class PhoneTransferScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+        Text(controller.recipientAccount.value?.fullName ??
+            'Получатель не найден')
+      ]),
+    ));
   }
 
   Widget _buildAmountInput(ThemeData theme) {

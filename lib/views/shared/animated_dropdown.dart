@@ -141,7 +141,9 @@ class _AccountItem extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            formatAccountType(account.accountType),
+                            formatAccountType(account.accountType)
+                                    .capitalizeFirst ??
+                                'Счет',
                             style: theme.textTheme.titleSmall,
                           ),
                           const SizedBox(height: 4),

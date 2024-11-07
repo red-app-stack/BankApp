@@ -199,7 +199,7 @@ class AccountsScreen extends StatelessWidget {
                           size: size,
                           type: 'debit',
                           onCardTap: () {
-                            _controller.accountsController.deleteAccounts();
+                            // _controller.accountsController.deleteAccounts();
                           },
                           child: _buildCardItem(
                               context: context,

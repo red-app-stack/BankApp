@@ -33,11 +33,43 @@ class AccountModel {
   }
 }
 
+class RecipientModel {
+  final int id;
+  final String accountNumber;
+  final String accountType;
+  final String currency;
+  final double balance;
+  final String fullName;
+  final String phoneNumber;
+
+  RecipientModel({
+    required this.id,
+    required this.accountNumber,
+    required this.accountType,
+    required this.currency,
+    required this.balance,
+    required this.fullName,
+    required this.phoneNumber,
+  });
+
+  factory RecipientModel.fromJson(Map<String, dynamic> json) {
+    return RecipientModel(
+      id: json['id'],
+      accountNumber: json['account_number'],
+      accountType: json['account_type'],
+      currency: json['currency'],
+      balance: double.parse(json['balance'].toString()),
+      fullName: json['full_name'],
+      phoneNumber: json['phone_number'],
+    );
+  }
+}
+
 class AccountsController extends GetxController {
   final Dio dio;
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
-
+  final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
   RxList<AccountModel> accounts = <AccountModel>[].obs;
   RxBool isLoading = false.obs;
 
@@ -160,8 +192,8 @@ class AccountsController extends GetxController {
     }
   }
 
-  Future<bool> createTransaction(
-      String fromAccountId, String toAccountId, double amount, String currency) async {
+  Future<bool> createTransaction(String fromAccountId, String toAccountId,
+      double amount, String currency) async {
     try {
       isLoading.value = true;
       final token = await secureStore.secureStorage.read(key: 'auth_token');
@@ -220,26 +252,28 @@ class AccountsController extends GetxController {
     }
   }
 
-Future<AccountModel?> getAccountByPhone(String phoneNumber) async {
-  try {
-    final token = await secureStore.secureStorage.read(key: 'auth_token');
-    if (token == null) return null;
+  Future<RecipientModel?> getAccountByPhone(String phoneNumber) async {
+    try {
+      final token = await secureStore.secureStorage.read(key: 'auth_token');
+      if (token == null) return null;
 
-    final response = await DioRetryHelper.retryRequest(() => dio.post(
-          '/accounts/lookup-by-phone',
-          data: {'phone_number': phoneNumber},
-          options: Options(
-            headers: {'Authorization': 'Bearer $token'},
-          ),
-        ));
+      final response = await DioRetryHelper.retryRequest(() => dio.post(
+            '/accounts/lookup-by-phone',
+            data: {'phone_number': phoneNumber},
+            options: Options(
+              headers: {'Authorization': 'Bearer $token'},
+            ),
+          ));
 
-    if (response.statusCode == 200) {
-      return AccountModel.fromJson(response.data);
+      if (response.statusCode == 200) {
+        final recipient = RecipientModel.fromJson(response.data);
+        recipientAccount.value = recipient;
+        return recipient;
+      }
+      return null;
+    } catch (e) {
+      print('Error looking up account by phone: $e');
+      return null;
     }
-    return null;
-  } catch (e) {
-    print('Error looking up account by phone: $e');
-    return null;
   }
-}
 }
