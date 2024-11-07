@@ -51,7 +51,6 @@ dependencies:
   local_auth_android: ^1.0.46
   curved_labeled_navigation_bar: ^2.0.2
   flutter_dotenv: ^5.2.1
-  flutter_windowmanager : ^0.2.0
   crypto: ^3.0.6
   card_swiper: ^3.0.1
 dev_dependencies:

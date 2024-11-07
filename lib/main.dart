@@ -4,14 +4,12 @@ import 'package:bank_app/views/shared/secure_store.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'controllers/accounts_controller.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'services/server_check_helper.dart';
-import 'views/shared/static_background.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -32,8 +30,9 @@ Future<void> main() async {
     receiveTimeout: Duration(seconds: 15),
     validateStatus: (status) => true,
   ));
+    bool _secureMode = false;
+
   dio.interceptors.add(AuthInterceptor());
-  await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
   Get.put(SecureStore());
   final userService = UserService(dio: dio);
   Get.put(userService);
