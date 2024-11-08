@@ -183,7 +183,7 @@ class TransfersScreen extends StatelessWidget {
                               svgPath: 'assets/icons/ic_bank.svg',
                               svgPathSub: 'assets/icons/visa.svg',
                               title: 'Bank',
-                              subtitle: '• 1488',
+                              subtitle: '• 3758',
                               theme: theme,
                             )
                           ],

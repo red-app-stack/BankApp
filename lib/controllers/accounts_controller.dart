@@ -365,9 +365,7 @@ class AccountsController extends GetxController {
             currency: transaction['currency'],
             type: transaction['transaction_type'],
             status: transaction['status'],
-            createdAt: DateTime.parse(transaction['created_at']),
-            fromUserName: transaction['from_user_name'] ?? '',
-            toUserName: transaction['to_user_name'] ?? '',
+            createdAt: DateTime.parse(transaction['created_at']).toLocal(),
           );
         }).toList();
         return transactionHistory.value!;

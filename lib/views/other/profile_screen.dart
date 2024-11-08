@@ -20,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
         MenuItem(
             icon: 'assets/icons/ic_transactions.svg',
             title: 'Операции по счетам',
-            description: 'Пополнение карты *1488 на 48180.20KZT.'),
+            description: 'Пополнение карты *3487 на 18180.20KZT.'),
         MenuItem(
             icon: 'assets/icons/ic_transfers.svg',
             title: 'Переводы',

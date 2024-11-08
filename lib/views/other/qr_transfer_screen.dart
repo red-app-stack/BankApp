@@ -552,6 +552,7 @@ class QRTransferScreen extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (context) => Dialog(
+                        backgroundColor: Colors.white,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: PrettyQrView.data(

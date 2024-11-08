@@ -158,7 +158,7 @@ class MainScreenState extends State<MainScreen> {
             });
   }
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     if (!(index == 2 || index == 4)) {
       manageNav(false, () => _navigateToPage(index), onFail: () {
         setState(() {
@@ -400,7 +400,7 @@ class MainScreenState extends State<MainScreen> {
               return false;
             });
           },
-          onTap: _onItemTapped,
+          onTap: onItemTapped,
           animationDuration: Duration(milliseconds: 500),
           animationCurve: Curves.easeInOut,
         ),
