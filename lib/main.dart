@@ -1,7 +1,5 @@
-import 'package:bank_app/services/interceptor.dart';
 import 'package:bank_app/services/user_service.dart';
 import 'package:bank_app/views/shared/secure_store.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
@@ -9,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'controllers/accounts_controller.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
+import 'services/dio_manager.dart';
 import 'services/server_check_helper.dart';
 import 'utils/themes/app_theme.dart';
 import 'routes/app_routes.dart';
@@ -22,17 +21,7 @@ Future<void> main() async {
   await dotenv.load();
   final serverHealthService = ServerHealthService();
   Get.put(serverHealthService);
-  final baseUrl = await serverHealthService.findWorkingServer();
-  print('Fastest: $baseUrl');
-  final dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: Duration(seconds: 15),
-    receiveTimeout: Duration(seconds: 15),
-    validateStatus: (status) => true,
-  ));
-  // bool _secureMode = false;
-
-  dio.interceptors.add(AuthInterceptor());
+  DioManager dio = Get.put(DioManager(serverHealthService: serverHealthService));
   Get.put(SecureStore());
   final userService = UserService(dio: dio);
   Get.put(userService);

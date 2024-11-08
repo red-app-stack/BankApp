@@ -1,9 +1,8 @@
 import 'dart:async';
+import 'package:bank_app/services/dio_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import '../services/dio_helper.dart';
 import '../services/server_check_helper.dart';
 import '../services/user_service.dart';
 import 'dart:convert';
@@ -15,17 +14,9 @@ class AuthController extends GetxController {
   final ServerHealthService serverHealthService = Get.find();
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
-
-  final dio = Dio();
-
-  final urls = [
-    dotenv.env['API_URL_1'] ?? '',
-    dotenv.env['API_URL_2'] ?? '',
-  ];
-
+  DioManager dio = Get.find<DioManager>();
   final RxString _availableBaseUrl = RxString('');
   String get apiBaseUrl => _availableBaseUrl.value;
-  final RxBool _isCheckingServer = false.obs;
 
   final Rx<TextEditingController> fullName = TextEditingController().obs;
   final Rx<TextEditingController> email = TextEditingController().obs;
@@ -84,15 +75,13 @@ class AuthController extends GetxController {
 
     isCheckingAuth = true;
     try {
-      bool tokenFound = await userService.tokenFound();
+      bool tokenFound = await userService.findToken() != null;
       print('Auth token found: $tokenFound');
       if (tokenFound) {
-        await checkServer();
         isAuthenticated = await userService.checkAuthentication();
       } else {
         isAuthenticated = false;
         isCheckingAuth = false;
-        await checkServer();
       }
 
       print('User is authenticated: $isAuthenticated');
@@ -115,22 +104,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> checkServer() async {
-    if (_isCheckingServer.value) return;
-    _isCheckingServer.value = true;
-    setStatus(true);
-
-    try {
-      final baseUrl = await serverHealthService.findWorkingServer();
-      dio.options.baseUrl = baseUrl;
-    } catch (e) {
-      print('Error during server check: $e');
-    } finally {
-      setStatus(false);
-      _isCheckingServer.value = false;
-    }
-  }
-
   Timer? _healthCheckTimer;
 
   Future<void> login() async {
@@ -141,11 +114,10 @@ class AuthController extends GetxController {
 
     try {
       setStatus(true);
-      final response = await DioRetryHelper.retryRequest(
-          () => dio.post('/auth/login', data: {
-                'email': email.value.text.trim(),
-                'password': password.value.text.trim(),
-              }));
+      final response = await dio.post('/auth/login', data: {
+        'email': email.value.text.trim(),
+        'password': password.value.text.trim(),
+      });
 
       if (response.statusCode == 200) {
         print('Got The Data, storing');
@@ -174,15 +146,15 @@ class AuthController extends GetxController {
     try {
       setStatus(true);
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/auth/register',
-            data: {
-              'email': email.value.text.trim(),
-              'password': password.value.text.trim(),
-              'fullName': fullName.value.text.trim(),
-              'phoneNumber': phone.value.text.trim(),
-            },
-          ));
+      final response = await dio.post(
+        '/auth/register',
+        data: {
+          'email': email.value.text.trim(),
+          'password': password.value.text.trim(),
+          'fullName': fullName.value.text.trim(),
+          'phoneNumber': phone.value.text.trim(),
+        },
+      );
 
       if (response.statusCode == 201) {
         final token = response.data['token'];
@@ -228,10 +200,10 @@ class AuthController extends GetxController {
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
       };
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/auth/check-user',
-            data: requestData,
-          ));
+      final response = await dio.post(
+        '/auth/check-user',
+        data: requestData,
+      );
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -308,11 +280,10 @@ class AuthController extends GetxController {
     setStatus(true);
 
     try {
-      final response = await DioRetryHelper.retryRequest(
-          () => dio.post('/auth/check-partial-email', data: {
-                'enteredEmail': enteredEmail,
-                'obfuscatedEmail': obfuscatedEmail,
-              }));
+      final response = await dio.post('/auth/check-partial-email', data: {
+        'enteredEmail': enteredEmail,
+        'obfuscatedEmail': obfuscatedEmail,
+      });
 
       if (response.statusCode == 200) {
         return true;
@@ -376,10 +347,9 @@ class AuthController extends GetxController {
     setStatus(true);
     int statuscode = 0;
     try {
-      final response = await DioRetryHelper.retryRequest(
-          () => dio.post('/auth/send-verification-code', data: {
-                'email': email,
-              }));
+      final response = await dio.post('/auth/send-verification-code', data: {
+        'email': email,
+      });
       print(response.statusCode);
       statuscode = response.statusCode ?? 0;
       if (response.statusCode == 200) {
@@ -413,12 +383,11 @@ class AuthController extends GetxController {
   Future<void> verifyCode(String code) async {
     setStatus(true);
     try {
-      final response = await DioRetryHelper.retryRequest(
-          () => dio.post('/auth/verify-code', data: {
-                'code': code,
-                'email': email.value.text.trim(),
-                'exists': obfuscatedEmail != null,
-              }));
+      final response = await dio.post('/auth/verify-code', data: {
+        'code': code,
+        'email': email.value.text.trim(),
+        'exists': obfuscatedEmail != null,
+      });
 
       if (response.statusCode == 200) {
         _isCodeCorrect.value = true;

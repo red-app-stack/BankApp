@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../views/shared/secure_store.dart';
-import 'dio_helper.dart';
+import 'dio_manager.dart';
 
 class UserService extends GetxController {
-  final Dio dio;
+  final DioManager dio;
   final secureStore = Get.find<SecureStore>();
-  bool? isTokenFound;
+  String? token;
   // Observable user data
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
   UserModel? get currentUser => _currentUser.value;
@@ -23,32 +23,31 @@ class UserService extends GetxController {
       if (token == null) {
         return null;
       }
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '/auth/profile',
-            options: Options(
-              headers: {
-                'Authorization': 'Bearer $token',
-              },
-            ),
-          ));
+      final response = await dio.get<Map<String, dynamic>>(
+        '/auth/profile',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
 
       if (response.statusCode == 200) {
-        final userData = response.data;
+        final userData = response.data!;
         final userModel = UserModel.fromJson(userData);
         print('Got user: $userModel');
-        await storeUserLocally(userModel); // Store user data locally
-        return userModel; // Return the user model
+        await storeUserLocally(userModel);
+        return userModel;
       }
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        print('Got error: $e');
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      if (e is DioException && e.response?.statusCode == 401) {
         await userLogout();
       }
-      print('Error fetching user profile: ${e.message}');
     } finally {
       print('Done checking');
     }
-    return null; // Return null if fetching fails
+    return null;
   }
 
   Future<void> storeUserLocally(UserModel user) async {
@@ -84,18 +83,12 @@ class UserService extends GetxController {
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token != null) {
-        await DioRetryHelper.retryRequest(() => dio.post(
-              '/auth/logout',
-              options: Options(
-                headers: {'Authorization': 'Bearer $token'},
-                validateStatus: (status) => status! < 500,
-              ),
-            )).timeout(
-          const Duration(seconds: 15),
-          onTimeout: () {
-            print('Logout request timed out, proceeding with local logout');
-            throw TimeoutException('Logout request timed out');
-          },
+        await dio.post(
+          '/auth/logout',
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            validateStatus: (status) => status! < 500,
+          ),
         );
       }
     } catch (e) {
@@ -117,39 +110,27 @@ class UserService extends GetxController {
     }
   }
 
-  Future<bool> tokenFound() async {
-    final token = await secureStore.secureStorage.read(key: 'auth_token');
-    if (token == null) {
-      isTokenFound = false;
-      return false;
-    } else {
-      isTokenFound = true;
-      return true;
-    }
+  Future<String?> findToken() async {
+    return token ?? await secureStore.secureStorage.read(key: 'auth_token');
   }
 
-  // Check if user is authenticated
   Future<bool> checkAuthentication() async {
     try {
-      final token = await secureStore.secureStorage.read(key: 'auth_token');
-      print('Token found: ${token != null}'); // Add this debug line
+      await findToken();
+      print('Token found: $token');
 
       if (token == null) {
-        isTokenFound = false;
         return false;
-      } else {
-        isTokenFound = true;
       }
 
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '/auth/verify',
-            options: Options(
-              headers: {
-                'Authorization': 'Bearer $token',
-              },
-            ),
-          )
-          );
+      final response = await dio.get(
+        '/auth/verify',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
       print('Auth response: ${response.statusCode}');
       if (response.statusCode == 200) {
         return true;
@@ -164,7 +145,6 @@ class UserService extends GetxController {
   String getInitials(String fullName) {
     List<String> names = fullName.trim().split(RegExp(r'\s+'));
 
-    // Ensure we have at least two parts
     if (names.length < 2) return '';
 
     String firstNameInitial =
@@ -176,7 +156,6 @@ class UserService extends GetxController {
   }
 }
 
-// User Model
 class UserModel {
   final int id;
   final String email;

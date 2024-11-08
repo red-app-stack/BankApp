@@ -1,6 +1,6 @@
-import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-import '../services/dio_helper.dart';
+import 'package:get/get.dart';
+import '../services/dio_manager.dart';
 import '../services/user_service.dart';
 import '../views/shared/secure_store.dart';
 
@@ -94,7 +94,7 @@ class RecipientModel {
 }
 
 class AccountsController extends GetxController {
-  final Dio dio;
+  DioManager dio;
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
   final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
@@ -114,12 +114,12 @@ class AccountsController extends GetxController {
 
       if (token == null) return;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '/accounts/list',
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await (dio.get(
+        '/accounts/list',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      ));
 
       if (response.statusCode == 200) {
         final List<AccountModel> fetchedAccounts = (response.data as List)
@@ -142,12 +142,12 @@ class AccountsController extends GetxController {
 
       if (token == null) return;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.delete(
-            '/accounts/delete-all',
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.delete(
+        '/accounts/delete-all',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         print('Successfully deleted ${response.data['count']} accounts');
@@ -170,12 +170,12 @@ class AccountsController extends GetxController {
 
       if (token == null) return;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.delete(
-            '/accounts/delete/$accountId',
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.delete(
+        '/accounts/delete/$accountId',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         print('Account deleted successfully');
@@ -199,16 +199,16 @@ class AccountsController extends GetxController {
 
       if (token == null) return false;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/accounts/create',
-            data: {
-              'account_type': accountType,
-              'currency': currency,
-            },
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.post(
+        '/accounts/create',
+        data: {
+          'account_type': accountType,
+          'currency': currency,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 201) {
         await fetchAccounts();
@@ -231,19 +231,19 @@ class AccountsController extends GetxController {
 
       if (token == null) return false;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/transactions/create',
-            data: {
-              'from_account_id': fromAccountId,
-              'to_account_id': toAccountId,
-              'amount': amount,
-              'currency': currency,
-              'transaction_type': 'transfer'
-            },
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.post(
+        '/transactions/create',
+        data: {
+          'from_account_id': fromAccountId,
+          'to_account_id': toAccountId,
+          'amount': amount,
+          'currency': currency,
+          'transaction_type': 'transfer'
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 201) {
         await fetchAccounts();
@@ -288,13 +288,13 @@ class AccountsController extends GetxController {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token == null) return null;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/accounts/lookup-by-phone',
-            data: {'phone_number': phoneNumber},
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.post(
+        '/accounts/lookup-by-phone',
+        data: {'phone_number': phoneNumber},
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         final recipient = RecipientModel.fromJson(response.data);
@@ -315,16 +315,16 @@ class AccountsController extends GetxController {
 
       if (token == null) return false;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.post(
-            '/transactions/add-test-money',
-            data: {
-              'account_number': accountNumber,
-              'amount': amount,
-            },
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.post(
+        '/transactions/add-test-money',
+        data: {
+          'account_number': accountNumber,
+          'amount': amount,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         await fetchAccounts(); // Refresh accounts after adding test money
@@ -347,12 +347,12 @@ class AccountsController extends GetxController {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token == null) return [];
 
-      final response = await DioRetryHelper.retryRequest(() => dio.get(
-            '/transactions/history/$accountNumber',
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.get(
+        '/transactions/history/$accountNumber',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200 && response.data is List) {
         transactionHistory.value = (response.data as List).map((transaction) {
@@ -385,12 +385,12 @@ class AccountsController extends GetxController {
 
       if (token == null) return false;
 
-      final response = await DioRetryHelper.retryRequest(() => dio.delete(
-            '/transactions/history/$accountNumber',
-            options: Options(
-              headers: {'Authorization': 'Bearer $token'},
-            ),
-          ));
+      final response = await dio.delete(
+        '/transactions/history/$accountNumber',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         Get.snackbar('Success', 'Transaction history deleted successfully');
