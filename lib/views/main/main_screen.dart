@@ -141,21 +141,16 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _handleSupportTap() {
-    manageNav(
-        false,
-        () => {
-              if (_controller.isSupportOpen.value)
-                {_controller.hideOverlay()}
-              else
-                {
-                  _controller.showOverlay(
-                    SupportScreen(
-                      onBack: () => _controller.hideOverlay(),
-                    ),
-                    isSupport: true,
-                  )
-                }
-            });
+    if (_controller.isSupportOpen.value) {
+      _controller.hideOverlay();
+    } else {
+      _controller.showOverlay(
+        SupportScreen(
+          onBack: () => _controller.hideOverlay(),
+        ),
+        isSupport: true,
+      );
+    }
   }
 
   void onItemTapped(int index) {

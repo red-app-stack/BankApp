@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import '../../routes/manage_auth_nav.dart';
 
 class HomeScreenController extends GetxController {
-
   final List<String> homeIconPaths = [
     'assets/icons/creditcard.svg',
     'assets/icons/deposit.svg',

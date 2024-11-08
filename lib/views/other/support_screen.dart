@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/accounts_controller.dart';
-import '../main/main_screen.dart';
 
 // Add this class to handle response actions
 class BotResponse {
@@ -207,10 +206,6 @@ void _showCardsGallery() {}
 void _checkBalance() {}
 
 void _initiatePhoneTransfer() {
-  Get.toNamed('/phoneTransfer');
-}
-
-void _initiateTransfer() {
   Get.toNamed('/phoneTransfer');
 }
 
