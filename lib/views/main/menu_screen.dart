@@ -92,36 +92,12 @@ class MenuScreen extends StatelessWidget {
                                   ),
                                 ),
                               ...section.items.map((item) => _buildMenuItem(
-                                  item: item,
-                                  theme: theme,
-                                  isLast: section.items.last == item,
-                                  onDoubleTap: (item.icon ==
-                                          'assets/icons/ic_phone.svg')
-                                      ? () {
-                                          _authController.email.value.text =
-                                              'redapp.stack@gmail.com';
-                                          _authController.password.value.text =
-                                              'vd500713044_B';
-                                          _authController.login();
-                                        }
-                                      : (item.icon ==
-                                              'assets/icons/ic_branch.svg')
-                                          ? () {
-                                              Get.find<AccountsController>()
-                                                  .deleteTransactionHistory(
-                                                      Get.find<
-                                                              AccountsController>()
-                                                          .accounts
-                                                          .first
-                                                          .accountNumber);
-                                            }
-                                          : null,
-                                  onTap: () {
-                                    (item.icon ==
-                                            'assets/icons/ic_settings.svg')
-                                        ? Get.toNamed('/securitySettings')
-                                        : null;
-                                  }))
+                                    item: item,
+                                    theme: theme,
+                                    isLast: section.items.last == item,
+                                    onDoubleTap: () {},
+                                    onTap: () {},
+                                  ))
                             ],
                           ),
                         ),

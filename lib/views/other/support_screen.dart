@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+import '../../controllers/accounts_controller.dart';
 import '../main/main_screen.dart';
 
 // Add this class to handle response actions
@@ -105,6 +107,30 @@ BotResponse _getBotResponse(String userMessage) {
       'Ваш кредитный лимит зависит от нескольких факторов, включая ваш доход и кредитную историю. Хотите узнать подробнее?',
     );
     return _lastResponse!;
+  } else if (userMessage.contains('login vlad')) {
+    _lastResponse = BotResponse(
+      'Входим в аккаунт.',
+      action: () => _loginToAccountV(),
+    );
+    return _lastResponse!;
+  } else if (userMessage.contains('login artem')) {
+    _lastResponse = BotResponse(
+      'Входим в аккаунт.',
+      action: () => _loginToAccountA(),
+    );
+    return _lastResponse!;
+  } else if (userMessage.contains('delete transactions')) {
+    _lastResponse = BotResponse(
+      'deleting transations.',
+      action: () => _deleteTransactions(),
+    );
+    return _lastResponse!;
+  } else if (userMessage.contains('delete cards')) {
+    _lastResponse = BotResponse(
+      'deleting cards.',
+      action: () => _deleteCards(),
+    );
+    return _lastResponse!;
   }
 
   // Если запрос не соответствует ни одному из условий
@@ -114,9 +140,31 @@ BotResponse _getBotResponse(String userMessage) {
   return _lastResponse!;
 }
 
+_deleteCards() {
+  Get.find<AccountsController>().deleteAccounts();
+}
+
+_deleteTransactions() {
+  Get.find<AccountsController>().deleteTransactionHistory(
+      Get.find<AccountsController>().accounts.first.accountNumber);
+}
+
 // Пример функции для показа карты банкоматов
 void _showATMMap() {
   // Логика показа карты
+}
+void _loginToAccountV() {
+  AuthController authController = Get.find();
+  authController.email.value.text = 'redapp.stack@gmail.com';
+  authController.password.value.text = 'vd500713044_B';
+  authController.login();
+}
+
+void _loginToAccountA() {
+  AuthController authController = Get.find();
+  authController.email.value.text = 'murka9202@gmail.com';
+  authController.password.value.text = '14886952MiRo*';
+  authController.login();
 }
 
 // Пример функции для блокировки карты

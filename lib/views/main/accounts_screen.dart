@@ -195,9 +195,7 @@ class AccountsScreen extends StatelessWidget {
                           title: 'Дебетовые карты',
                           size: size,
                           type: 'debit',
-                          onCardLongPress: () {
-                            _controller.accountsController.deleteAccounts();
-                          },
+                          onCardLongPress: () {},
                           child: _buildCardItem(
                               context: context,
                               icon: 'assets/icons/ic_add.svg',
