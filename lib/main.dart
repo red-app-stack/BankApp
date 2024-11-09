@@ -21,11 +21,11 @@ Future<void> main() async {
   await dotenv.load();
   final serverHealthService = ServerHealthService();
   Get.put(serverHealthService);
-  DioManager dio = Get.put(DioManager(serverHealthService: serverHealthService));
+  Get.put(DioManager(serverHealthService: serverHealthService));
   Get.put(SecureStore());
-  final userService = UserService(dio: dio);
+  final userService = UserService();
   Get.put(userService);
-  Get.put(AccountsController(dio: dio));
+  Get.put(AccountsController());
   AuthController authController = Get.put(AuthController());
   await authController.checkAuthStatus();
   final themeController = Get.put(ThemeController());

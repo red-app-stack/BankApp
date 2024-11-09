@@ -20,7 +20,7 @@ class CodeEnteringScreen extends StatefulWidget {
 class CodeEnteringScreenState extends State<CodeEnteringScreen> {
   final AuthController _authController = Get.find<AuthController>();
   final UserService _userService = Get.find<UserService>();
-
+  final AccountsController _accountsController = Get.find<AccountsController>();
   final FocusNode _codeFocusNode = FocusNode();
   final LocalAuthentication _auth = LocalAuthentication();
 
@@ -379,7 +379,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
       _authController.isAuthenticated = true;
       _authController.isLoggedIn = true;
       _handleMainNavigation();
-      Get.find<AccountsController>().fetchAccounts();
+      _accountsController.fetchAccounts();
       print("Authentication successful!");
     } else {
       _authController.isLoggedIn = false;

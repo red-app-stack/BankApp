@@ -94,7 +94,7 @@ class RecipientModel {
 }
 
 class AccountsController extends GetxController {
-  DioManager dio;
+  DioManager dio = Get.find();
   final UserService userService = Get.find<UserService>();
   final SecureStore secureStore = Get.find<SecureStore>();
   final Rx<RecipientModel?> recipientAccount = Rx<RecipientModel?>(null);
@@ -104,7 +104,7 @@ class AccountsController extends GetxController {
   RxList<AccountModel> accounts = <AccountModel>[].obs;
   RxBool isLoading = false.obs;
 
-  AccountsController({required this.dio});
+  AccountsController();
 
   Future<void> fetchAccounts() async {
     try {

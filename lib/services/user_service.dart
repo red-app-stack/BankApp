@@ -6,7 +6,7 @@ import '../views/shared/secure_store.dart';
 import 'dio_manager.dart';
 
 class UserService extends GetxController {
-  final DioManager dio;
+  final DioManager dio = Get.find<DioManager>();
   final secureStore = Get.find<SecureStore>();
   String? token;
   // Observable user data
@@ -14,7 +14,7 @@ class UserService extends GetxController {
   UserModel? get currentUser => _currentUser.value;
   bool get isAuthenticated => _currentUser.value != null;
 
-  UserService({required this.dio});
+  UserService();
 
   Future<UserModel?> fetchUserProfile() async {
     print('Fetching user profile');
