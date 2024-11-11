@@ -56,8 +56,7 @@ class AccountsScreenController extends GetxController {
   }
 
   void updateBankCards() {
-    print(
-        'Updating bank cards with ${accountsController.accounts.length} accounts');
+    print('Updating bank cards with ${accountsController.accounts.length} accounts');
     debits.clear();
     deposits.clear();
     credits.clear();

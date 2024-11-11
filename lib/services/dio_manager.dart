@@ -5,11 +5,13 @@ class DioManager {
   final ServerHealthService serverHealthService;
   late final Dio _dio;
 
+  final _stopwatch = Stopwatch();
+
   DioManager({required this.serverHealthService}) {
     _dio = Dio()
       ..options.baseUrl = serverHealthService.currentBaseUrl
-      ..options.sendTimeout = const Duration(seconds: 20)
-      ..options.receiveTimeout = const Duration(seconds: 20);
+      ..options.sendTimeout = const Duration(seconds: 10)
+      ..options.receiveTimeout = const Duration(seconds: 10);
   }
 
   Future<Response<T>> get<T>(
@@ -50,6 +52,8 @@ class DioManager {
   Future<Response<T>> _makeRequest<T>(
     Future<Response<T>> Function() request,
   ) async {
+    _stopwatch.reset();
+    _stopwatch.start();
     final String workingServerUrl =
         await serverHealthService.findWorkingServer();
     if (workingServerUrl != _dio.options.baseUrl) {
@@ -57,7 +61,13 @@ class DioManager {
     }
 
     try {
-      return await request();
+      final response = await request();
+      _stopwatch.stop();
+      final responseTime = _stopwatch.elapsedMilliseconds;
+      if (responseTime < 500) {
+        await Future.delayed(Duration(milliseconds: 500 - responseTime));
+      }
+      return response;
     } on DioException catch (e) {
       print(e);
       return RetryHelper(this).retryRequest(() => request());

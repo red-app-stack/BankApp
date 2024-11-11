@@ -310,30 +310,46 @@ class MainScreenState extends State<MainScreen> {
     final bool isSelected = index == _selectedIndex;
     final String iconPath = _iconPaths[index];
     final String label = _labels[index];
+    final animDuration = isSelected ? 300 : 150;
 
     return CurvedNavigationBarItem(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: isSelected ? 40 : 30,
-          height: isSelected ? 40 : 30,
-          child: AnimatedOpacity(
-            opacity: isSelected ? 1.0 : 1.0,
-            duration: const Duration(milliseconds: 300),
-            child: SvgPicture.asset(
-              iconPath,
-              colorFilter: isSelected
-                  ? ColorFilter.mode(
-                      Theme.of(context).colorScheme.onPrimary,
-                      BlendMode.srcIn,
-                    )
-                  : ColorFilter.mode(
-                      Theme.of(context).colorScheme.onSurfaceVariant,
-                      BlendMode.srcIn,
-                    ),
-            ),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: animDuration),
+        curve: isSelected ? Curves.easeOutCubic : Curves.easeInOut,
+        width: isSelected ? 40 : 30,
+        height: isSelected ? 40 : 30,
+        child: TweenAnimationBuilder<Color?>(
+          duration:
+              Duration(milliseconds: animDuration), // Faster when deselecting
+          curve: isSelected
+              ? Curves.easeOutCubic // Smooth transition when selecting
+              : Curves.easeInOut, // Quick transition when deselecting
+          tween: ColorTween(
+            // For home icon (index 2), use these colors
+
+            begin: index == 2
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+            // When selected, transition to onPrimary, otherwise onSurfaceVariant
+            end: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
+          // Add a key to prevent unnecessary rebuilds
+          key: ValueKey('icon_$index'),
+          builder: (BuildContext context, Color? color, Widget? child) {
+            return SvgPicture.asset(
+              iconPath,
+              colorFilter: ColorFilter.mode(
+                color!,
+                BlendMode.srcIn,
+              ),
+            );
+          },
         ),
-        label: label);
+      ),
+      label: label,
+    );
   }
 
   @override
@@ -391,7 +407,6 @@ class MainScreenState extends State<MainScreen> {
             return manageNav(false, () {
               return true;
             }, onFail: () {
-              print('failed');
               return false;
             });
           },

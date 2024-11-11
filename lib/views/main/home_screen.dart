@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../routes/manage_auth_nav.dart';
+import '../../services/server_check_helper.dart';
 
 class HomeScreenController extends GetxController {
   final List<String> homeIconPaths = [
@@ -119,7 +120,7 @@ class HomeScreen extends StatelessWidget {
       color: Colors.transparent,
       child: Ink(
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             svgPath == 'assets/icons/creditcard.svg'
                 ? {
                     manageNav(false,
@@ -142,7 +143,10 @@ class HomeScreen extends StatelessWidget {
                             )
                           }
                         : svgPath == 'assets/icons/installment.svg'
-                            ? {}
+                            ? {
+                                print(await Get.find<ServerHealthService>()
+                                    .findWorkingServer())
+                              }
                             : null;
           },
           borderRadius: BorderRadius.circular(12),

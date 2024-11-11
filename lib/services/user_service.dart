@@ -9,7 +9,7 @@ class UserService extends GetxController {
   final DioManager dio = Get.find<DioManager>();
   final secureStore = Get.find<SecureStore>();
   String? token;
-  // Observable user data
+
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
   UserModel? get currentUser => _currentUser.value;
   bool get isAuthenticated => _currentUser.value != null;
@@ -111,7 +111,7 @@ class UserService extends GetxController {
   }
 
   Future<String?> findToken() async {
-    return token ?? await secureStore.secureStorage.read(key: 'auth_token');
+    return token ??= await secureStore.secureStorage.read(key: 'auth_token');
   }
 
   Future<bool> checkAuthentication() async {

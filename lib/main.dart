@@ -40,7 +40,7 @@ Future<void> main() async {
   final endTime = DateTime.now();
   final timePassed = endTime.difference(startTime);
   if (timePassed.inSeconds < 2) {
-    await Future.delayed(Duration(seconds: 2 - timePassed.inSeconds));
+    await Future.delayed(Duration(seconds: 1 - timePassed.inSeconds));
   }
 
   FlutterNativeSplash.remove();

@@ -95,7 +95,14 @@ class MenuScreen extends StatelessWidget {
                                     theme: theme,
                                     isLast: section.items.last == item,
                                     onDoubleTap: () {},
-                                    onTap: () {},
+                                    onTap: () {
+                                      item.icon ==
+                                              'assets/icons/ic_settings.svg'
+                                          ? {
+                                            Get.toNamed('/securitySettings'),
+                                          }
+                                          : {};
+                                    },
                                   ))
                             ],
                           ),
