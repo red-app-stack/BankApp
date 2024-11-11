@@ -63,7 +63,9 @@ class PaymentsScreen extends StatelessWidget {
                               style: theme.textTheme.titleLarge,
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.toNamed('/paymentHistory');
+                              },
                               child: Text('История',
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                           color: theme.colorScheme.primary) ??

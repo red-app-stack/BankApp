@@ -4,6 +4,12 @@ import '../services/dio_manager.dart';
 import '../services/user_service.dart';
 import '../views/shared/secure_store.dart';
 
+
+// how in flutter dart make a check of the transaction (with a squigly line at the top and bottom, and a column containing app logo, (green box with text transaction successful (depending on the transaction status) and amount), row (user icon (if null then a circle with initials of the user) toUserName, phone number), transaction type, transaction id, created at, comission (0 by default),  sender: from username, from (type)) 
+
+
+
+
 class AccountModel {
   final int id;
   final String accountNumber;
@@ -328,13 +334,13 @@ class AccountsController extends GetxController {
 
       if (response.statusCode == 200) {
         await fetchAccounts(); // Refresh accounts after adding test money
-        Get.snackbar('Success', 'Test money added successfully');
+        // Get.snackbar('Success', 'Test money added successfully');
         return true;
       }
       return false;
     } catch (e) {
       print('Error adding test money: $e');
-      Get.snackbar('Error', 'Failed to add test money');
+      // Get.snackbar('Error', 'Failed to add test money');
       return false;
     } finally {
       isLoading.value = false;
@@ -393,13 +399,13 @@ class AccountsController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar('Success', 'Transaction history deleted successfully');
+        // Get.snackbar('Success', 'Transaction history deleted successfully');
         return true;
       }
       return false;
     } catch (e) {
       print('Error deleting transaction history: $e');
-      Get.snackbar('Error', 'Failed to delete transaction history');
+      // Get.snackbar('Error', 'Failed to delete transaction history');
       return false;
     } finally {
       isLoading.value = false;

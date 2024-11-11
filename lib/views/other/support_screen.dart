@@ -43,8 +43,8 @@ BotResponse _getBotResponse(String userMessage) {
     return _lastResponse!;
   } else if (userMessage.contains('карт')) {
     _lastResponse = BotResponse(
-      'У нас есть дебетовые и кредитные карты. Нажмите здесь чтобы посмотреть каталог карт.',
-      action: () => _showCardsGallery(),
+      'У нас есть дебетовые и кредитные карты. Хотите перейти к оформлению?',
+      action: () => _startDebitApplication(),
     );
     return _lastResponse!;
   } else if (userMessage.contains('баланс')) {
@@ -67,7 +67,8 @@ BotResponse _getBotResponse(String userMessage) {
     return _lastResponse!;
   } else if (userMessage.contains('процент') || userMessage.contains('ставк')) {
     _lastResponse = BotResponse(
-      'Наши ставки по депозитам начинаются от 5% годовых. Хотите узнать подробнее?',
+      'Наши ставки по депозитам начинаются от 14% годовых для KZT. Хотите узнать подробнее?',
+      action: () => _startDepositApplication(),
     );
     return _lastResponse!;
   } else if (userMessage.contains('валют') || userMessage.contains('курс')) {
@@ -95,38 +96,31 @@ BotResponse _getBotResponse(String userMessage) {
       action: () => _startCardReissueApplication(),
     );
     return _lastResponse!;
-  } else if (userMessage.contains('интернет-банк') ||
-      userMessage.contains('мобильный банк')) {
+  } else if (userMessage.contains('интернет')) {
     _lastResponse = BotResponse(
       'Вы можете подключить интернет-банк через наш сайт или приложение. Хотите узнать больше?',
     );
     return _lastResponse!;
-  } else if (userMessage.contains('кредитный лимит')) {
+  } else if (userMessage.contains('кредит') && userMessage.contains('лимит')) {
     _lastResponse = BotResponse(
       'Ваш кредитный лимит зависит от нескольких факторов, включая ваш доход и кредитную историю. Хотите узнать подробнее?',
     );
     return _lastResponse!;
   } else if (userMessage.contains('login vlad')) {
-    _lastResponse = BotResponse(
-      'Входим в аккаунт.',
-      action: () => _loginToAccountV(),
-    );
+    _lastResponse = BotResponse('Входим в аккаунт.',
+        action: () => _loginToAccountV(), confirmation: true);
     return _lastResponse!;
   } else if (userMessage.contains('login artem')) {
-    _lastResponse = BotResponse(
-      'Входим в аккаунт.',
-      action: () => _loginToAccountA(),
-    );
+    _lastResponse = BotResponse('Входим в аккаунт.',
+        action: () => _loginToAccountA(), confirmation: true);
     return _lastResponse!;
   } else if (userMessage.contains('delete transactions')) {
-    _lastResponse = BotResponse(
-      'deleting transations.',
-      action: () => _deleteTransactions(),
-    );
+    _lastResponse = BotResponse('deleting transations.',
+        action: () => _deleteTransactions(), confirmation: true);
     return _lastResponse!;
   } else if (userMessage.contains('delete cards')) {
     _lastResponse = BotResponse(
-      'deleting cards.',
+      'are you sure you want to delete all cards?',
       action: () => _deleteCards(),
     );
     return _lastResponse!;
@@ -144,8 +138,11 @@ _deleteCards() {
 }
 
 _deleteTransactions() {
-  Get.find<AccountsController>().deleteTransactionHistory(
-      Get.find<AccountsController>().accounts.first.accountNumber);
+  AccountsController controller = Get.find<AccountsController>();
+  for (AccountModel account in controller.accounts) {
+    controller.deleteTransactionHistory(account.accountNumber);
+  }
+  Get.snackbar('Success', 'Transaction history deleted successfully');
 }
 
 // Пример функции для показа карты банкоматов
@@ -198,6 +195,10 @@ void _startCreditApplication() {
 }
 
 void _startDepositApplication() {
+  Get.toNamed('/createAccount', arguments: 'deposit');
+}
+
+void _startDebitApplication() {
   Get.toNamed('/createAccount', arguments: 'deposit');
 }
 
