@@ -86,88 +86,93 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+        backgroundColor: theme.brightness == Brightness.light
+            ? theme.colorScheme.surfaceContainerHigh
+            : theme.colorScheme.surface,
         body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(6),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/ic_back.svg',
-                        width: 32,
-                        height: 32,
-                        colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Безопасность',
-                        style: theme.textTheme.titleLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(width: 32),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: size.height * 0.02),
-            Expanded(
-              child: Column(
-                children: [
-                  ...sections.map((section) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (section.title != null)
-                                  Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Text(
-                                      section.title!,
-                                      style: theme.textTheme.bodyLarge,
-                                    ),
-                                  ),
-                                ...section.items.map((item) => _buildMenuItem(
-                                      item: item,
-                                      theme: theme,
-                                      isLast: section.items.last == item,
-                                    ))
-                              ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/icons/ic_back.svg',
+                            width: 32,
+                            height: 32,
+                            colorFilter: ColorFilter.mode(
+                              theme.colorScheme.primary,
+                              BlendMode.srcIn,
                             ),
                           ),
-                          SizedBox(height: size.height * 0.02),
-                        ],
-                      )),
-                  const Spacer(),
-                  Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Запросить удаление учётной записи',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                      ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Безопасность',
+                            style: theme.textTheme.titleLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(width: 32),
+                      ],
                     ),
                   ),
-                  SizedBox(height: size.height * 0.03),
-                ],
-              ),
+                ),
+                SizedBox(height: size.height * 0.02),
+                Expanded(
+                  child: Column(
+                    children: [
+                      ...sections.map((section) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Card(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (section.title != null)
+                                      Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: Text(
+                                          section.title!,
+                                          style: theme.textTheme.bodyLarge,
+                                        ),
+                                      ),
+                                    ...section.items
+                                        .map((item) => _buildMenuItem(
+                                              item: item,
+                                              theme: theme,
+                                              isLast:
+                                                  section.items.last == item,
+                                            ))
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: size.height * 0.02),
+                            ],
+                          )),
+                      const Spacer(),
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Запросить удаление учётной записи',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.03),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   Widget _buildMenuItem({

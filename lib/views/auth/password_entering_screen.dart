@@ -58,6 +58,9 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
+        backgroundColor: theme.brightness == Brightness.light
+            ? theme.colorScheme.surfaceContainerHigh
+            : theme.colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

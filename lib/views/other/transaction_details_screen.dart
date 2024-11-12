@@ -54,7 +54,7 @@ class TransactionDetailsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerHigh,
+      backgroundColor: theme.brightness == Brightness.light ? theme.colorScheme.surfaceContainerHigh : theme.colorScheme.surface, 
         body: SafeArea(
       child: SingleChildScrollView(
         child: Padding(
@@ -271,7 +271,7 @@ class CustomBorder extends ShapeBorder {
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
     final Path path = Path();
     final double waveHeight = 6.0;
-    final double waveWidth = 8.0;
+    final double waveWidth = 6.0;
 
     path.moveTo(rect.left, rect.top);
     

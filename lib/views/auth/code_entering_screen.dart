@@ -31,7 +31,7 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_authController.secureStore.currentSettings?.useBiometrics == true) {
         _authenticateWithBiometrics();
       }
@@ -46,6 +46,9 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     final isLandscape = size.width > size.height;
 
     return Scaffold(
+      backgroundColor: theme.brightness == Brightness.light
+          ? theme.colorScheme.surfaceContainerHigh
+          : theme.colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(

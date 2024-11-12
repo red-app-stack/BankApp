@@ -39,11 +39,12 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: theme.brightness == Brightness.light
+          ? theme.colorScheme.surfaceContainerHigh
+          : theme.colorScheme.surface,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -99,8 +100,8 @@ class MenuScreen extends StatelessWidget {
                                       item.icon ==
                                               'assets/icons/ic_settings.svg'
                                           ? {
-                                            Get.toNamed('/securitySettings'),
-                                          }
+                                              Get.toNamed('/securitySettings'),
+                                            }
                                           : {};
                                     },
                                   ))
