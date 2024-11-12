@@ -4,12 +4,6 @@ import '../services/dio_manager.dart';
 import '../services/user_service.dart';
 import '../views/shared/secure_store.dart';
 
-
-// how in flutter dart make a check of the transaction (with a squigly line at the top and bottom, and a column containing app logo, (green box with text transaction successful (depending on the transaction status) and amount), row (user icon (if null then a circle with initials of the user) toUserName, phone number), transaction type, transaction id, created at, comission (0 by default),  sender: from username, from (type)) 
-
-
-
-
 class AccountModel {
   final int id;
   final String accountNumber;
@@ -359,7 +353,6 @@ class AccountsController extends GetxController {
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
-
       if (response.statusCode == 200 && response.data is List) {
         transactionHistory.value = (response.data as List).map((transaction) {
           return Transaction(
@@ -372,6 +365,8 @@ class AccountsController extends GetxController {
             type: transaction['transaction_type'],
             status: transaction['status'],
             createdAt: DateTime.parse(transaction['created_at']).toLocal(),
+            fromUserName: transaction['from_user_name'],
+            toUserName: transaction['to_user_name'],
           );
         }).toList();
         return transactionHistory.value!;

@@ -12,6 +12,7 @@ import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
 import '../views/other/qr_transfer_screen.dart';
 import '../views/other/security_settings_screen.dart';
+import '../views/other/transaction_details_screen.dart';
 import '/views/auth/register_screen.dart';
 import '/views/main/home_screen.dart';
 import '../views/main/main_screen.dart';
@@ -27,6 +28,7 @@ class Routes {
   static const transfers = '/transfers';
   static const paymentHistory = '/paymentHistory';
   static const transferHistory = '/transferHistory';
+  static const transferDetails = '/transferDetails';
 
   static const createAccount = '/createAccount';
   static const phoneTransfer = '/phoneTransfer';
@@ -105,6 +107,12 @@ class AppRoutes {
     GetPage(
       name: Routes.transferHistory,
       page: () => TransferHistoryScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.transferDetails,
+      page: () => TransactionDetailsScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

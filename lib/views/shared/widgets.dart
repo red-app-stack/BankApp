@@ -2,6 +2,7 @@ import 'package:bank_app/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../utils/themes/theme_extension.dart';
+import 'formatters.dart';
 
 Widget buildTextInput(
   TextEditingController controller,
@@ -295,8 +296,7 @@ Widget buildUserCard(UserService userService, ThemeData theme, Size size) {
               radius: 48,
               backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
               child: Text(
-                userService
-                    .getInitials(userService.currentUser?.fullName ?? ''),
+                getInitials(userService.currentUser?.fullName ?? ''),
                 style: theme.textTheme.headlineMedium?.copyWith(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,

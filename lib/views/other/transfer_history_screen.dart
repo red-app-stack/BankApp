@@ -25,9 +25,13 @@ class TransferHistoryController extends GetxController {
     List<Transaction> allTransactions = [];
 
     for (var account in accountsController.accounts) {
-      final transactions = await accountsController
-          .fetchTransactionHistory(account.accountNumber);
+      final transactions = await accountsController.fetchTransactionHistory(account.accountNumber);
       allTransactions.addAll(transactions);
+      for(Transaction transaction in allTransactions) {
+        print(transaction.fromAccount);
+        print(transaction.toAccount);
+        // print(transaction.fromUserName);
+      }
     }
 
     // Sort transactions by date, most recent first
@@ -258,7 +262,9 @@ class TransferHistoryScreen extends StatelessWidget {
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {
     return GestureDetector(
-      onTap: () => {},
+      onTap: () => {
+        Get.toNamed('/transferDetails', arguments: transaction),
+      },
       behavior: HitTestBehavior.opaque,
       child: Card(
         margin: const EdgeInsets.only(bottom: 16),

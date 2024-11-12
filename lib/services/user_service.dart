@@ -142,18 +142,6 @@ class UserService extends GetxController {
     }
   }
 
-  String getInitials(String fullName) {
-    List<String> names = fullName.trim().split(RegExp(r'\s+'));
-
-    if (names.length < 2) return '';
-
-    String firstNameInitial =
-        names[0].isNotEmpty ? names[0][0].toUpperCase() : '';
-    String lastNameInitial =
-        names[1].isNotEmpty ? names[1][0].toUpperCase() : '';
-
-    return firstNameInitial + lastNameInitial;
-  }
 }
 
 class UserModel {
