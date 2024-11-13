@@ -359,11 +359,7 @@ class _SupportScreenState extends State<SupportScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.light
-          ? theme.colorScheme.surfaceContainerHigh
-          : theme.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [

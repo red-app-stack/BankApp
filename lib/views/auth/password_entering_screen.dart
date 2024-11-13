@@ -58,9 +58,6 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-        backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -244,7 +241,8 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                                     _isPasswordVisible = !_isPasswordVisible;
                                   });
                                 },
-                                tooltip: 'Пароль должен содержать заглавные и строчные буквы, цифры и спец. символы',
+                                tooltip:
+                                    'Пароль должен содержать заглавные и строчные буквы, цифры и спец. символы',
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),

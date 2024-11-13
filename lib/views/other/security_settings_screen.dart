@@ -86,9 +86,6 @@ class SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-        backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),

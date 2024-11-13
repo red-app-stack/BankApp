@@ -101,9 +101,6 @@ class ProfileScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-        backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: () async {

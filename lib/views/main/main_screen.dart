@@ -356,9 +356,9 @@ class MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.light
-          ? theme.colorScheme.surfaceContainerHigh
-          : theme.colorScheme.surface,
+      // backgroundColor: theme.brightness == Brightness.light
+      //     ? theme.colorScheme.surfaceContainerHighest
+      //     : theme.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -396,9 +396,7 @@ class MainScreenState extends State<MainScreen> {
         ),
         child: CurvedNavigationBar(
           key: _bottomNavigationKey,
-          color: theme.brightness == Brightness.light
-          ? theme.colorScheme.surface
-          : theme.colorScheme.surfaceContainer,
+          color: theme.colorScheme.surfaceContainer,
           buttonBackgroundColor: Theme.of(context).colorScheme.primary,
           backgroundColor: Colors.transparent,
           index: _selectedIndex,

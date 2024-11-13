@@ -185,9 +185,6 @@ class PhoneTransferScreen extends StatelessWidget {
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
-                backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
         body: SafeArea(
           
             child: Padding(
@@ -380,7 +377,7 @@ class PhoneTransferScreen extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
+                color: theme.colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(

@@ -13,9 +13,6 @@ class SettingsScreen extends StatelessWidget {
 
     return Builder(
       builder: (context) => Scaffold(
-                backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
         appBar: AppBar(
           title: Text('Настройки'),
           backgroundColor: colorScheme.surface,

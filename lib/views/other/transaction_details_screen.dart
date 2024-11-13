@@ -54,7 +54,6 @@ class TransactionDetailsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.light ? theme.colorScheme.surfaceContainerHigh : theme.colorScheme.surface, 
         body: SafeArea(
       child: SingleChildScrollView(
         child: Padding(
@@ -93,7 +92,7 @@ class TransactionDetailsScreen extends StatelessWidget {
               ),
 
               Card(
-                  shape: CustomBorder(),
+                shape: CustomBorder(),
                 margin: const EdgeInsets.all(16),
                 child: Column(
                   children: [
@@ -274,7 +273,7 @@ class CustomBorder extends ShapeBorder {
     final double waveWidth = 6.0;
 
     path.moveTo(rect.left, rect.top);
-    
+
     bool up = true;
     for (double x = rect.left; x < rect.right; x += waveWidth) {
       if (up) {

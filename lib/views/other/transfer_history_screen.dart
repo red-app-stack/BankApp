@@ -74,43 +74,40 @@ class TransferHistoryScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-        backgroundColor: theme.brightness == Brightness.light
-            ? theme.colorScheme.surfaceContainerHigh
-            : theme.colorScheme.surface,
         body: SafeArea(
             child: Column(children: [
-          Expanded(
-              child: RefreshIndicator(
-            onRefresh: () async {
-              try {
-                await Future.delayed(const Duration(milliseconds: 500));
-              } on TimeoutException {
-                print('Refresh operation timed out');
-              } catch (e) {
-                print('Error during refresh: $e');
-              }
-              return Future.value();
-            },
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    _buildHeader(context),
-                    const SizedBox(height: 16),
-                    _buildFilterCard(theme),
-                    const SizedBox(height: 16),
-                    Obx(() => controller.accountsController.transactionHistory
-                                .value?.isNotEmpty ??
-                            false
-                        ? _buildTransactionsList(context)
-                        : _buildEmptyState(theme, size)),
-                  ],
-                ),
-              ),
+      Expanded(
+          child: RefreshIndicator(
+        onRefresh: () async {
+          try {
+            await Future.delayed(const Duration(milliseconds: 500));
+          } on TimeoutException {
+            print('Refresh operation timed out');
+          } catch (e) {
+            print('Error during refresh: $e');
+          }
+          return Future.value();
+        },
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 16),
+                _buildFilterCard(theme),
+                const SizedBox(height: 16),
+                Obx(() => controller.accountsController.transactionHistory.value
+                            ?.isNotEmpty ??
+                        false
+                    ? _buildTransactionsList(context)
+                    : _buildEmptyState(theme, size)),
+              ],
             ),
-          ))
-        ])));
+          ),
+        ),
+      ))
+    ])));
   }
 
   Widget _buildHeader(BuildContext context) {

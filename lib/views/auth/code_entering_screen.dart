@@ -46,9 +46,6 @@ class CodeEnteringScreenState extends State<CodeEnteringScreen> {
     final isLandscape = size.width > size.height;
 
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.light
-          ? theme.colorScheme.surfaceContainerHigh
-          : theme.colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
