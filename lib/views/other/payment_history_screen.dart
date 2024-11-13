@@ -23,13 +23,14 @@ class PaymentHistoryController extends GetxController {
 
   Future<void> loadTransactions() async {
     List<Transaction> allTransactions = [];
-
-    for (var account in accountsController.accounts) {
-      final transactions = await accountsController
-          .fetchTransactionHistory(account.accountNumber);
-      allTransactions.addAll(transactions);
+    if (accountsController.transactionHistory.value == null) {
+      for (var account in accountsController.accounts) {
+        await accountsController.fetchTransactionHistory(account.accountNumber);
+      }
     }
-
+    if (accountsController.transactionHistory.value != null) {
+      allTransactions.addAll(accountsController.transactionHistory.value!);
+    }
     // Sort transactions by date, most recent first
     allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -300,7 +301,7 @@ class PaymentHistoryScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    transaction.createdAt.toLocal().toString().split('.')[0],
+                    transaction.formattedCreatedAt,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Container(

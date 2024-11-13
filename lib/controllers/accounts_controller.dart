@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../services/dio_manager.dart';
 import '../services/user_service.dart';
 import '../views/shared/secure_store.dart';
@@ -43,6 +44,7 @@ class Transaction {
   final String type;
   final String status;
   final DateTime createdAt;
+  final String formattedCreatedAt;
   final String? fromUserName;
   final String? toUserName;
 
@@ -56,6 +58,7 @@ class Transaction {
     required this.type,
     required this.status,
     required this.createdAt,
+    required this.formattedCreatedAt,
     this.fromUserName,
     this.toUserName,
   });
@@ -355,6 +358,12 @@ class AccountsController extends GetxController {
       );
       if (response.statusCode == 200 && response.data is List) {
         transactionHistory.value = (response.data as List).map((transaction) {
+          final createdAtString = transaction['created_at'];
+          DateTime createdAt = DateTime.parse(createdAtString).toLocal();
+
+          final formattedDate =
+              DateFormat('dd.MM.yyyy HH:mm:ss').format(createdAt);
+
           return Transaction(
             id: (response.data as List).indexOf(transaction),
             fromAccount: transaction['from_account_number'] ?? '',
@@ -364,7 +373,8 @@ class AccountsController extends GetxController {
             currency: transaction['currency'],
             type: transaction['transaction_type'],
             status: transaction['status'],
-            createdAt: DateTime.parse(transaction['created_at']).toLocal(),
+            createdAt: createdAt,
+            formattedCreatedAt: formattedDate,
             fromUserName: transaction['from_user_name'],
             toUserName: transaction['to_user_name'],
           );

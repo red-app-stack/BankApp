@@ -28,11 +28,6 @@ class TransferHistoryController extends GetxController {
       final transactions = await accountsController
           .fetchTransactionHistory(account.accountNumber);
       allTransactions.addAll(transactions);
-      for (Transaction transaction in allTransactions) {
-        print(transaction.fromAccount);
-        print(transaction.toAccount);
-        // print(transaction.fromUserName);
-      }
     }
 
     // Sort transactions by date, most recent first
@@ -307,7 +302,7 @@ class TransferHistoryScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    transaction.createdAt.toLocal().toString().split('.')[0],
+                    transaction.formattedCreatedAt,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Container(

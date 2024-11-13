@@ -159,7 +159,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                           _buildDetailRow(
                               'ID транзакции', transaction.reference),
                           _buildDetailRow('Дата и время',
-                              transaction.createdAt.toString().split('.')[0]),
+                              transaction.formattedCreatedAt),
                           _buildDetailRow(
                               'Комиссия', '0 ${transaction.currency}'),
                           _buildDetailRow('Отправитель',
