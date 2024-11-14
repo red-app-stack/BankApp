@@ -54,6 +54,15 @@ String getInitials(String fullName) {
   return firstNameInitial + lastNameInitial;
 }
 
+
+String formatCardNumber(String cardNumber) {
+  if (cardNumber.length < 8) {
+    return cardNumber; // Fallback if the card number is too short
+  }
+  return '${cardNumber.substring(0, 4)} ${cardNumber.substring(4, 8)} ${cardNumber.substring(8, 12)} ${cardNumber.substring(cardNumber.length - 4)}';
+}
+
+
 String censorCardNumber(String cardNumber) {
   if (cardNumber.length < 8) {
     return cardNumber; // Fallback if the card number is too short
