@@ -54,6 +54,20 @@ String getInitials(String fullName) {
   return firstNameInitial + lastNameInitial;
 }
 
+String formatFullName(String? fullName) {
+  if (fullName == null || fullName.isEmpty) return '';
+
+  List<String> names = fullName.trim().split(RegExp(r'\s+'));
+  if (names.isEmpty) return '';
+
+  String formattedName = names[0];
+  for (int i = 1; i < names.length; i++) {
+    if (names[i].isNotEmpty) {
+      formattedName += ' ${names[i][0]}.';
+    }
+  }
+  return formattedName;
+}
 
 String formatCardNumber(String cardNumber) {
   if (cardNumber.length < 8) {
@@ -61,7 +75,6 @@ String formatCardNumber(String cardNumber) {
   }
   return '${cardNumber.substring(0, 4)} ${cardNumber.substring(4, 8)} ${cardNumber.substring(8, 12)} ${cardNumber.substring(cardNumber.length - 4)}';
 }
-
 
 String censorCardNumber(String cardNumber) {
   if (cardNumber.length < 8) {

@@ -91,6 +91,20 @@ Widget buildTextInput(
   );
 }
 
+Widget buildUserAvatar(ThemeData theme, String? userName) {
+  return CircleAvatar(
+    radius: 24,
+    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+    child: Text(
+      getInitials(userName ?? ''),
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
+}
+
 List<String> _getAutofillHints(String iconType) {
   switch (iconType) {
     case 'email':

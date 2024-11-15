@@ -62,6 +62,40 @@ class Transaction {
     this.fromUserName,
     this.toUserName,
   });
+
+  static Transaction fromJson(Map<String, dynamic> json) {
+    return Transaction(
+      id: json['id'] ?? 0,
+      fromAccount: json['from_account'] ?? '',
+      toAccount: json['to_account'] ?? '',
+      reference: json['reference'] ?? '',
+      amount: double.parse(json['amount'].toString()),
+      currency: json['currency'] ?? '',
+      type: json['type'] ?? '',
+      status: json['status'] ?? '',
+      createdAt: DateTime.parse(json['created_at']),
+      formattedCreatedAt: json['formatted_created_at'] ?? '',
+      fromUserName: json['from_user_name'],
+      toUserName: json['to_user_name'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'from_account': fromAccount,
+      'to_account': toAccount,
+      'reference': reference,
+      'amount': amount,
+      'currency': currency,
+      'type': type,
+      'status': status,
+      'created_at': createdAt.toIso8601String(),
+      'formatted_created_at': formattedCreatedAt,
+      'from_user_name': fromUserName,
+      'to_user_name': toUserName,
+    };
+  }
 }
 
 class RecipientModel {

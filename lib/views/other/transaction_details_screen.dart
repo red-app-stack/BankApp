@@ -1,11 +1,54 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/formatters.dart';
+import '../shared/secure_store.dart';
+
+class TransactionDetailsController extends GetxController {
+  final SecureStore secureStore = Get.find<SecureStore>();
+  bool isFavorite = false;
+
+  static const String favoritesKey = 'favorite_transfers';
+
+  Future<List<Transaction>> getFavoriteTransfers() async {
+    final favoritesJson = await secureStore.secureRead(favoritesKey);
+    if (favoritesJson != null) {
+      final List<dynamic> decoded = jsonDecode(favoritesJson);
+      return decoded.map((json) => Transaction.fromJson(json)).toList();
+    }
+    return [];
+  }
+
+  Future<void> saveFavoriteTransfer(Transaction transaction) async {
+    List<Transaction> favorites = await getFavoriteTransfers();
+    favorites.add(transaction);
+    print(favorites.map((e) => e.toJson()).toList());
+    await secureStore.secureStore(
+        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+  }
+
+  Future<void> removeFavoriteTransfer(String reference) async {
+    List<Transaction> favorites = await getFavoriteTransfers();
+    favorites.removeWhere((t) => t.reference == reference);
+    await secureStore.secureStore(
+        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+  }
+
+  TransactionDetailsController();
+
+  @override
+  void onInit() {
+    super.onInit();
+  }
+}
 
 class TransactionDetailsScreen extends StatelessWidget {
   final Transaction transaction = Get.arguments;
+  final TransactionDetailsController controller =
+      Get.put(TransactionDetailsController());
 
   TransactionDetailsScreen({super.key});
 
@@ -271,11 +314,21 @@ class TransactionDetailsScreen extends StatelessWidget {
                         () {},
                       ),
                       _buildActionButton(
-                        context,
-                        'assets/icons/ic_favorite.svg',
-                        'В избранное',
-                        () {},
-                      ),
+                          context,
+                          'assets/icons/ic_favorite.svg',
+                          'В избранное', () async {
+                        if (controller.isFavorite) {
+                          print('removing from favorite');
+                          await controller
+                              .removeFavoriteTransfer(transaction.reference);
+                        } else {
+                          print('adding to favorite');
+
+                          await controller.saveFavoriteTransfer(transaction);
+                        }
+                        controller.isFavorite = !controller.isFavorite;
+                        // setState(() {});
+                      }),
                     ],
                   ),
                 )),

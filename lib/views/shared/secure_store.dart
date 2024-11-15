@@ -5,6 +5,7 @@ import 'user_settings.dart';
 
 class SecureStore extends GetxController {
   static const String settingsKey = 'user_settings';
+  static const String favoritesKey = 'favorite_transfers';
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
   UserSettings? currentSettings;
 
