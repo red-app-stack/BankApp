@@ -8,6 +8,7 @@ import '../shared/formatters.dart';
 import '../shared/secure_store.dart';
 
 class TransactionDetailsController extends GetxController {
+  Transaction transaction;
   final SecureStore secureStore = Get.find<SecureStore>();
   bool isFavorite = false;
 
@@ -37,18 +38,28 @@ class TransactionDetailsController extends GetxController {
         favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
   }
 
-  TransactionDetailsController();
+  TransactionDetailsController(this.transaction);
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    await loadTransferState();
+  }
+
+  loadTransferState() async {
+    List<Transaction> favorites = await getFavoriteTransfers();
+    for (Transaction element in favorites) {
+      if (element.reference == transaction.reference) {
+        isFavorite = true;
+      }
+    }
   }
 }
 
 class TransactionDetailsScreen extends StatelessWidget {
   final Transaction transaction = Get.arguments;
   final TransactionDetailsController controller =
-      Get.put(TransactionDetailsController());
+      Get.put(TransactionDetailsController(Get.arguments as Transaction));
 
   TransactionDetailsScreen({super.key});
 

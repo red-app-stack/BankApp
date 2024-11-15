@@ -50,7 +50,27 @@ class TransfersScreen extends StatelessWidget {
   final TransfersController controller = Get.put(TransfersController());
   final AccountsController accountsController = Get.find<AccountsController>();
 
-  TransfersScreen({super.key});
+  TransfersScreen({super.key}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      refreshData();
+    });
+
+    // // Using GetX navigation observer
+    // NavigatorObserver() = (route) {
+    //     if (route?.settings.name == '/transfers') {
+    //       refreshData();
+    //     }
+    //   };
+  }
+  Future<void> refreshData() async {
+    try {
+      await controller.loadFavorites();
+      controller.favorites.refresh();
+    } catch (e) {
+      print('Error refreshing data: $e');
+    }
+  }
+
   void _handleTransferItemTap(BuildContext context, String type) {
     switch (type) {
       case 'phone':
@@ -76,11 +96,16 @@ class TransfersScreen extends StatelessWidget {
       child: RefreshIndicator(
         onRefresh: () async {
           try {
+            await controller.loadFavorites();
+            controller.favorites.refresh();
+
             await Future.delayed(const Duration(milliseconds: 500));
           } on TimeoutException {
             print('Refresh operation timed out');
           } catch (e) {
             print('Error during refresh: $e');
+          } finally {
+            // The next line should update the UI after the refresh is complete
           }
           return Future.value();
         },
