@@ -20,7 +20,15 @@ BotResponse? _lastResponse;
 // Replace the existing _getBotResponse method with this enhanced version
 BotResponse _getBotResponse(String userMessage) {
   // Handle confirmations first
-  if (_lastResponse?.action != null && _isConfirmation(userMessage)) {
+  if (_lastResponse?.action != null && _isCancelation(userMessage)) {
+    BotResponse response = BotResponse('Действие отменено пользователем.',
+        action: null, confirmation: false);
+    _lastResponse = response;
+    return response;
+  }
+  if (_lastResponse?.action != null &&
+      _isConfirmation(userMessage) &&
+      !_isCancelation(userMessage)) {
     BotResponse response = BotResponse('Отлично! Сейчас все сделаем.',
         action: _lastResponse!.action, confirmation: true);
     _lastResponse = response;
@@ -185,7 +193,27 @@ bool _isConfirmation(String message) {
     'ок',
     'ok',
     'угу',
+    'sure',
+    'okay',
+    'confirm',
     'верно',
+  ].contains(message);
+}
+
+bool _isCancelation(String message) {
+  message = message.toLowerCase().trim();
+  return [
+    'нет',
+    'не',
+    'no',
+    'неа',
+    'не хочу',
+    'отстань',
+    'cancel',
+    'отмена',
+    'назад',
+    'отказ',
+    'deny',
   ].contains(message);
 }
 
@@ -269,6 +297,9 @@ class SupportScreen extends StatefulWidget {
 
 class _SupportScreenState extends State<SupportScreen>
     with TickerProviderStateMixin {
+  late AnimationController _headerAnimationController;
+  late Animation<double> _headerFadeAnimation;
+  late Animation<Offset> _headerSlideAnimation;
   final List<Message> _messages = [];
   final Map<Message, AnimationController> _messageAnimations = {};
   final TextEditingController _textController = TextEditingController();
@@ -276,6 +307,8 @@ class _SupportScreenState extends State<SupportScreen>
 
   @override
   void dispose() {
+    _headerAnimationController.dispose();
+
     for (var controller in _messageAnimations.values) {
       controller.dispose();
     }
@@ -294,6 +327,10 @@ class _SupportScreenState extends State<SupportScreen>
     });
 
     animationController.forward();
+
+    if (_messages.length == 1) {
+      _headerAnimationController.forward();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
@@ -320,7 +357,7 @@ class _SupportScreenState extends State<SupportScreen>
     _addMessageWithAnimation(message);
     _textController.clear();
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 1000), () {
       _addBotResponse(text.toLowerCase());
     });
   }
@@ -328,8 +365,29 @@ class _SupportScreenState extends State<SupportScreen>
   @override
   void initState() {
     super.initState();
+    _headerAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _headerFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _headerAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _headerSlideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -0.25),
+    ).animate(
+      CurvedAnimation(
+        parent: _headerAnimationController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
     // Send welcome message after 500ms
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 1000), () {
       _addBotMessage("Здравствуйте! Как я могу вам помочь?");
     });
   }
@@ -359,10 +417,38 @@ class _SupportScreenState extends State<SupportScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
+            SlideTransition(
+              position: _headerSlideAnimation,
+              child: FadeTransition(
+                opacity: _headerFadeAnimation,
+                child: Center(
+                    child: Column(children: [
+                  SizedBox(height: size.height * 0.15),
+                  Text('Бот\nконсультант',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: theme.colorScheme.secondaryContainer,
+                          fontFamily: 'OpenSans',
+                          fontSize: 40,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1)),
+                  SizedBox(height: size.height * 0.02),
+                  SvgPicture.asset(
+                    'assets/icons/ic_chatbot.svg',
+                    height: size.height * 0.3,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.secondaryContainer,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ])),
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
