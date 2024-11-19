@@ -356,7 +356,7 @@ class AccountsScreen extends StatelessWidget {
                     : Transform(
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..rotateY(pi),
-                        child: _buildCardBacks(
+                        child: _buildCardBack(
                             theme, card, width, colorBg, colorFg),
                       ),
               );
@@ -498,7 +498,7 @@ class AccountsScreen extends StatelessWidget {
         ));
   }
 
-  Widget _buildCardBacks(
+  Widget _buildCardBack(
     ThemeData theme,
     BankCard card,
     double width,
@@ -660,65 +660,6 @@ class AccountsScreen extends StatelessWidget {
             ],
           ),
         ));
-  }
-
-  Widget _buildCardBack(
-    BuildContext context,
-    BankCard card,
-    ThemeData theme,
-    Color colorBg,
-    Color colorFg,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorBg,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Text(
-            //   '',
-            //   style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
-            // ),
-            // const Spacer(),
-            Text(
-              card.name,
-              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              card.number,
-              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  card.expiryDate,
-                  style:
-                      theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-                ),
-                const Spacer(),
-                // GestureDetector(
-                //   onTap: () {
-                //     cvv.value = cvv.value == 'CVV' ? card.cvv : 'CVV';
-                //     print('tap');
-                //   },
-                //   child: Obx(() => Text(
-                //         cvv.value,
-                //         style: theme.textTheme.bodyLarge
-                //             ?.copyWith(color: Colors.white),
-                //       )),
-                // ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   bool _getCurrentPage(String type, int index) {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -296,18 +297,39 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _headerAnimationController;
-  late Animation<double> _headerFadeAnimation;
-  late Animation<Offset> _headerSlideAnimation;
+  late ValueNotifier<double> _scrollPosition;
   final List<Message> _messages = [];
   final Map<Message, AnimationController> _messageAnimations = {};
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  late ValueNotifier<double> _keyboardHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _keyboardHeight = ValueNotifier(0.0);
+    WidgetsBinding.instance.addObserver(this);
+
+    _scrollPosition = ValueNotifier(0.0);
+    _scrollController.addListener(_onScroll);
+
+    _headerAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    // Send welcome message after 500ms
+    Future.delayed(const Duration(milliseconds: 700), () {
+      _addBotMessage("Здравствуйте! Как я могу вам помочь?");
+    });
+  }
 
   @override
   void dispose() {
     _headerAnimationController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
 
     for (var controller in _messageAnimations.values) {
       controller.dispose();
@@ -315,6 +337,17 @@ class _SupportScreenState extends State<SupportScreen>
     super.dispose();
   }
 
+  @override
+  void didChangeMetrics() {
+    _updateKeyboardHeight();
+  }
+
+  void _updateKeyboardHeight() {
+    _keyboardHeight.value =
+        MediaQueryData.fromView(View.of(context)).viewInsets.bottom;
+  }
+
+// In the _addMessageWithAnimation method, modify it to:
   void _addMessageWithAnimation(Message message) {
     final animationController = AnimationController(
       vsync: this,
@@ -325,16 +358,23 @@ class _SupportScreenState extends State<SupportScreen>
       _messages.add(message);
       _messageAnimations[message] = animationController;
     });
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
     animationController.forward();
 
+    // When first message appears, scroll down to show it
     if (_messages.length == 1) {
-      _headerAnimationController.forward();
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent, // Adjust this value to control how far it scrolls
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeOut,
+      );
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
   }
 
   void _addBotMessage(String text) {
@@ -362,34 +402,8 @@ class _SupportScreenState extends State<SupportScreen>
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _headerAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _headerFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _headerAnimationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _headerSlideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, -0.25),
-    ).animate(
-      CurvedAnimation(
-        parent: _headerAnimationController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
-    // Send welcome message after 500ms
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      _addBotMessage("Здравствуйте! Как я могу вам помочь?");
-    });
+  void _onScroll() {
+    _scrollPosition.value = _scrollController.position.pixels;
   }
 
 // Update _addBotResponse to handle the new response type
@@ -418,56 +432,93 @@ class _SupportScreenState extends State<SupportScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            SlideTransition(
-              position: _headerSlideAnimation,
-              child: FadeTransition(
-                opacity: _headerFadeAnimation,
-                child: Center(
-                    child: Column(children: [
-                  SizedBox(height: size.height * 0.15),
-                  Text('Бот\nконсультант',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: theme.colorScheme.secondaryContainer,
-                          fontFamily: 'OpenSans',
-                          fontSize: 40,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1)),
-                  SizedBox(height: size.height * 0.02),
-                  SvgPicture.asset(
-                    'assets/icons/ic_chatbot.svg',
-                    height: size.height * 0.3,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.secondaryContainer,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ])),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
+        body: SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: _messages.length + 2, // +1 for the header
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return ValueListenableBuilder<double>(
+                    valueListenable: _scrollPosition,
+                    builder: (context, scrollValue, child) {
+                      final opacity =
+                          (1.0 - (scrollValue / 800)).clamp(0.0, 1.0);
+                      final scale = (1.0 - (scrollValue / 700)).clamp(0.1, 0.9);
+                      return Opacity(
+                        opacity: opacity,
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Column(
+                            children: [
+                              SizedBox(height: size.height * 0.05 * scale),
+                              Text('Бот\nконсультант',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color:
+                                          theme.colorScheme.secondaryContainer,
+                                      fontFamily: 'OpenSans',
+                                      fontSize: 40 * scale,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.1)),
+                              SizedBox(height: size.height * 0.02),
+                              SvgPicture.asset(
+                                'assets/icons/ic_chatbot.svg',
+                                height: size.height * 0.3 * scale,
+                                colorFilter: ColorFilter.mode(
+                                  theme.colorScheme.secondaryContainer,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else if (index <= _messages.length) {
+                  final message = _messages[index - 1];
                   return _buildMessageBubble(message, theme);
-                },
-              ),
+                } else {
+                  return ValueListenableBuilder<double>(
+                      valueListenable: _keyboardHeight,
+                      builder: (context, keyboardHeight, child) {
+                        return SizedBox(
+                          height: max(
+                              0,
+                              (size.height * 0.7 -
+                                  (_messages.length * 80) -
+                                  (keyboardHeight == 0.0
+                                      ? keyboardHeight
+                                      : keyboardHeight - 100))),
+                        );
+                      });
+                }
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 48, left: 16, right: 16),
-              child: _buildTextBarIcons(theme),
-            ),
-          ],
-        ),
+          ),
+          ValueListenableBuilder<double>(
+              valueListenable: _keyboardHeight,
+              builder: (context, keyboardHeight, child) {
+                return AnimatedPadding(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.only(
+                      top: 8,
+                      bottom: keyboardHeight == 0 ? 48 : 16,
+                      left: 16,
+                      right: 16),
+                  child: _buildTextBarIcons(context),
+                );
+              }),
+        ],
       ),
-    );
+    ));
   }
 
   Widget _buildMessageBubble(Message message, ThemeData theme) {
@@ -507,7 +558,8 @@ class _SupportScreenState extends State<SupportScreen>
     );
   }
 
-  Widget _buildTextBarIcons(ThemeData theme) {
+  Widget _buildTextBarIcons(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       children: [
         IconButton(
@@ -535,6 +587,7 @@ class _SupportScreenState extends State<SupportScreen>
               textAlignVertical: TextAlignVertical.center,
               textInputAction: TextInputAction.send,
               onSubmitted: _handleUserMessage,
+              onChanged: (_) => _updateKeyboardHeight(),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Задайте интересующий вопрос',

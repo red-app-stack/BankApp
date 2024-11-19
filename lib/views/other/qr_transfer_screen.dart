@@ -510,7 +510,7 @@ class QRTransferScreen extends StatelessWidget {
   }
 
   Widget _buildCreator(BuildContext context) {
-    final botomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
         padding: const EdgeInsets.all(16),
@@ -547,7 +547,7 @@ class QRTransferScreen extends StatelessWidget {
             AnimatedPadding(
                 duration: const Duration(milliseconds: 50),
                 curve: Curves.easeInOut,
-                padding: EdgeInsets.only(bottom: botomInset),
+                padding: EdgeInsets.only(bottom: bottomInset),
                 child: ElevatedButton(
                   onPressed: () {
                     showDialog(

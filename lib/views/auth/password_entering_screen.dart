@@ -54,7 +54,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    final botomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -359,7 +359,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
               Obx(() => AnimatedPadding(
                     duration: const Duration(milliseconds: 50),
                     curve: Curves.easeInOut,
-                    padding: EdgeInsets.only(bottom: botomInset),
+                    padding: EdgeInsets.only(bottom: bottomInset),
                     child: ElevatedButton(
                       onPressed: _authController.status
                           ? null
@@ -404,7 +404,7 @@ class PasswordEnteringScreenState extends State<PasswordEnteringScreen> {
                     ),
                   )),
               SizedBox(
-                  height: botomInset <= size.height * 0.02
+                  height: bottomInset <= size.height * 0.02
                       ? size.height * 0.02
                       : 0),
             ],

@@ -55,7 +55,12 @@ class PhoneTransferController extends GetxController {
 
   void _initializeSelectedAccount() {
     if (accountsController.accounts.isNotEmpty) {
-      selectedAccount.value = accountsController.accounts.first;
+      final cards = accountsController.accounts
+          .where((account) => account.accountType == 'card')
+          .toList()
+        ..sort((a, b) => b.balance.compareTo(a.balance));
+
+      selectedAccount.value = cards.isNotEmpty ? cards.first : null;
     }
   }
 
@@ -181,12 +186,11 @@ class PhoneTransferScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    final botomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: SafeArea(
-          
             child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(children: [
@@ -234,7 +238,7 @@ class PhoneTransferScreen extends StatelessWidget {
                     return AnimatedPadding(
                         duration: const Duration(milliseconds: 50),
                         curve: Curves.easeInOut,
-                        padding: EdgeInsets.only(bottom: botomInset),
+                        padding: EdgeInsets.only(bottom: bottomInset),
                         child: ElevatedButton(
                           onPressed: () async {
                             if (controller.selectedAccount.value == null) {
@@ -505,5 +509,4 @@ class PhoneTransferScreen extends StatelessWidget {
       ),
     );
   }
-  
 }

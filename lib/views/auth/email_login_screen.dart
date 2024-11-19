@@ -86,7 +86,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
-    final botomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
@@ -298,7 +298,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
               Obx(() => AnimatedPadding(
                   duration: const Duration(milliseconds: 50),
                   curve: Curves.easeInOut,
-                  padding: EdgeInsets.only(bottom: botomInset),
+                  padding: EdgeInsets.only(bottom: bottomInset),
                   child: ElevatedButton(
                       onPressed: _authController.isCodeSent
                           ? () {
@@ -307,7 +307,10 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                                     _authController.verification.value.text);
                               }
                             }
-                          : sendVerificationCode,
+                          : () {
+                              print(bottomInset);
+                              sendVerificationCode();
+                            },
                       style: theme.elevatedButtonTheme.style?.copyWith(
                         backgroundColor: WidgetStateProperty.all(
                           theme.colorScheme.secondaryContainer,
@@ -338,7 +341,7 @@ class EmailVerificationPageState extends State<EmailVerificationPage>
                               ),
                       )))),
               SizedBox(
-                  height: botomInset <= size.height * 0.02
+                  height: bottomInset <= size.height * 0.02
                       ? size.height * 0.02
                       : 0),
             ],
