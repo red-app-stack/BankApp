@@ -12,12 +12,15 @@ import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
 import '../views/other/qr_transfer_screen.dart';
 import '../views/other/security_settings_screen.dart';
+import '../views/other/testing_screen.dart';
 import '../views/other/transaction_details_screen.dart';
 import '/views/auth/register_screen.dart';
 import '/views/main/home_screen.dart';
 import '../views/main/main_screen.dart';
 
 class Routes {
+  static const testing = '/testing';
+
   static const main = '/main';
   static const phoneLogin = '/phoneLogin';
   static const emailLogin = '/emailLogin';
@@ -38,6 +41,18 @@ class Routes {
 
 class AppRoutes {
   static final routes = [
+    GetPage(
+      name: Routes.testing,
+      page: () => TestingScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 800),
+    ),
+    GetPage(
+      name: Routes.main,
+      page: () => MainScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 800),
+    ),
     GetPage(
       name: Routes.phoneLogin,
       page: () => PhoneLoginPage(),
@@ -61,12 +76,6 @@ class AppRoutes {
       page: () => HomeScreen(),
       customTransition: FadeWithHeroTransition(),
       transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: Routes.main,
-      page: () => MainScreen(),
-      customTransition: ZoomFadeTransition(),
-      transitionDuration: Duration(milliseconds: 800),
     ),
     GetPage(
       name: Routes.codeEntering,
