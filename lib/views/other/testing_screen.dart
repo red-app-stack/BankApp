@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'testing_detail_screen.dart';
+// import 'testing_detail_screen.dart';
 import 'testing_scheme_screen.dart';
 
 class TestingItem {
@@ -258,8 +258,8 @@ class TestingItemView extends StatefulWidget {
   const TestingItemView({
     required this.item,
     this.level = 0,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<TestingItemView> createState() => _TestingItemViewState();

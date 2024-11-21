@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:graphview/graphview.dart';
+import 'package:graphview/graphview.dart' as graphview;
 
 class TestingItem {
   final String title;
@@ -15,9 +15,19 @@ class TestingItem {
   });
 }
 
-class TestingSchemeScreen extends StatelessWidget {
+class TestingSchemeScreen extends StatefulWidget {
+  @override
+  _TestingSchemeScreenState createState() => _TestingSchemeScreenState();
+}
+
+class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
   final Graph graph = Graph();
-  final AlgorithmType builder = AlgorithmType.sugiyama;
+
+  final SugiyamaConfiguration builder = SugiyamaConfiguration()
+    ..nodeSeparation = 50
+    ..levelSeparation = 100
+    ..orientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
+  int _currentOrientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
 
   final List<TestingItem> sections = [
     TestingItem(
@@ -132,8 +142,9 @@ class TestingSchemeScreen extends StatelessWidget {
     ),
   ];
 
-  void _buildGraphFromItem(Node parentNode, TestingItem item) {
-    Node itemNode = Node.Id(item.title);
+  void _buildGraphFromItem(graphview.Node parentNode, TestingItem item) {
+    graphview.Node itemNode = graphview.Node.Id(item.title);
+    graph.addNode(itemNode);
     if (parentNode != itemNode) {
       graph.addEdge(parentNode, itemNode);
     }
@@ -145,14 +156,151 @@ class TestingSchemeScreen extends StatelessWidget {
     }
   }
 
+// Clear the graph before rebuilding
+void _updateOrientation(int newOrientation) {
+  setState(() {
+    _currentOrientation = newOrientation;
+    builder.orientation = _currentOrientation;
+    graph.nodes.clear();
+    graph.edges.clear();
+
+    // Rebuild graph with new orientation
+    graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
+    graph.addNode(rootNode);
+    for (var section in sections) {
+      _buildGraphFromItem(rootNode, section);
+    }
+  });
+}
+
+// Update the ChoiceChip onSelected callbacks to use the new method
+
+  Widget _buildControls() {
+    return Wrap(
+      spacing: 8,
+      children: [
+        SizedBox(
+          width: 120,
+          child: TextFormField(
+            initialValue: builder.nodeSeparation.toString(),
+            decoration: InputDecoration(labelText: "Node Separation"),
+            onChanged: (text) {
+              setState(() {
+                builder.nodeSeparation = int.tryParse(text) ?? 50;
+              });
+            },
+          ),
+        ),
+        SizedBox(
+          width: 120,
+          child: TextFormField(
+            initialValue: builder.levelSeparation.toString(),
+            decoration: InputDecoration(labelText: "Level Separation"),
+            onChanged: (text) {
+              setState(() {
+                builder.levelSeparation = int.tryParse(text) ?? 100;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLayoutControls() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ChoiceChip(
+              label: Text('Top-Down'),
+              selected: _currentOrientation ==
+                  SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM,
+              onSelected: (selected) {
+                _updateOrientation(
+                    SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM);
+              },
+            ),
+            ChoiceChip(
+              label: Text('Left-Right'),
+              selected: _currentOrientation ==
+                  SugiyamaConfiguration.ORIENTATION_LEFT_RIGHT,
+              onSelected: (selected) {
+                _updateOrientation(
+                    SugiyamaConfiguration.ORIENTATION_LEFT_RIGHT);
+              },
+            ),
+            ChoiceChip(
+              label: Text('Bottom-Up'),
+              selected: _currentOrientation ==
+                  SugiyamaConfiguration.ORIENTATION_BOTTOM_TOP,
+              onSelected: (selected) {
+                _updateOrientation(
+                    SugiyamaConfiguration.ORIENTATION_BOTTOM_TOP);
+              },
+            ),
+            ChoiceChip(
+              label: Text('Right-Left'),
+              selected: _currentOrientation ==
+                  SugiyamaConfiguration.ORIENTATION_RIGHT_LEFT,
+              onSelected: (selected) {
+                _updateOrientation(
+                    SugiyamaConfiguration.ORIENTATION_RIGHT_LEFT);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNode(Node node, BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () {
+        // Safe node value access with null check
+        final nodeValue = node.key?.value;
+        if (nodeValue != null) {
+          print('Tapped node: $nodeValue');
+          // Optional: Add more interaction handling here
+        }
+      },
+      child: Card(
+        elevation: 4,
+        child: Container(
+          padding: EdgeInsets.all(16),
+          constraints: BoxConstraints(maxWidth: 200),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.2),
+            ),
+          ),
+          child: Text(
+            // Safe text display with null check
+            node.key?.value?.toString() ?? 'Unknown',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.primary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Create root node
-    Node rootNode = Node.Id('Виды тестирования');
-    
+    graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
+
     // Build graph structure
+    graph.addNode(rootNode);
     for (var section in sections) {
       _buildGraphFromItem(rootNode, section);
     }
@@ -190,46 +338,28 @@ class TestingSchemeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: InteractiveViewer(
-                boundaryMargin: EdgeInsets.all(100),
-                minScale: 0.1,
-                maxScale: 2.0,
-                child: GraphView(
-                  graph: graph,
-                  algorithm: SugiyamaAlgorithm(builder)
-                    ..nodeSeparation = 50
-                    ..levelSeparation = 100,
-                  paint: Paint()
-                    ..color = theme.colorScheme.primary
-                    ..strokeWidth = 1
-                    ..style = PaintingStyle.stroke,
-                  builder: (Node node) {
-                    return Card(
-                      elevation: 2,
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        constraints: BoxConstraints(maxWidth: 200),
-                        decoration: BoxDecoration(
-                          color: theme.cardColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withOpacity(0.2),
-                          ),
-                        ),
-                        child: Text(
-                          node.key?.value?.toString() ?? '',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
+            _buildLayoutControls(),
+            // Wrap InteractiveViewer with Container to ensure it has constraints
+// Update the InteractiveViewer settings
+            Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height -
+                    200, // Adjust the height as needed
+                child: InteractiveViewer(
+                  constrained: false,
+                  boundaryMargin: EdgeInsets.all(100),
+                  minScale: 0.01,
+                  maxScale: 5.6,
+                  child: GraphView(
+                    graph: graph,
+                    algorithm: SugiyamaAlgorithm(builder),
+                    paint: Paint()
+                      ..color = theme.colorScheme.primary
+                      ..strokeWidth = 1.5
+                      ..style = PaintingStyle.stroke,
+                    builder: (Node node) => _buildNode(node, context),
+                  ),
+                ))
           ],
         ),
       ),

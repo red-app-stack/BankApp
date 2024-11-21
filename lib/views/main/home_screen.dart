@@ -142,8 +142,8 @@ class HomeScreen extends StatelessWidget {
                           }
                         : svgPath == 'assets/icons/installment.svg'
                             ? {
-                                print(await Get.find<ServerHealthService>()
-                                    .findWorkingServer())
+                                Get.toNamed('/testing')
+                                //  print(await Get.find<ServerHealthService>().findWorkingServer())
                               }
                             : null;
           },
