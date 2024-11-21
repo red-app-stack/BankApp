@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: Get.find<ThemeController>().themeMode.value,
-      initialRoute: Routes.testing,
+      initialRoute: Routes.home,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
