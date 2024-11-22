@@ -29,6 +29,7 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
     ..orientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
   int _currentOrientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
 
+
   final List<TestingItem> sections = [
     TestingItem(
       title: 'По хроноголии выполнения',
@@ -142,6 +143,7 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
     ),
   ];
 
+
   void _buildGraphFromItem(graphview.Node parentNode, TestingItem item) {
     graphview.Node itemNode = graphview.Node.Id(item.title);
     graph.addNode(itemNode);
@@ -156,24 +158,26 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
     }
   }
 
-// Clear the graph before rebuilding
-void _updateOrientation(int newOrientation) {
-  setState(() {
-    _currentOrientation = newOrientation;
-    builder.orientation = _currentOrientation;
-    graph.nodes.clear();
-    graph.edges.clear();
+  // Clear the graph before rebuilding
+  void _updateOrientation(int newOrientation) {
+    setState(() {
+      _currentOrientation = newOrientation;
+      builder.orientation = _currentOrientation;
 
-    // Rebuild graph with new orientation
-    graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
-    graph.addNode(rootNode);
-    for (var section in sections) {
-      _buildGraphFromItem(rootNode, section);
-    }
-  });
-}
+      // Clear the graph
+      graph.nodes.clear();
+      graph.edges.clear();
 
-// Update the ChoiceChip onSelected callbacks to use the new method
+      // Rebuild graph with new orientation
+      graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
+      graph.addNode(rootNode);
+
+      // Add new nodes based on the sections
+      for (var section in sections) {
+        _buildGraphFromItem(rootNode, section);
+      }
+    });
+  }
 
   Widget _buildControls() {
     return Wrap(
@@ -260,11 +264,9 @@ void _updateOrientation(int newOrientation) {
     final theme = Theme.of(context);
     return InkWell(
       onTap: () {
-        // Safe node value access with null check
         final nodeValue = node.key?.value;
         if (nodeValue != null) {
           print('Tapped node: $nodeValue');
-          // Optional: Add more interaction handling here
         }
       },
       child: Card(
@@ -280,7 +282,6 @@ void _updateOrientation(int newOrientation) {
             ),
           ),
           child: Text(
-            // Safe text display with null check
             node.key?.value?.toString() ?? 'Unknown',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.primary,
@@ -298,9 +299,9 @@ void _updateOrientation(int newOrientation) {
 
     // Create root node
     graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
-
-    // Build graph structure
     graph.addNode(rootNode);
+
+    // Build graph structure from sections
     for (var section in sections) {
       _buildGraphFromItem(rootNode, section);
     }
@@ -339,27 +340,25 @@ void _updateOrientation(int newOrientation) {
               ),
             ),
             _buildLayoutControls(),
-            // Wrap InteractiveViewer with Container to ensure it has constraints
-// Update the InteractiveViewer settings
             Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height -
-                    200, // Adjust the height as needed
-                child: InteractiveViewer(
-                  constrained: false,
-                  boundaryMargin: EdgeInsets.all(100),
-                  minScale: 0.01,
-                  maxScale: 5.6,
-                  child: GraphView(
-                    graph: graph,
-                    algorithm: SugiyamaAlgorithm(builder),
-                    paint: Paint()
-                      ..color = theme.colorScheme.primary
-                      ..strokeWidth = 1.5
-                      ..style = PaintingStyle.stroke,
-                    builder: (Node node) => _buildNode(node, context),
-                  ),
-                ))
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height - 200, // Adjust the height as needed
+              child: InteractiveViewer(
+                constrained: false,
+                boundaryMargin: EdgeInsets.all(100),
+                minScale: 0.01,
+                maxScale: 5.6,
+                child: GraphView(
+                  graph: graph,
+                  algorithm: SugiyamaAlgorithm(builder),
+                  paint: Paint()
+                    ..color = theme.colorScheme.primary
+                    ..strokeWidth = 1.5
+                    ..style = PaintingStyle.stroke,
+                  builder: (Node node) => _buildNode(node, context),
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -285,6 +285,10 @@ class _TestingItemViewState extends State<TestingItemView> {
                     });
                   }
                 : null,
+            borderRadius: BorderRadius.circular(12),
+            splashFactory: InkRipple.splashFactory,
+            splashColor: theme.colorScheme.primary.withOpacity(0.08),
+            highlightColor: theme.colorScheme.primary.withOpacity(0.04),
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Row(

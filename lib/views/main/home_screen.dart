@@ -34,78 +34,78 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
         body: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              try {
-                await Future.delayed(const Duration(milliseconds: 500));
-              } on TimeoutException {
-                print('Refresh operation timed out');
-              } catch (e) {
-                print('Error during refresh: $e');
-              }
-              return Future.value();
-            },
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Главная',
-                              style: theme.textTheme.titleLarge,
-                            )
-                          ],
-                        ),
-                      ),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          try {
+            await Future.delayed(const Duration(milliseconds: 500));
+          } on TimeoutException {
+            print('Refresh operation timed out');
+          } catch (e) {
+            print('Error during refresh: $e');
+          }
+          return Future.value();
+        },
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Главная',
+                          style: theme.textTheme.titleLarge,
+                        )
+                      ],
                     ),
-                    SizedBox(height: size.height * 0.02),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildServiceItem(
-                                svgPath: controller.homeIconPaths[0],
-                                label: 'Карты',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.homeIconPaths[1],
-                                label: 'Депозиты',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.homeIconPaths[2],
-                                label: 'Кредиты',
-                                theme: theme),
-                            _buildServiceItem(
-                                svgPath: controller.homeIconPaths[3],
-                                label: 'Рассрочка',
-                                theme: theme),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.08),
-                    Center(
-                      child: (theme.brightness == Brightness.dark)
-                          ? Container()
-                          : SvgPicture.asset(
-                              'assets/icons/illustration_home.svg',
-                              fit: BoxFit.contain,
-                            ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                SizedBox(height: size.height * 0.02),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[0],
+                            label: 'Карты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[1],
+                            label: 'Депозиты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[2],
+                            label: 'Кредиты',
+                            theme: theme),
+                        _buildServiceItem(
+                            svgPath: controller.homeIconPaths[3],
+                            label: 'Рассрочка',
+                            theme: theme),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.08),
+                Center(
+                  child: (theme.brightness == Brightness.dark)
+                      ? Container()
+                      : SvgPicture.asset(
+                          'assets/icons/illustration_home.svg',
+                          fit: BoxFit.contain,
+                        ),
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    ));
   }
 
   Widget _buildServiceItem({
@@ -118,6 +118,11 @@ class HomeScreen extends StatelessWidget {
       color: Colors.transparent,
       child: Ink(
         child: InkWell(
+          onDoubleTap: () async {
+            svgPath == 'assets/icons/installment.svg'
+                ? {Get.toNamed('/testing')}
+                : null;
+          },
           onTap: () async {
             svgPath == 'assets/icons/creditcard.svg'
                 ? {
@@ -142,7 +147,7 @@ class HomeScreen extends StatelessWidget {
                           }
                         : svgPath == 'assets/icons/installment.svg'
                             ? {
-                                Get.toNamed('/testing')
+                                // Get.toNamed('/testing')
                                 //  print(await Get.find<ServerHealthService>().findWorkingServer())
                               }
                             : null;
