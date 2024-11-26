@@ -28,7 +28,7 @@ class MenuScreen extends StatelessWidget {
       ],
     ),
     MenuSection(
-      title: 'Банк',
+      title: 'Инсайт Банк',
       items: [
         MenuItem(icon: 'assets/icons/ic_atm.svg', title: 'Банкоматы'),
         MenuItem(icon: 'assets/icons/ic_branch.svg', title: 'Отделения'),

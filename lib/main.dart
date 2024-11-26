@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         const Locale('kk', 'KZ'),
       ],
       fallbackLocale: const Locale('ru', 'RU'),
-      title: 'Банк',
+      title: 'Инсайт Банк',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: Get.find<ThemeController>().themeMode.value,
