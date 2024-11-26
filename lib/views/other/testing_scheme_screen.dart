@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:graphview/graphview.dart';
 import 'package:graphview/graphview.dart' as graphview;
@@ -16,19 +17,20 @@ class TestingItem {
 }
 
 class TestingSchemeScreen extends StatefulWidget {
+  const TestingSchemeScreen({super.key});
+
   @override
-  _TestingSchemeScreenState createState() => _TestingSchemeScreenState();
+  TestingSchemeScreenState createState() => TestingSchemeScreenState();
 }
 
-class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
+class TestingSchemeScreenState extends State<TestingSchemeScreen> {
   final Graph graph = Graph();
+  bool isGraphBuilt = false;
 
   final SugiyamaConfiguration builder = SugiyamaConfiguration()
     ..nodeSeparation = 50
     ..levelSeparation = 100
     ..orientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
-  int _currentOrientation = SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM;
-
 
   final List<TestingItem> sections = [
     TestingItem(
@@ -143,7 +145,6 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
     ),
   ];
 
-
   void _buildGraphFromItem(graphview.Node parentNode, TestingItem item) {
     graphview.Node itemNode = graphview.Node.Id(item.title);
     graph.addNode(itemNode);
@@ -158,106 +159,18 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
     }
   }
 
-  // Clear the graph before rebuilding
-  void _updateOrientation(int newOrientation) {
-    setState(() {
-      _currentOrientation = newOrientation;
-      builder.orientation = _currentOrientation;
-
-      // Clear the graph
-      graph.nodes.clear();
-      graph.edges.clear();
-
-      // Rebuild graph with new orientation
+  void buildGraphOnce() {
+    if (!isGraphBuilt) {
+      // Create root node
       graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
       graph.addNode(rootNode);
 
-      // Add new nodes based on the sections
+      // Build graph structure from sections
       for (var section in sections) {
         _buildGraphFromItem(rootNode, section);
       }
-    });
-  }
-
-  Widget _buildControls() {
-    return Wrap(
-      spacing: 8,
-      children: [
-        SizedBox(
-          width: 120,
-          child: TextFormField(
-            initialValue: builder.nodeSeparation.toString(),
-            decoration: InputDecoration(labelText: "Node Separation"),
-            onChanged: (text) {
-              setState(() {
-                builder.nodeSeparation = int.tryParse(text) ?? 50;
-              });
-            },
-          ),
-        ),
-        SizedBox(
-          width: 120,
-          child: TextFormField(
-            initialValue: builder.levelSeparation.toString(),
-            decoration: InputDecoration(labelText: "Level Separation"),
-            onChanged: (text) {
-              setState(() {
-                builder.levelSeparation = int.tryParse(text) ?? 100;
-              });
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLayoutControls() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ChoiceChip(
-              label: Text('Top-Down'),
-              selected: _currentOrientation ==
-                  SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM,
-              onSelected: (selected) {
-                _updateOrientation(
-                    SugiyamaConfiguration.ORIENTATION_TOP_BOTTOM);
-              },
-            ),
-            ChoiceChip(
-              label: Text('Left-Right'),
-              selected: _currentOrientation ==
-                  SugiyamaConfiguration.ORIENTATION_LEFT_RIGHT,
-              onSelected: (selected) {
-                _updateOrientation(
-                    SugiyamaConfiguration.ORIENTATION_LEFT_RIGHT);
-              },
-            ),
-            ChoiceChip(
-              label: Text('Bottom-Up'),
-              selected: _currentOrientation ==
-                  SugiyamaConfiguration.ORIENTATION_BOTTOM_TOP,
-              onSelected: (selected) {
-                _updateOrientation(
-                    SugiyamaConfiguration.ORIENTATION_BOTTOM_TOP);
-              },
-            ),
-            ChoiceChip(
-              label: Text('Right-Left'),
-              selected: _currentOrientation ==
-                  SugiyamaConfiguration.ORIENTATION_RIGHT_LEFT,
-              onSelected: (selected) {
-                _updateOrientation(
-                    SugiyamaConfiguration.ORIENTATION_RIGHT_LEFT);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+      isGraphBuilt = true;
+    }
   }
 
   Widget _buildNode(Node node, BuildContext context) {
@@ -294,17 +207,22 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    graph.nodes.clear();
+    graph.edges.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Create root node
-    graphview.Node rootNode = graphview.Node.Id('Виды тестирования');
-    graph.addNode(rootNode);
-
-    // Build graph structure from sections
-    for (var section in sections) {
-      _buildGraphFromItem(rootNode, section);
-    }
+    buildGraphOnce();
 
     return Scaffold(
       body: SafeArea(
@@ -339,10 +257,7 @@ class _TestingSchemeScreenState extends State<TestingSchemeScreen> {
                 ),
               ),
             ),
-            _buildLayoutControls(),
-            Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height - 200, // Adjust the height as needed
+            Expanded(
               child: InteractiveViewer(
                 constrained: false,
                 boundaryMargin: EdgeInsets.all(100),

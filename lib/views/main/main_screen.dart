@@ -363,7 +363,7 @@ class MainScreenState extends State<MainScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: _buildTopBarIcons(theme),
             ),
             Expanded(

@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../routes/manage_auth_nav.dart';
-import '../../services/server_check_helper.dart';
 
 class HomeScreenController extends GetxController {
   final List<String> homeIconPaths = [

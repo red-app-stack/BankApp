@@ -184,7 +184,7 @@ class QRTransferScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
+    Theme.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(

@@ -10,8 +10,8 @@ class TestingDetailsScreen extends StatelessWidget {
     required this.title,
     this.description,
     this.subItems,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
