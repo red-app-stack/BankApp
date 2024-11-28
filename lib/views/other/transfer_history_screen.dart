@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -9,6 +8,33 @@ import '../../controllers/accounts_controller.dart';
 class TransferHistoryController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
   RxString accountId = ''.obs;
+  RxString selectedPeriod = 'За текущую неделю'.obs;
+
+  Rx<DateTimeRange?> selectedDateRange = Rx<DateTimeRange?>(null);
+  Future<void> selectDateRange(BuildContext context) async {
+    final picked = await showDialog<DateTimeRange>(
+      context: context,
+      builder: (BuildContext context) => DateRangePickerDialog(
+        firstDate: DateTime(2023),
+        lastDate: DateTime.now(),
+        initialEntryMode: DatePickerEntryMode.input,
+        initialDateRange: selectedDateRange.value ??
+            DateTimeRange(
+              start: DateTime.now().subtract(Duration(days: 7)),
+              end: DateTime.now(),
+            ),
+        saveText: 'Выбрать',
+        confirmText: 'Выбрать',
+        cancelText: 'Отмена',
+      ),
+    );
+
+    if (picked != null) {
+      selectedDateRange.value = picked;
+      selectedPeriod.value = 'Выбранный период';
+      loadTransactions();
+    }
+  }
 
   RxMap<String, List<Transaction>> categorizedTransactions =
       <String, List<Transaction>>{}.obs;
@@ -21,8 +47,14 @@ class TransferHistoryController extends GetxController {
     await loadTransactions();
   }
 
+  void updatePeriod(String period) {
+    selectedPeriod.value = period;
+    loadTransactions();
+  }
+
   Future<void> loadTransactions() async {
     List<Transaction> allTransactions = [];
+    final now = DateTime.now();
 
     for (var account in accountsController.accounts) {
       final transactions = await accountsController
@@ -35,20 +67,36 @@ class TransferHistoryController extends GetxController {
 
     // Categorize transactions
     Map<String, List<Transaction>> categorized = {
-      'На этой неделе': [],
-      'Этот месяц': [],
-      'Ранее': [],
+      selectedPeriod.value: [],
     };
 
-    final now = DateTime.now();
     for (var transaction in allTransactions) {
-      if (transaction.createdAt
-          .isAfter(now.subtract(Duration(days: now.weekday)))) {
-        categorized['На этой неделе']?.add(transaction);
-      } else if (transaction.createdAt.isAfter(DateTime(now.year, now.month))) {
-        categorized['Этот месяц']?.add(transaction);
-      } else {
-        categorized['Ранее']?.add(transaction);
+      switch (selectedPeriod.value) {
+        case 'За текущую неделю':
+          if (transaction.createdAt
+              .isAfter(now.subtract(Duration(days: now.weekday)))) {
+            categorized[selectedPeriod.value]?.add(transaction);
+          }
+          break;
+        case 'За текущий месяц':
+          if (transaction.createdAt.isAfter(DateTime(now.year, now.month))) {
+            categorized[selectedPeriod.value]?.add(transaction);
+          }
+          break;
+        case 'За 3 месяца':
+          if (transaction.createdAt
+              .isAfter(DateTime(now.year, now.month - 3))) {
+            categorized[selectedPeriod.value]?.add(transaction);
+          }
+          break;
+        case 'Выбранный период':
+          if (selectedDateRange.value != null &&
+              transaction.createdAt.isAfter(selectedDateRange.value!.start) &&
+              transaction.createdAt.isBefore(
+                  selectedDateRange.value!.end.add(Duration(days: 1)))) {
+            categorized[selectedPeriod.value]?.add(transaction);
+          }
+          break;
       }
     }
 
@@ -70,39 +118,46 @@ class TransferHistoryScreen extends StatelessWidget {
 
     return Scaffold(
         body: SafeArea(
-            child: Column(children: [
-      Expanded(
-          child: RefreshIndicator(
-        onRefresh: () async {
-          try {
-            await Future.delayed(const Duration(milliseconds: 500));
-          } on TimeoutException {
-            print('Refresh operation timed out');
-          } catch (e) {
-            print('Error during refresh: $e');
-          }
-          return Future.value();
-        },
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _buildHeader(context),
-                const SizedBox(height: 16),
-                _buildFilterCard(theme),
-                const SizedBox(height: 16),
-                Obx(() => controller.accountsController.transactionHistory.value
-                            ?.isNotEmpty ??
-                        false
-                    ? _buildTransactionsList(context)
-                    : _buildEmptyState(theme, size)),
-              ],
-            ),
-          ),
-        ),
-      ))
-    ])));
+            child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(children: [
+                  _buildHeader(context),
+                  Expanded(
+                      child: RefreshIndicator(
+                    onRefresh: () async {
+                      try {
+                        await Future.delayed(const Duration(milliseconds: 500));
+                      } on TimeoutException {
+                        print('Refresh operation timed out');
+                      } catch (e) {
+                        print('Error during refresh: $e');
+                      }
+                      return Future.value();
+                    },
+                    child: SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.top -
+                              MediaQuery.of(context).padding.bottom,
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildFilterCard(context),
+                            const SizedBox(height: 16),
+                            Obx(() => controller.accountsController
+                                        .transactionHistory.value?.isNotEmpty ??
+                                    false
+                                ? _buildTransactionsList(context)
+                                : _buildEmptyState(theme, size)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ))
+                ]))));
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -169,91 +224,91 @@ class TransferHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterCard(ThemeData theme) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'За эту неделю',
-              style: theme.textTheme.titleMedium,
-            ),
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/ic_filter.svg',
-                width: 32,
-                height: 32,
-                // colorFilter: ColorFilter.mode(
-                //   theme.colorScheme.primary,
-                //   BlendMode.srcIn,
-                // ),
-              ),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _buildFilterCard(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Material(
+        color: Colors.transparent,
+        child: Ink(
+            child: InkWell(
+                onTap: () {
+                  _showFilterBottomSheet(context);
+                },
+                borderRadius: BorderRadius.circular(12),
+                splashFactory: InkRipple.splashFactory,
+                splashColor: theme.colorScheme.primary.withOpacity(0.08),
+                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Obx(() => Text(
+                              controller.selectedPeriod.value,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            )),
+                        SvgPicture.asset(
+                          'assets/icons/ic_filter.svg',
+                          width: 32,
+                          height: 32,
+                        ),
+                      ],
+                    ),
+                  ),
+                ))));
   }
 
   Widget _buildTransactionsList(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.7,
-      child: Obx(() {
-        final categories = controller.categorizedTransactions.keys.toList();
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final transactions =
-                controller.categorizedTransactions[category] ?? [];
+    return Obx(() {
+      final categories = controller.categorizedTransactions.keys.toList();
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final transactions =
+              controller.categorizedTransactions[category] ?? [];
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    category,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  category,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                transactions.isNotEmpty
-                    ? ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: transactions.length,
-                        itemBuilder: (context, i) {
-                          final transaction = transactions[i];
-                          return _buildTransactionCard(context, transaction);
-                        },
-                      )
-                    : Center(
-                        child: Padding(
-                            padding: EdgeInsets.all(size.height * 0.03),
-                            child: SvgPicture.asset(
-                              'assets/icons/ic_empty_list.svg',
-                              height: size.width > size.height
-                                  ? size.height * 0.3
-                                  : size.width * 0.3,
-                              colorFilter: ColorFilter.mode(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                BlendMode.srcIn,
-                              ),
-                            ))),
-              ],
-            );
-          },
-        );
-      }),
-    );
+              ),
+              transactions.isNotEmpty
+                  ? ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: transactions.length,
+                      itemBuilder: (context, i) {
+                        final transaction = transactions[i];
+                        return _buildTransactionCard(context, transaction);
+                      },
+                    )
+                  : Center(
+                      child: Padding(
+                          padding: EdgeInsets.all(size.height * 0.03),
+                          child: SvgPicture.asset(
+                            'assets/icons/ic_empty_list.svg',
+                            height: size.width > size.height
+                                ? size.height * 0.3
+                                : size.width * 0.3,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.secondaryContainer,
+                              BlendMode.srcIn,
+                            ),
+                          ))),
+            ],
+          );
+        },
+      );
+    });
   }
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {
@@ -323,6 +378,84 @@ class TransferHistoryScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/ic_back.svg',
+                    width: 32,
+                    height: 32,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: Text(
+                    'Выберите период',
+                    style: theme.textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(width: 48),
+              ],
+            ),
+            SizedBox(height: 16),
+            ...[
+              'За текущую неделю',
+              'За текущий месяц',
+              'За 3 месяца',
+              'Выбрать период в календаре'
+            ].map((period) => ListTile(
+                  leading: Container(
+                    height: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
+                    width: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      period == 'За текущую неделю'
+                          ? '7'
+                          : period == 'За текущий месяц'
+                              ? '30'
+                              : period == 'За 3 месяца'
+                                  ? '90'
+                                  : '∞',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  title: Text(period),
+                  onTap: () async {
+                    if (period == 'Выбрать период в календаре') {
+                      Navigator.pop(context);
+                      await controller.selectDateRange(context);
+                    } else {
+                      controller.updatePeriod(period);
+                      Navigator.pop(context);
+                    }
+                  },
+                )),
+          ],
         ),
       ),
     );

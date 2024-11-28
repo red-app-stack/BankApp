@@ -71,39 +71,46 @@ class PaymentHistoryScreen extends StatelessWidget {
 
     return Scaffold(
         body: SafeArea(
-            child: Column(children: [
-      Expanded(
-          child: RefreshIndicator(
-        onRefresh: () async {
-          try {
-            await Future.delayed(const Duration(milliseconds: 500));
-          } on TimeoutException {
-            print('Refresh operation timed out');
-          } catch (e) {
-            print('Error during refresh: $e');
-          }
-          return Future.value();
-        },
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _buildHeader(context),
-                const SizedBox(height: 16),
-                _buildFilterCard(theme),
-                const SizedBox(height: 16),
-                Obx(() => controller.accountsController.transactionHistory.value
-                            ?.isNotEmpty ??
-                        false
-                    ? _buildTransactionsList(context)
-                    : _buildEmptyState(theme, size)),
-              ],
-            ),
-          ),
-        ),
-      ))
-    ])));
+            child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(children: [
+                  _buildHeader(context),
+                  Expanded(
+                      child: RefreshIndicator(
+                    onRefresh: () async {
+                      try {
+                        await Future.delayed(const Duration(milliseconds: 500));
+                      } on TimeoutException {
+                        print('Refresh operation timed out');
+                      } catch (e) {
+                        print('Error during refresh: $e');
+                      }
+                      return Future.value();
+                    },
+                    child: SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.top -
+                              MediaQuery.of(context).padding.bottom,
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildFilterCard(theme),
+                            const SizedBox(height: 16),
+                            Obx(() => controller.accountsController
+                                        .transactionHistory.value?.isNotEmpty ??
+                                    false
+                                ? _buildTransactionsList(context)
+                                : _buildEmptyState(theme, size)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ))
+                ]))));
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -201,60 +208,57 @@ class PaymentHistoryScreen extends StatelessWidget {
 
   Widget _buildTransactionsList(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.7,
-      child: Obx(() {
-        final categories = controller.categorizedTransactions.keys.toList();
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final transactions =
-                controller.categorizedTransactions[category] ?? [];
+    return Obx(() {
+      final categories = controller.categorizedTransactions.keys.toList();
+      return ListView.builder(
+        shrinkWrap: true,
+        physics:
+            NeverScrollableScrollPhysics(), // Changed from NeverScrollableScrollPhysics
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final transactions =
+              controller.categorizedTransactions[category] ?? [];
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    category,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  category,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                transactions.isNotEmpty
-                    ? ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: transactions.length,
-                        itemBuilder: (context, i) {
-                          final transaction = transactions[i];
-                          return _buildTransactionCard(context, transaction);
-                        },
-                      )
-                    : Center(
-                        child: Padding(
-                            padding: EdgeInsets.all(size.height * 0.03),
-                            child: SvgPicture.asset(
-                              'assets/icons/ic_empty_list.svg',
-                              height: size.width > size.height
-                                  ? size.height * 0.3
-                                  : size.width * 0.3,
-                              colorFilter: ColorFilter.mode(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                BlendMode.srcIn,
-                              ),
-                            ))),
-              ],
-            );
-          },
-        );
-      }),
-    );
+              ),
+              transactions.isNotEmpty
+                  ? ListView.builder(
+                      shrinkWrap: true,
+                      physics:
+                          NeverScrollableScrollPhysics(), // Changed from NeverScrollableScrollPhysics
+                      itemCount: transactions.length,
+                      itemBuilder: (context, i) {
+                        final transaction = transactions[i];
+                        return _buildTransactionCard(context, transaction);
+                      },
+                    )
+                  : Center(
+                      child: Padding(
+                          padding: EdgeInsets.all(size.height * 0.03),
+                          child: SvgPicture.asset(
+                            'assets/icons/ic_empty_list.svg',
+                            height: size.width > size.height
+                                ? size.height * 0.3
+                                : size.width * 0.3,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.secondaryContainer,
+                              BlendMode.srcIn,
+                            ),
+                          ))),
+            ],
+          );
+        },
+      );
+    });
   }
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {

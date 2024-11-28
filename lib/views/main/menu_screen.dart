@@ -55,6 +55,7 @@ class MenuScreen extends StatelessWidget {
             return Future.value();
           },
           child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
