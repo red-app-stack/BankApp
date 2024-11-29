@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../../controllers/theme_controller.dart';
 import '../../services/user_service.dart';
 import '../../utils/themes/theme_extension.dart';
+import '../../widgets/common/custom_card.dart';
+import '../../widgets/items/list_item.dart';
 import '../shared/shared_classes.dart';
 import '../shared/widgets.dart';
 
@@ -59,6 +61,19 @@ class ProfileScreen extends StatelessWidget {
     required this.onBack,
   }) {
     Get.lazyPut(() => ThemeController());
+  }
+  bool showNotification(String icon) {
+    return switch (icon) {
+      'assets/icons/ic_transactions.svg' => true,
+      'assets/icons/ic_transfers.svg' => true,
+      'assets/icons/ic_payments.svg' => true,
+      'assets/icons/ic_security.svg' => true,
+      'assets/icons/ic_notifications.svg' => false,
+      'assets/icons/ic_language.svg' => false,
+      'assets/icons/ic_smartphone.svg' => false,
+      'assets/icons/ic_phone.svg' => false,
+      _ => false
+    };
   }
 
   void handeItemClick(String icon) {
@@ -120,19 +135,8 @@ class ProfileScreen extends StatelessWidget {
             child: Center(
                 child: Column(
               children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Профиль',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
+                CustomCard(
+                  label: 'Профиль',
                 ),
                 SizedBox(height: size.height * 0.02),
                 buildUserCard(_userService, theme, size),
@@ -152,10 +156,11 @@ class ProfileScreen extends StatelessWidget {
                                     style: theme.textTheme.bodyLarge,
                                   ),
                                 ),
-                              ...section.items.map((item) => _buildMenuItem(
-                                    item: item,
-                                    theme: theme,
-                                    isLast: section.items.last == item,
+                              ...section.items.map((item) => ListItem(
+                                    svgPath: item.icon,
+                                    title: item.title,
+                                    showNotification: showNotification(item.icon),
+                                    showDivider: section.items.last == item,
                                   ))
                             ],
                           ),

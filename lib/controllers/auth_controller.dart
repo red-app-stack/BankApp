@@ -181,7 +181,7 @@ class AuthController extends GetxController {
     } finally {
       tempUserData = null;
       tempUserToken = null;
-      Get.offAllNamed('/phoneLogin');
+      Get.offAllNamed('/main');
       setStatus(false);
     }
   }

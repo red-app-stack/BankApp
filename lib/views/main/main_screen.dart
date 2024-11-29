@@ -35,11 +35,11 @@ class MainScreenController extends GetxController
     );
   }
 
-  @override
-  void onClose() {
-    overlayAnimationController.dispose();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+  //   overlayAnimationController.dispose();
+  //   super.onClose();
+  // }
 
   void showOverlay(Widget screen,
       {bool isProfile = false, bool isSupport = false}) {

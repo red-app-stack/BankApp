@@ -231,8 +231,6 @@ void _startDebitApplication() {
   Get.toNamed('/createAccount', arguments: 'deposit');
 }
 
-void _showCardsGallery() {}
-
 void _checkBalance() {}
 
 void _initiatePhoneTransfer() {
