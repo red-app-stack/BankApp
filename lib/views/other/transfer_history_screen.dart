@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../controllers/accounts_controller.dart';
 
@@ -11,28 +12,101 @@ class TransferHistoryController extends GetxController {
   RxString selectedPeriod = 'За текущую неделю'.obs;
 
   Rx<DateTimeRange?> selectedDateRange = Rx<DateTimeRange?>(null);
+
   Future<void> selectDateRange(BuildContext context) async {
+    final theme = Theme.of(context);
+    DateTimeRange tempRange = selectedDateRange.value ??
+        DateTimeRange(
+          start: DateTime.now().subtract(Duration(days: 7)),
+          end: DateTime.now(),
+        );
+
     final picked = await showDialog<DateTimeRange>(
       context: context,
-      builder: (BuildContext context) => DateRangePickerDialog(
-        firstDate: DateTime(2023),
-        lastDate: DateTime.now(),
-        initialEntryMode: DatePickerEntryMode.input,
-        initialDateRange: selectedDateRange.value ??
-            DateTimeRange(
-              start: DateTime.now().subtract(Duration(days: 7)),
-              end: DateTime.now(),
-            ),
-        saveText: 'Выбрать',
-        confirmText: 'Выбрать',
-        cancelText: 'Отмена',
+      builder: (BuildContext context) => Dialog(
+        child: Container(
+          height: 400,
+          width: 300,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text(
+                'Выберите период',
+                style: theme.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SfDateRangePicker(
+                  view: DateRangePickerView.month,
+                  selectionMode: DateRangePickerSelectionMode.range,
+                  initialSelectedRange: PickerDateRange(
+                    tempRange.start,
+                    tempRange.end,
+                  ),
+                  minDate: DateTime(2023),
+                  maxDate: DateTime.now(),
+                  monthViewSettings: DateRangePickerMonthViewSettings(
+                    firstDayOfWeek: 1,
+                    showTrailingAndLeadingDates: true,
+                  ),
+                  onSelectionChanged:
+                      (DateRangePickerSelectionChangedArgs args) {
+                    if (args.value is PickerDateRange &&
+                        args.value.startDate != null) {
+                      tempRange = DateTimeRange(
+                        start: args.value.startDate,
+                        end: args.value.endDate ?? args.value.startDate,
+                      );
+                    }
+                  },
+                  headerStyle: DateRangePickerHeaderStyle(
+                    backgroundColor: theme.colorScheme.surface,
+                    textStyle: theme.textTheme.titleMedium,
+                  ),
+                  yearCellStyle: DateRangePickerYearCellStyle(
+                    textStyle: theme.textTheme.bodyMedium,
+                    todayTextStyle: theme.textTheme.bodyMedium,
+                  ),
+                  monthCellStyle: DateRangePickerMonthCellStyle(
+                    textStyle: theme.textTheme.bodyMedium,
+                    todayTextStyle: theme.textTheme.bodyMedium,
+                  ),
+                  selectionColor: theme.colorScheme.primary,
+                  todayHighlightColor: theme.colorScheme.primary,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Отмена',
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context, tempRange);
+                    },
+                    child: Text(
+                      'Выбрать',
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
-
+    print(picked);
+    print(tempRange);
     if (picked != null) {
       selectedDateRange.value = picked;
       selectedPeriod.value = 'Выбранный период';
-      loadTransactions();
+      await loadTransactions();
     }
   }
 
@@ -56,11 +130,7 @@ class TransferHistoryController extends GetxController {
     List<Transaction> allTransactions = [];
     final now = DateTime.now();
 
-    for (var account in accountsController.accounts) {
-      final transactions = await accountsController
-          .fetchTransactionHistory(account.accountNumber);
-      allTransactions.addAll(transactions);
-    }
+    allTransactions.addAll(await accountsController.fetchTransactionHistory());
 
     // Sort transactions by date, most recent first
     allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -396,23 +466,27 @@ class TransferHistoryScreen extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  icon: SvgPicture.asset(
-                    'assets/icons/ic_back.svg',
-                    width: 32,
-                    height: 32,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
+                  icon: Transform.rotate(
+                      angle: - 90 * 3.14159 / 180, // 90 degrees in radians
+                      child: SvgPicture.asset(
+                        'assets/icons/ic_back.svg',
+                        width: 32,
+                        height: 32,
+                        colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      )),
                   onPressed: () => Navigator.pop(context),
                 ),
                 Expanded(
-                  child: Text(
-                    'Выберите период',
-                    style: theme.textTheme.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Выберите период',
+                        style: theme.textTheme.titleLarge,
+                        textAlign: TextAlign.start,
+                      )),
                 ),
                 SizedBox(width: 48),
               ],

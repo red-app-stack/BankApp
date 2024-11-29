@@ -53,7 +53,7 @@ class PaymentsScreen extends StatelessWidget {
               children: [
                 Card(
                   child: Padding(
-                    padding: EdgeInsets.all(6),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -513,7 +514,7 @@ class QRTransferScreen extends StatelessWidget {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
             buildCardSelector(context),
@@ -529,14 +530,21 @@ class QRTransferScreen extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 12),
-                    child: SvgPicture.asset('assets/icons/attention.svg',
-                        width: 40, height: 40),
+                    child: SvgPicture.asset(
+                      'assets/icons/attention.svg',
+                      width: 40,
+                      height: 40,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.outline,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: Text(
                       'Вы можете создать QR без суммы получаемого перевода или сообщения. Сумма перевода будет указана отправителем при сканировании вашего QR',
                       style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                          color: Theme.of(context).colorScheme.outlineVariant),
+                          color: Theme.of(context).colorScheme.outline),
                       maxLines: 5,
                       overflow: TextOverflow.ellipsis,
                     ),

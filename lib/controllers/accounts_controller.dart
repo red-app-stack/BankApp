@@ -36,64 +36,102 @@ class AccountModel {
 
 class Transaction {
   final int id;
-  final String fromAccount;
-  final String toAccount;
   final String reference;
+  final String fromAccount;
+  final String fromAccountType;
+  final String toAccount;
+  final String toAccountType;
   final double amount;
   final String currency;
   final String type;
   final String status;
   final DateTime createdAt;
-  final String formattedCreatedAt;
+  final DateTime? completedAt;
   final String? fromUserName;
+  final String? fromUserPicture;
+  final String? fromUserRole;
+  final String? fromUserPhone;
   final String? toUserName;
+  final String? toUserPicture;
+  final String? toUserRole;
+  final String? toUserPhone;
+  final String formattedCreatedAt;
 
   Transaction({
     required this.id,
-    required this.fromAccount,
-    required this.toAccount,
     required this.reference,
+    required this.fromAccount,
+    required this.fromAccountType,
+    required this.toAccount,
+    required this.toAccountType,
     required this.amount,
     required this.currency,
     required this.type,
     required this.status,
     required this.createdAt,
-    required this.formattedCreatedAt,
+    this.completedAt,
     this.fromUserName,
+    this.fromUserPicture,
+    this.fromUserRole,
+    this.fromUserPhone,
     this.toUserName,
+    this.toUserPicture,
+    this.toUserRole,
+    this.toUserPhone,
+    required this.formattedCreatedAt,
   });
 
   static Transaction fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json['id'] ?? 0,
-      fromAccount: json['from_account'] ?? '',
-      toAccount: json['to_account'] ?? '',
-      reference: json['reference'] ?? '',
+      id: json['id'],
+      reference: json['transaction_reference'],
+      fromAccount: json['from_account_number'] ?? '',
+      fromAccountType: json['from_account_type'] ?? '',
+      toAccount: json['to_account_number'] ?? '',
+      toAccountType: json['to_account_type'] ?? '',
       amount: double.parse(json['amount'].toString()),
-      currency: json['currency'] ?? '',
-      type: json['type'] ?? '',
-      status: json['status'] ?? '',
+      currency: json['currency'],
+      type: json['transaction_type'],
+      status: json['status'],
       createdAt: DateTime.parse(json['created_at']),
-      formattedCreatedAt: json['formatted_created_at'] ?? '',
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'])
+          : null,
       fromUserName: json['from_user_name'],
+      fromUserPicture: json['from_user_picture'],
+      fromUserRole: json['from_user_role'],
+      fromUserPhone: json['from_user_phone_number'],
       toUserName: json['to_user_name'],
+      toUserPicture: json['to_user_picture'],
+      toUserRole: json['to_user_role'],
+      toUserPhone: json['to_user_phone_number'],
+      formattedCreatedAt: DateFormat('dd.MM.yyyy HH:mm:ss')
+          .format(DateTime.parse(json['created_at']).toLocal()),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'from_account': fromAccount,
-      'to_account': toAccount,
-      'reference': reference,
+      'transaction_reference': reference,
+      'from_account_number': fromAccount,
+      'from_account_type': fromAccountType,
+      'to_account_number': toAccount,
+      'to_account_type': toAccountType,
       'amount': amount,
       'currency': currency,
-      'type': type,
+      'transaction_type': type,
       'status': status,
       'created_at': createdAt.toIso8601String(),
-      'formatted_created_at': formattedCreatedAt,
+      'completed_at': completedAt?.toIso8601String(),
       'from_user_name': fromUserName,
+      'from_user_picture': fromUserPicture,
+      'from_user_role': fromUserRole,
+      'from_user_phone_number': fromUserPhone,
       'to_user_name': toUserName,
+      'to_user_picture': toUserPicture,
+      'to_user_role': toUserRole,
+      'to_user_phone_number': toUserPhone,
     };
   }
 }
@@ -379,40 +417,23 @@ class AccountsController extends GetxController {
   }
 
   Future<List<Transaction>> fetchTransactionHistory(
-      String accountNumber) async {
+      [String? accountNumber]) async {
     try {
       final token = await secureStore.secureStorage.read(key: 'auth_token');
       if (token == null) return [];
-
+      final endpoint = accountNumber != null
+          ? '/transactions/history/$accountNumber'
+          : '/transactions/history';
       final response = await dio.get(
-        '/transactions/history/$accountNumber',
+        endpoint,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
       if (response.statusCode == 200 && response.data is List) {
-        transactionHistory.value = (response.data as List).map((transaction) {
-          final createdAtString = transaction['created_at'];
-          DateTime createdAt = DateTime.parse(createdAtString).toLocal();
-
-          final formattedDate =
-              DateFormat('dd.MM.yyyy HH:mm:ss').format(createdAt);
-
-          return Transaction(
-            id: (response.data as List).indexOf(transaction),
-            fromAccount: transaction['from_account_number'] ?? '',
-            toAccount: transaction['to_account_number'] ?? '',
-            reference: transaction['transaction_reference'],
-            amount: double.parse(transaction['amount'].toString()),
-            currency: transaction['currency'],
-            type: transaction['transaction_type'],
-            status: transaction['status'],
-            createdAt: createdAt,
-            formattedCreatedAt: formattedDate,
-            fromUserName: transaction['from_user_name'],
-            toUserName: transaction['to_user_name'],
-          );
-        }).toList();
+        transactionHistory.value = (response.data as List)
+            .map((transaction) => Transaction.fromJson(transaction))
+            .toList();
         return transactionHistory.value!;
       }
       return [];

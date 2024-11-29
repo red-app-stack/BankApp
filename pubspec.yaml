@@ -58,6 +58,7 @@ dependencies:
   image_picker: ^1.1.2
   photo_view: ^0.15.0
   graphview: ^1.2.0
+  syncfusion_flutter_datepicker: ^27.2.4
 dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:
