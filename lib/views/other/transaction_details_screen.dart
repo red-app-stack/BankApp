@@ -27,15 +27,13 @@ class TransactionDetailsController extends GetxController {
     List<Transaction> favorites = await getFavoriteTransfers();
     favorites.add(transaction);
     print(favorites.map((e) => e.toJson()).toList());
-    await secureStore.secureStore(
-        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+    await secureStore.secureStore(favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
   }
 
   Future<void> removeFavoriteTransfer(String reference) async {
     List<Transaction> favorites = await getFavoriteTransfers();
     favorites.removeWhere((t) => t.reference == reference);
-    await secureStore.secureStore(
-        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+    await secureStore.secureStore(favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
   }
 
   TransactionDetailsController(this.transaction);
@@ -58,8 +56,7 @@ class TransactionDetailsController extends GetxController {
 
 class TransactionDetailsScreen extends StatelessWidget {
   final Transaction transaction = Get.arguments;
-  final TransactionDetailsController controller =
-      Get.put(TransactionDetailsController(Get.arguments as Transaction));
+  final TransactionDetailsController controller = Get.put(TransactionDetailsController(Get.arguments as Transaction));
 
   TransactionDetailsScreen({super.key});
 
@@ -93,26 +90,13 @@ class TransactionDetailsScreen extends StatelessWidget {
   String _getStatusText(String type, String status) {
     switch (status) {
       case 'completed':
-        return '${_getTypeText(type)} успешно выполнен';
+        return '${getTypeText(type)} успешно выполнен';
       case 'pending':
-        return '${_getTypeText(type)} в обработке';
+        return '${getTypeText(type)} в обработке';
       case 'failed':
-        return '${_getTypeText(type)} не выполнен';
+        return '${getTypeText(type)} не выполнен';
       default:
-        return '${_getTypeText(type)} В обработке';
-    }
-  }
-
-  String _getTypeText(String type) {
-    switch (type) {
-      case 'transfer':
-        return 'Перевод';
-      case 'deposit':
-        return 'Вклад';
-      case 'withdrawal':
-        return 'Вывод';
-      default:
-        return 'Перевод';
+        return '${getTypeText(type)} В обработке';
     }
   }
 
@@ -147,8 +131,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                       const Expanded(
                         child: Text(
                           'Информация о переводе',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -171,57 +154,38 @@ class TransactionDetailsScreen extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: CircleAvatar(
                                 radius: 20,
-                                backgroundImage: AssetImage(
-                                    'assets/images/play_store_512.png'),
+                                backgroundImage: AssetImage('assets/images/play_store_512.png'),
                               )),
                           SizedBox(height: 16),
                           // Status and Amount
                           Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(transaction.status)
-                                    .withOpacity(0.6),
+                                color: _getStatusColor(transaction.status).withOpacity(0.6),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _getStatusText(
-                                          transaction.type, transaction.status),
-                                      textAlign: TextAlign.left,
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(
-                                              color: theme.brightness ==
-                                                      Brightness.light
-                                                  ? _getStatusColor(
-                                                          transaction.status)
-                                                      .withGreen(120)
-                                                  : _getStatusColor(
-                                                          transaction.status)
-                                                      .withGreen(220),
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      formatCurrency(transaction.amount,
-                                          transaction.currency, 'ru_RU'),
-                                      style: theme.textTheme.headlineMedium
-                                          ?.copyWith(
-                                              color: theme.brightness ==
-                                                      Brightness.light
-                                                  ? _getStatusColor(
-                                                          transaction.status)
-                                                      .withGreen(120)
-                                                  : _getStatusColor(
-                                                          transaction.status)
-                                                      .withGreen(220),
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'Roboto'),
-                                    ),
-                                  ])),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(
+                                  _getStatusText(transaction.type, transaction.status),
+                                  textAlign: TextAlign.left,
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                      color: theme.brightness == Brightness.light
+                                          ? _getStatusColor(transaction.status).withGreen(120)
+                                          : _getStatusColor(transaction.status).withGreen(220),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  formatCurrency(transaction.amount, transaction.currency, 'ru_RU'),
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                      color: theme.brightness == Brightness.light
+                                          ? _getStatusColor(transaction.status).withGreen(120)
+                                          : _getStatusColor(transaction.status).withGreen(220),
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Roboto'),
+                                ),
+                              ])),
 
                           const SizedBox(height: 24),
 
@@ -239,7 +203,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                                       style: theme.textTheme.titleMedium,
                                     ),
                                     Text(
-                                      transaction.toAccount,
+                                      transaction.toUserPhone != null ? '+7 ${transaction.toUserPhone}' : censorCardNumber(transaction.toAccount),
                                       style: theme.textTheme.bodyMedium,
                                     ),
                                   ],
@@ -250,43 +214,22 @@ class TransactionDetailsScreen extends StatelessWidget {
 
                           const SizedBox(height: 24),
                           // Transaction Details
-                          _buildDetailRow(
-                              'Тип транзакции', _getTypeText(transaction.type)),
+                          _buildDetailRow('Тип транзакции', getTypeText(transaction.type)),
                           const SizedBox(height: 4),
-                          Divider(
-                              height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow(
-                              'ID транзакции', transaction.reference),
+                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('ID транзакции', transaction.reference),
                           const SizedBox(height: 4),
-                          Divider(
-                              height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow(
-                              'Дата и время', transaction.formattedCreatedAt),
+                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('Дата и время', transaction.formattedCreatedAt),
                           const SizedBox(height: 4),
-                          Divider(
-                              height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow(
-                              'Комиссия', '0 ${transaction.currency}'),
+                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('Комиссия', '0 ${transaction.currency}'),
                           const SizedBox(height: 4),
-                          Divider(
-                              height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('Отправитель',
-                              transaction.fromUserName ?? 'Неизвестно'),
+                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('Отправитель', transaction.fromUserName ?? 'Неизвестно'),
                           const SizedBox(height: 4),
-                          Divider(
-                              height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow(
-                              'Счет отправителя', transaction.fromAccount),
+                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('Счет отправителя', transaction.fromAccount),
                           const SizedBox(height: 12),
                         ],
                       ),
@@ -301,8 +244,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Card(
                     child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -324,14 +266,10 @@ class TransactionDetailsScreen extends StatelessWidget {
                         'Отменить',
                         () {},
                       ),
-                      _buildActionButton(
-                          context,
-                          'assets/icons/ic_favorite.svg',
-                          'В избранное', () async {
+                      _buildActionButton(context, 'assets/icons/ic_favorite.svg', 'В избранное', () async {
                         if (controller.isFavorite) {
                           print('removing from favorite');
-                          await controller
-                              .removeFavoriteTransfer(transaction.reference);
+                          await controller.removeFavoriteTransfer(transaction.reference);
                         } else {
                           print('adding to favorite');
 

@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:bank_app/views/shared/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../controllers/accounts_controller.dart';
@@ -10,6 +12,8 @@ class TransferHistoryController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
   RxString accountId = ''.obs;
   RxString selectedPeriod = 'За текущую неделю'.obs;
+  RxString selectedPeriodDetail = ''.obs;
+  RxMap<String, List<Transaction>> categorizedTransactions = <String, List<Transaction>>{}.obs;
 
   Rx<DateTimeRange?> selectedDateRange = Rx<DateTimeRange?>(null);
 
@@ -49,10 +53,8 @@ class TransferHistoryController extends GetxController {
                     firstDayOfWeek: 1,
                     showTrailingAndLeadingDates: true,
                   ),
-                  onSelectionChanged:
-                      (DateRangePickerSelectionChangedArgs args) {
-                    if (args.value is PickerDateRange &&
-                        args.value.startDate != null) {
+                  onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
+                    if (args.value is PickerDateRange && args.value.startDate != null) {
                       tempRange = DateTimeRange(
                         start: args.value.startDate,
                         end: args.value.endDate ?? args.value.startDate,
@@ -101,28 +103,56 @@ class TransferHistoryController extends GetxController {
         ),
       ),
     );
-    print(picked);
-    print(tempRange);
     if (picked != null) {
       selectedDateRange.value = picked;
-      selectedPeriod.value = 'Выбранный период';
-      await loadTransactions();
+      updatePeriod('Выбранный период');
     }
   }
-
-  RxMap<String, List<Transaction>> categorizedTransactions =
-      <String, List<Transaction>>{}.obs;
 
   TransferHistoryController();
 
   @override
   void onInit() async {
     super.onInit();
+    updatePeriod('За текущую неделю');
     await loadTransactions();
   }
 
   void updatePeriod(String period) {
     selectedPeriod.value = period;
+
+    final now = DateTime.now();
+
+    String formatDate(DateTime date) {
+      const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+      String yearSuffix = date.year != now.year ? " '${date.year.toString().substring(2)}" : "";
+      return "${date.day} ${months[date.month - 1]}$yearSuffix";
+    }
+
+    switch (selectedPeriod.value) {
+      case 'За текущую неделю':
+        final startDate = now.subtract(Duration(days: now.weekday - 1));
+        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+        break;
+      case 'За текущий месяц':
+        final startDate = DateTime(now.year, now.month, 1);
+        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+        break;
+      case 'За 3 месяца':
+        final startDate = DateTime(now.year, now.month - 2, 1);
+        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+        break;
+      case 'Выбранный период':
+        if (selectedDateRange.value != null) {
+          print(selectedDateRange.value?.duration.inDays);
+          selectedPeriodDetail.value = selectedDateRange.value?.duration.inDays == 0
+              ? formatDate(selectedDateRange.value!.start)
+              : "${formatDate(selectedDateRange.value!.start)} - ${formatDate(selectedDateRange.value!.end)}";
+        }
+        break;
+    }
+
     loadTransactions();
   }
 
@@ -132,10 +162,8 @@ class TransferHistoryController extends GetxController {
 
     allTransactions.addAll(await accountsController.fetchTransactionHistory());
 
-    // Sort transactions by date, most recent first
     allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    // Categorize transactions
     Map<String, List<Transaction>> categorized = {
       selectedPeriod.value: [],
     };
@@ -143,8 +171,7 @@ class TransferHistoryController extends GetxController {
     for (var transaction in allTransactions) {
       switch (selectedPeriod.value) {
         case 'За текущую неделю':
-          if (transaction.createdAt
-              .isAfter(now.subtract(Duration(days: now.weekday)))) {
+          if (transaction.createdAt.isAfter(now.subtract(Duration(days: now.weekday)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
@@ -154,16 +181,14 @@ class TransferHistoryController extends GetxController {
           }
           break;
         case 'За 3 месяца':
-          if (transaction.createdAt
-              .isAfter(DateTime(now.year, now.month - 3))) {
+          if (transaction.createdAt.isAfter(DateTime(now.year, now.month - 3))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
         case 'Выбранный период':
           if (selectedDateRange.value != null &&
               transaction.createdAt.isAfter(selectedDateRange.value!.start) &&
-              transaction.createdAt.isBefore(
-                  selectedDateRange.value!.end.add(Duration(days: 1)))) {
+              transaction.createdAt.isBefore(selectedDateRange.value!.end.add(Duration(days: 1)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
@@ -176,8 +201,7 @@ class TransferHistoryController extends GetxController {
 }
 
 class TransferHistoryScreen extends StatelessWidget {
-  final TransferHistoryController controller =
-      Get.put(TransferHistoryController());
+  final TransferHistoryController controller = Get.put(TransferHistoryController());
 
   TransferHistoryScreen({super.key});
 
@@ -196,6 +220,8 @@ class TransferHistoryScreen extends StatelessWidget {
                       child: RefreshIndicator(
                     onRefresh: () async {
                       try {
+                        controller.categorizedTransactions.value = {'': []};
+                        await controller.loadTransactions();
                         await Future.delayed(const Duration(milliseconds: 500));
                       } on TimeoutException {
                         print('Refresh operation timed out');
@@ -208,18 +234,14 @@ class TransferHistoryScreen extends StatelessWidget {
                       physics: AlwaysScrollableScrollPhysics(),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height -
-                              MediaQuery.of(context).padding.top -
-                              MediaQuery.of(context).padding.bottom,
+                          minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
                         ),
                         child: Column(
                           children: [
                             const SizedBox(height: 16),
                             _buildFilterCard(context),
                             const SizedBox(height: 16),
-                            Obx(() => controller.accountsController
-                                        .transactionHistory.value?.isNotEmpty ??
-                                    false
+                            Obx(() => controller.accountsController.transactionHistory.value?.isNotEmpty ?? false
                                 ? _buildTransactionsList(context)
                                 : _buildEmptyState(theme, size)),
                           ],
@@ -269,8 +291,7 @@ class TransferHistoryScreen extends StatelessWidget {
           SizedBox(height: size.height * 0.15),
           SvgPicture.asset(
             'assets/icons/ic_empty_list.svg',
-            height:
-                size.width > size.height ? size.height * 0.3 : size.width * 0.3,
+            height: size.width > size.height ? size.height * 0.3 : size.width * 0.3,
             colorFilter: ColorFilter.mode(
               theme.colorScheme.secondaryContainer,
               BlendMode.srcIn,
@@ -314,7 +335,7 @@ class TransferHistoryScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Obx(() => Text(
-                              controller.selectedPeriod.value,
+                              controller.selectedPeriodDetail.value,
                               style: Theme.of(context).textTheme.titleMedium,
                             )),
                         SvgPicture.asset(
@@ -332,53 +353,130 @@ class TransferHistoryScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     return Obx(() {
       final categories = controller.categorizedTransactions.keys.toList();
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final transactions =
-              controller.categorizedTransactions[category] ?? [];
+      final transactions = controller.categorizedTransactions[categories[0]] ?? [];
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      // Group transactions by date
+      Map<String, List<Transaction>> transactionsByDate = {};
+      for (var transaction in transactions) {
+        String dateKey = DateFormat('d MMMM', 'ru').format(transaction.createdAt);
+        transactionsByDate.putIfAbsent(dateKey, () => []);
+        transactionsByDate[dateKey]!.add(transaction);
+      }
+
+      return transactions.isEmpty
+          ? Center(
+              child: Padding(
+                  padding: EdgeInsets.all(size.height * 0.03),
+                  child: SvgPicture.asset(
+                    'assets/icons/ic_empty_list.svg',
+                    height: size.width > size.height ? size.height * 0.3 : size.width * 0.3,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.secondaryContainer,
+                      BlendMode.srcIn,
+                    ),
+                  )))
+          : ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: transactionsByDate.length,
+              itemBuilder: (context, index) {
+                String date = transactionsByDate.keys.elementAt(index);
+                List<Transaction> dayTransactions = transactionsByDate[date]!;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          date,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                      ...dayTransactions.map((transaction) => Column(
+                            children: [
+                              dayTransactions.first != transaction
+                                  ? Divider(height: 1, indent: 16, endIndent: 16, color: Theme.of(context).colorScheme.outline)
+                                  : Container(),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: _buildTransactionContent(context, transaction),
+                              ),
+                            ],
+                          )),
+                    ],
+                  ),
+                );
+              },
+            );
+    });
+  }
+
+  Widget _buildTransactionContent(BuildContext context, Transaction transaction) {
+    return GestureDetector(
+      onTap: () => {
+        Get.toNamed('/transferDetails', arguments: transaction),
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+              Text(
+                getTypeText(transaction.type),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
+                    ),
+              ),
+              Text(
+                formatCurrency(transaction.amount, transaction.currency, Get.locale.toString()),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (transaction.fromUserName != null && transaction.fromAccount != '')
+            Text(
+              'От: ${transaction.fromUserName ?? transaction.fromAccount}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          Text(
+            'Кому: ${transaction.toUserName ?? transaction.toAccount}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(transaction.status),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Text(
-                  category,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  _getStatusText(transaction.status),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                      ),
                 ),
               ),
-              transactions.isNotEmpty
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: transactions.length,
-                      itemBuilder: (context, i) {
-                        final transaction = transactions[i];
-                        return _buildTransactionCard(context, transaction);
-                      },
-                    )
-                  : Center(
-                      child: Padding(
-                          padding: EdgeInsets.all(size.height * 0.03),
-                          child: SvgPicture.asset(
-                            'assets/icons/ic_empty_list.svg',
-                            height: size.width > size.height
-                                ? size.height * 0.3
-                                : size.width * 0.3,
-                            colorFilter: ColorFilter.mode(
-                              Theme.of(context).colorScheme.secondaryContainer,
-                              BlendMode.srcIn,
-                            ),
-                          ))),
             ],
-          );
-        },
-      );
-    });
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {
@@ -403,16 +501,12 @@ class TransferHistoryScreen extends StatelessWidget {
                   ),
                   Text(
                     '${transaction.amount} ${transaction.currency}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              (transaction.fromUserName == null ||
-                      transaction.fromAccount == '')
+              (transaction.fromUserName == null || transaction.fromAccount == '')
                   ? Container()
                   : Text(
                       'От: ${transaction.fromUserName ?? transaction.fromAccount}',
@@ -431,8 +525,7 @@ class TransferHistoryScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getStatusColor(transaction.status),
                       borderRadius: BorderRadius.circular(12),
@@ -467,7 +560,7 @@ class TransferHistoryScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: Transform.rotate(
-                      angle: - 90 * 3.14159 / 180, // 90 degrees in radians
+                      angle: -90 * 3.14159 / 180, // 90 degrees in radians
                       child: SvgPicture.asset(
                         'assets/icons/ic_back.svg',
                         width: 32,
@@ -492,12 +585,7 @@ class TransferHistoryScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 16),
-            ...[
-              'За текущую неделю',
-              'За текущий месяц',
-              'За 3 месяца',
-              'Выбрать период в календаре'
-            ].map((period) => ListTile(
+            ...['За текущую неделю', 'За текущий месяц', 'За 3 месяца', 'Выбрать период в календаре'].map((period) => ListTile(
                   leading: Container(
                     height: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
                     width: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
@@ -529,6 +617,7 @@ class TransferHistoryScreen extends StatelessWidget {
                     }
                   },
                 )),
+            SizedBox(height: 32),
           ],
         ),
       ),

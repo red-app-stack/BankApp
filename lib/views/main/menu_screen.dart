@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:bank_app/controllers/auth_controller.dart';
 import 'package:bank_app/widgets/items/service_item.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/items/list_item.dart';
@@ -122,77 +121,6 @@ class MenuScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildMenuItem({
-    required MenuItem item,
-    required ThemeData theme,
-    bool isLast = false,
-    required VoidCallback onTap,
-    VoidCallback? onDoubleTap,
-  }) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          onDoubleTap: onDoubleTap,
-          borderRadius: BorderRadius.circular(12),
-          splashFactory: InkRipple.splashFactory,
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Stack(
-                  alignment: Alignment.topRight,
-                  clipBehavior: Clip.none,
-                  children: [
-                    SvgPicture.asset(
-                      item.icon,
-                      width: 40,
-                      height: 40,
-                    ),
-                  ],
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: item.description == null
-                        ? MainAxisAlignment.center
-                        : MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item.title,
-                        style: theme.textTheme.bodyLarge
-                            ?.copyWith(color: theme.colorScheme.primary),
-                      ),
-                      if (item.description != null) ...[
-                        SizedBox(height: 4),
-                        Text(
-                          item.description!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            indent: 16,
-            endIndent: 16,
-            color: theme.colorScheme.secondaryContainer,
-          ),
-      ],
     );
   }
 }

@@ -159,7 +159,8 @@ class ProfileScreen extends StatelessWidget {
                               ...section.items.map((item) => ListItem(
                                     svgPath: item.icon,
                                     title: item.title,
-                                    showNotification: showNotification(item.icon),
+                                    showNotification:
+                                        showNotification(item.icon),
                                     showDivider: section.items.last == item,
                                   ))
                             ],
@@ -175,100 +176,5 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     ));
-  }
-
-  Widget _buildMenuItem({
-    required MenuItem item,
-    required ThemeData theme,
-    bool isLast = false,
-  }) {
-    return Column(
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: Ink(
-            child: InkWell(
-              onTap: () {
-                handeItemClick(item.icon);
-              },
-              borderRadius: BorderRadius.circular(12),
-              splashFactory: InkRipple.splashFactory,
-              splashColor: theme.colorScheme.primary.withOpacity(0.08),
-              highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Stack(
-                      alignment: Alignment.topRight,
-                      clipBehavior: Clip.none,
-                      children: [
-                        SvgPicture.asset(
-                          item.icon,
-                          width: 40,
-                          height: 40,
-                        ),
-                        if (item.icon == 'assets/icons/ic_transactions.svg' ||
-                            item.icon == 'assets/icons/ic_transfers.svg' ||
-                            item.icon == 'assets/icons/ic_payments.svg' ||
-                            item.icon == 'assets/icons/ic_security.svg')
-                          Positioned(
-                            top: -3,
-                            right: -3,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: theme
-                                    .extension<CustomColors>()!
-                                    .notifications,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: item.description == null
-                            ? MainAxisAlignment.center
-                            : MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            item.title,
-                            style: theme.textTheme.bodyLarge
-                                ?.copyWith(color: theme.colorScheme.primary),
-                          ),
-                          if (item.description != null) ...[
-                            SizedBox(height: 4),
-                            Text(
-                              item.description!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            indent: 16,
-            endIndent: 16,
-            color: theme.colorScheme.secondaryContainer,
-          ),
-      ],
-    );
   }
 }
