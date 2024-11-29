@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:bank_app/widgets/items/service_item.dart';
 
 import '../../routes/manage_auth_nav.dart';
+import '../../widgets/common/custom_card.dart';
 
 class HomeScreenController extends GetxController {
   final List<String> homeIconPaths = [
@@ -50,45 +52,47 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Главная',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
+                CustomCard(
+                  label: 'Главная',
                 ),
                 SizedBox(height: size.height * 0.02),
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[0],
-                            label: 'Карты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[1],
-                            label: 'Депозиты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[2],
-                            label: 'Кредиты',
-                            theme: theme),
-                        _buildServiceItem(
-                            svgPath: controller.homeIconPaths[3],
-                            label: 'Рассрочка',
-                            theme: theme),
-                      ],
-                    ),
+                CustomCard(
+                  child: Row(
+                    children: [
+                      ServiceItem(
+                        svgPath: controller.homeIconPaths[0],
+                        label: 'Карты',
+                        iconSize: 32,
+                        onTap: () => manageNav(
+                            false,
+                            () => Get.toNamed('/createAccount',
+                                arguments: 'card')),
+                      ),
+                      ServiceItem(
+                          svgPath: controller.homeIconPaths[1],
+                          label: 'Депозиты',
+                          iconSize: 32,
+                          onTap: () => manageNav(
+                                false,
+                                () => Get.toNamed('/createAccount',
+                                    arguments: 'deposit'),
+                              )),
+                      ServiceItem(
+                        svgPath: controller.homeIconPaths[2],
+                        label: 'Кредиты',
+                        iconSize: 32,
+                        onTap: () => manageNav(
+                            false,
+                            () => Get.toNamed('/createAccount',
+                                arguments: 'credit')),
+                      ),
+                      ServiceItem(
+                        svgPath: controller.homeIconPaths[3],
+                        label: 'Рассрочка',
+                        iconSize: 32,
+                        onDoubleTap: () => {Get.toNamed('/testing')},
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: size.height * 0.08),
@@ -106,88 +110,5 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     ));
-  }
-
-  Widget _buildServiceItem({
-    required String svgPath,
-    String label = '',
-    double iconSize = 32,
-    required ThemeData theme,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        child: InkWell(
-          onDoubleTap: () async {
-            svgPath == 'assets/icons/installment.svg'
-                ? {Get.toNamed('/testing')}
-                : null;
-          },
-          onTap: () async {
-            svgPath == 'assets/icons/creditcard.svg'
-                ? {
-                    manageNav(false,
-                        () => Get.toNamed('/createAccount', arguments: 'card')),
-                  }
-                : svgPath == 'assets/icons/deposit.svg'
-                    ? {
-                        manageNav(
-                          false,
-                          () => Get.toNamed('/createAccount',
-                              arguments: 'deposit'),
-                        )
-                      }
-                    : svgPath == 'assets/icons/credit.svg'
-                        ? {
-                            manageNav(
-                              false,
-                              () => Get.toNamed('/createAccount',
-                                  arguments: 'credit'),
-                            )
-                          }
-                        : svgPath == 'assets/icons/installment.svg'
-                            ? {
-                                // Get.toNamed('/testing')
-                                //  print(await Get.find<ServerHealthService>().findWorkingServer())
-                              }
-                            : null;
-          },
-          borderRadius: BorderRadius.circular(12),
-          splashFactory: InkRipple.splashFactory,
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SvgPicture.asset(
-                      svgPath,
-                      width: iconSize,
-                      height: iconSize,
-                      colorFilter: ColorFilter.mode(
-                        theme.colorScheme.primary,
-                        BlendMode.srcIn,
-                      ),
-                    )),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Get.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ) ??
-                      Get.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

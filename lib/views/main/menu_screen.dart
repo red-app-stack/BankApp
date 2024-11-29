@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:bank_app/controllers/auth_controller.dart';
+import 'package:bank_app/widgets/items/service_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../../widgets/common/custom_card.dart';
+import '../../widgets/items/list_item.dart';
 import '../shared/shared_classes.dart';
 
 class MenuScreen extends StatelessWidget {
@@ -28,7 +31,7 @@ class MenuScreen extends StatelessWidget {
       ],
     ),
     MenuSection(
-      title: 'Инсайт Банк',
+      title: 'Insight Bank',
       items: [
         MenuItem(icon: 'assets/icons/ic_atm.svg', title: 'Банкоматы'),
         MenuItem(icon: 'assets/icons/ic_branch.svg', title: 'Отделения'),
@@ -59,25 +62,15 @@ class MenuScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Меню',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
+                CustomCard(
+                  label: 'Меню',
                 ),
                 SizedBox(height: size.height * 0.02),
                 ...sections.map((section) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Card(
+                        CustomCard(
+                          padding: EdgeInsets.zero,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -89,80 +82,41 @@ class MenuScreen extends StatelessWidget {
                                     style: theme.textTheme.bodyLarge,
                                   ),
                                 ),
-                              ...section.items.map((item) => _buildMenuItem(
-                                    item: item,
-                                    theme: theme,
-                                    isLast: section.items.last == item,
-                                    onDoubleTap: () {},
-                                    onTap: () {
-                                      item.icon ==
-                                              'assets/icons/ic_settings.svg'
-                                          ? {
-                                              Get.toNamed('/securitySettings'),
-                                            }
-                                          : {};
-                                    },
-                                  ))
+                              ...section.items.map((item) => ListItem(
+                                    svgPath: item.icon,
+                                    title: item.title,
+                                    subtitle: item.description,
+                                    showDivider: !(section.items.last == item),
+                                    onTap: () => handleItemClick(item.icon),
+                                  )),
+                              // ...section.items.map((item) => _buildMenuItem(
+                              //       item: item,
+                              //       theme: theme,
+                              //       isLast: section.items.last == item,
+                              //       onDoubleTap: () {},
+                              //       onTap: () {
+                              //         item.icon ==
+                              //                 'assets/icons/ic_settings.svg'
+                              //             ? {
+                              //                 Get.toNamed('/securitySettings'),
+                              //               }
+                              //             : {};
+                              //       },
+                              //     ))
                             ],
                           ),
                         ),
                         SizedBox(height: size.height * 0.02),
                       ],
                     )),
-                _buildServiceItem(theme: theme),
+                ServiceItem(
+                    svgPath: 'assets/icons/ic_exit.svg',
+                    label: 'Выход',
+                    iconSize: 40,
+                    expanded: false,
+                    onTap: () => _authController.logout()),
+                // _buildServiceItem(theme: theme),
                 SizedBox(height: size.height * 0.02),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServiceItem({
-    String svgPath = 'assets/icons/ic_exit.svg',
-    String label = 'Выход',
-    double iconSize = 40,
-    required ThemeData theme,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        child: InkWell(
-          onTap: () {
-            _authController.logout();
-          },
-          borderRadius: BorderRadius.circular(12),
-          splashFactory: InkRipple.splashFactory,
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SvgPicture.asset(
-                      svgPath,
-                      width: iconSize,
-                      height: iconSize,
-                      colorFilter: ColorFilter.mode(
-                        theme.colorScheme.inversePrimary,
-                        BlendMode.srcIn,
-                      ),
-                    )),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Get.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ) ??
-                      Get.textTheme.bodyMedium,
-                ),
               ],
             ),
           ),
@@ -241,4 +195,16 @@ class MenuScreen extends StatelessWidget {
       ],
     );
   }
+}
+
+shouldShowNotification(String icon) {
+  return false;
+}
+
+handleItemClick(String icon) {
+  icon == 'assets/icons/ic_settings.svg'
+      ? {
+          Get.toNamed('/securitySettings'),
+        }
+      : {};
 }

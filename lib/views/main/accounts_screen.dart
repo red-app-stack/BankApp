@@ -12,6 +12,7 @@ import 'package:card_swiper/card_swiper.dart';
 import '../../controllers/accounts_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../services/user_service.dart';
+import '../../widgets/common/custom_card.dart';
 import '../shared/formatters.dart';
 
 class BankCard {
@@ -190,19 +191,8 @@ class AccountsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Счета',
-                          style: theme.textTheme.titleLarge,
-                        )
-                      ],
-                    ),
-                  ),
+                CustomCard(
+                  label: 'Счета',
                 ),
                 SizedBox(height: size.height * 0.02),
                 Obx(() => _buildCardSection(
