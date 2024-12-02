@@ -393,13 +393,13 @@ class QRTransferScreen extends StatelessWidget {
                     return;
                   }
 
-                  final success = await controller.accountsController
+                  final transaction = await controller.accountsController
                       .createTransaction(
                           controller.selectedAccount.value!.accountNumber,
                           scannedData['accountNumber'],
                           double.parse(controller.amount.value),
                           controller.selectedAccount.value!.currency);
-                  if (success) {
+                  if (transaction != null && transaction.status == 'success') {
                     Get.snackbar('Успех', 'Перевод успешно выполнен');
                     controller.refreshCards();
                     Navigator.of(Get.context!).pop();

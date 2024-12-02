@@ -13,7 +13,7 @@ class TransferHistoryController extends GetxController {
   RxString accountId = ''.obs;
   RxString selectedPeriod = 'За текущую неделю'.obs;
   RxString selectedPeriodDetail = ''.obs;
-  RxMap<String, List<Transaction>> categorizedTransactions = <String, List<Transaction>>{}.obs;
+  RxMap<String, List<Transaction>> categorizedTransactions = <String, List<Transaction>>{'': []}.obs;
 
   Rx<DateTimeRange?> selectedDateRange = Rx<DateTimeRange?>(null);
 
@@ -317,36 +317,33 @@ class TransferHistoryScreen extends StatelessWidget {
 
   Widget _buildFilterCard(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return Material(
-        color: Colors.transparent,
-        child: Ink(
-            child: InkWell(
-                onTap: () {
-                  _showFilterBottomSheet(context);
-                },
-                borderRadius: BorderRadius.circular(12),
-                splashFactory: InkRipple.splashFactory,
-                splashColor: theme.colorScheme.primary.withOpacity(0.08),
-                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Obx(() => Text(
-                              controller.selectedPeriodDetail.value,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            )),
-                        SvgPicture.asset(
-                          'assets/icons/ic_filter.svg',
-                          width: 32,
-                          height: 32,
-                        ),
-                      ],
-                    ),
-                  ),
-                ))));
+    return Card(
+        child: InkWell(
+      onTap: () {
+        _showFilterBottomSheet(context);
+      },
+      borderRadius: BorderRadius.circular(12),
+      splashFactory: InkRipple.splashFactory,
+      splashColor: theme.colorScheme.primary.withOpacity(0.08),
+      highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Obx(() => Text(
+                  controller.selectedPeriodDetail.value,
+                  style: Theme.of(context).textTheme.titleMedium,
+                )),
+            SvgPicture.asset(
+              'assets/icons/ic_filter.svg',
+              width: 32,
+              height: 32,
+            ),
+          ],
+        ),
+      ),
+    ));
   }
 
   Widget _buildTransactionsList(BuildContext context) {
@@ -362,6 +359,9 @@ class TransferHistoryScreen extends StatelessWidget {
         transactionsByDate.putIfAbsent(dateKey, () => []);
         transactionsByDate[dateKey]!.add(transaction);
       }
+
+      final now = DateTime.now();
+      final today = DateFormat('d MMMM', 'ru').format(now);
 
       return transactions.isEmpty
           ? Center(
@@ -389,9 +389,9 @@ class TransferHistoryScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.only(top: 16, left: 16),
                         child: Text(
-                          date,
+                          date == today ? 'Сегодня, $date' : date,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -402,10 +402,7 @@ class TransferHistoryScreen extends StatelessWidget {
                               dayTransactions.first != transaction
                                   ? Divider(height: 1, indent: 16, endIndent: 16, color: Theme.of(context).colorScheme.outline)
                                   : Container(),
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: _buildTransactionContent(context, transaction),
-                              ),
+                              _buildTransactionContent(context, transaction),
                             ],
                           )),
                     ],
@@ -417,66 +414,76 @@ class TransferHistoryScreen extends StatelessWidget {
   }
 
   Widget _buildTransactionContent(BuildContext context, Transaction transaction) {
-    return GestureDetector(
-      onTap: () => {
-        Get.toNamed('/transferDetails', arguments: transaction),
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return InkWell(
+        onTap: () {
+          Get.toNamed('/transferDetails', arguments: transaction);
+        },
+        splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+        highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                getTypeText(transaction.type),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    getTypeText(transaction.type),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                  ),
+                  Text(
+                    formatCurrency(transaction.amount, transaction.currency, Get.locale.toString()),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: transaction.status != 'completed'
+                              ? _getStatusColor(transaction.status)
+                              : Theme.of(context).textTheme.titleMedium?.color,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 8),
+              if (transaction.fromUserName != null && transaction.fromAccount != '')
+                Text(
+                  'От: ${transaction.fromUserName ?? transaction.fromAccount}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               Text(
-                formatCurrency(transaction.amount, transaction.currency, Get.locale.toString()),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                'Кому: ${transaction.toUserName ?? transaction.toAccount}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(transaction.status),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Text(
+                      _getStatusText(transaction.status),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white,
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          if (transaction.fromUserName != null && transaction.fromAccount != '')
-            Text(
-              'От: ${transaction.fromUserName ?? transaction.fromAccount}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          Text(
-            'Кому: ${transaction.toUserName ?? transaction.toAccount}',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(transaction.status),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getStatusText(transaction.status),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                      ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {

@@ -211,9 +211,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 24),
-                          // Transaction Details
                           _buildDetailRow('Тип транзакции', getTypeText(transaction.type)),
                           const SizedBox(height: 4),
                           Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
@@ -258,7 +256,9 @@ class TransactionDetailsScreen extends StatelessWidget {
                         context,
                         'assets/icons/ic_repeat.svg',
                         'Повторить',
-                        () {},
+                        () {
+                          Get.toNamed('/phoneTransfer', arguments: transaction);
+                        },
                       ),
                       _buildActionButton(
                         context,

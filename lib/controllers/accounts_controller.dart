@@ -298,13 +298,12 @@ class AccountsController extends GetxController {
     }
   }
 
-  Future<bool> createTransaction(String fromAccountId, String toAccountId,
-      double amount, String currency) async {
+Future<Transaction?> createTransaction(String fromAccountId, String toAccountId, double amount, String currency) async {
     try {
       isLoading.value = true;
       final token = await secureStore.secureStorage.read(key: 'auth_token');
 
-      if (token == null) return false;
+      if (token == null) return null;
 
       final response = await dio.post(
         '/transactions/create',
@@ -322,12 +321,12 @@ class AccountsController extends GetxController {
 
       if (response.statusCode == 201) {
         await fetchAccounts();
-        return true;
+     return Transaction.fromJson(response.data);
       }
-      return false;
+      return null;
     } catch (e) {
       print('Error creating transaction: $e');
-      return false;
+      return null;
     } finally {
       isLoading.value = false;
     }

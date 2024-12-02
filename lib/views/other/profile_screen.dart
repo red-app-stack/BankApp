@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/theme_controller.dart';
 import '../../services/user_service.dart';
-import '../../utils/themes/theme_extension.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/items/list_item.dart';
 import '../shared/shared_classes.dart';

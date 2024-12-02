@@ -28,14 +28,14 @@ class CardModel {
 class PhoneTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
-  final FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
+  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
 
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
   final RxString phoneNumber = ''.obs;
   final RxString formattedPhoneNumber = ''.obs;
   final RxString amount = ''.obs;
   String previousNumber = '';
+  Transaction? transaction;
   final RxString formattedAmount = ''.obs;
   final RxBool isAccountDropdownExpanded = false.obs;
 
@@ -51,13 +51,18 @@ class PhoneTransferController extends GetxController {
     _initializeSelectedAccount();
     amountController.text = '0';
     updateAmount('0');
+    transaction = Get.arguments;
+    if (transaction != null) {
+      updatePhoneNumber(transaction?.toUserPhone ?? '');
+      print(transaction?.amount.toString());
+      updateAmount(transaction?.amount.toString() ?? '');
+      // phoneNumber.value = transaction?.toUserPhone ?? '';
+    }
   }
 
   void _initializeSelectedAccount() {
     if (accountsController.accounts.isNotEmpty) {
-      final cards = accountsController.accounts
-          .where((account) => account.accountType == 'card')
-          .toList()
+      final cards = accountsController.accounts.where((account) => account.accountType == 'card').toList()
         ..sort((a, b) => b.balance.compareTo(a.balance));
 
       selectedAccount.value = cards.isNotEmpty ? cards.first : null;
@@ -65,16 +70,13 @@ class PhoneTransferController extends GetxController {
   }
 
   void refreshCards() {
-    accountsController
-        .fetchAccounts()
-        .then((_) => _initializeSelectedAccount());
+    accountsController.fetchAccounts().then((_) => _initializeSelectedAccount());
   }
 
   void updatePhoneNumber(String value) {
     int cursorPosition = phoneController.value.selection.start;
 
-    String oldDigits =
-        _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
+    String oldDigits = _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
     String newDigits = value.replaceAll(RegExp(r'\D'), '');
     bool isDeleting = newDigits.length < oldDigits.length;
 
@@ -85,8 +87,7 @@ class PhoneTransferController extends GetxController {
       } else if (newDigits.length <= 6) {
         formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
       } else {
-        formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, min(10, newDigits.length))}';
+        formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, min(10, newDigits.length))}';
       }
     }
 
@@ -112,12 +113,20 @@ class PhoneTransferController extends GetxController {
   }
 
   void updateAmount(String value) {
-    String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
     const int maxTransferAmount = 2000000;
+    String normalizedValue = value.replaceAll('.', ',');
 
-    if (digitsOnly.isEmpty) {
+    List<String> parts = normalizedValue.split(',');
+    String integerPart = parts[0].replaceAll(RegExp(r'\D'), '');
+    String decimalPart = parts.length > 1 ? parts[1].replaceAll(RegExp(r'\D'), '') : '';
+
+    if (decimalPart.length > 2) {
+      decimalPart = decimalPart.substring(0, 2);
+    }
+
+    if (integerPart.isEmpty) {
       amount.value = '';
-      formattedAmount.value = '';
+      formattedAmount.value = '0';
       amountController.value = TextEditingValue(
         text: '0',
         selection: TextSelection.collapsed(offset: 1),
@@ -125,36 +134,41 @@ class PhoneTransferController extends GetxController {
       return;
     }
 
-    int number = int.tryParse(digitsOnly) ?? 0;
+    int number = int.tryParse(integerPart) ?? 0;
 
     if (number > maxTransferAmount) {
-      number = int.parse(previousNumber);
-      String formatted = previousNumber.replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (Match m) => '${m[1]} ',
-      );
-      final oldCursor = amountController.selection.start;
-      final oldTextLength = amountController.text.length;
-      final distanceFromEnd = oldTextLength - oldCursor;
+      print(number);
+      number = int.parse(previousNumber.split(',')[0]);
+      String formatted = _formatAmount(number);
 
-      amountController.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(
-          offset: formatted.length - distanceFromEnd,
-        ),
-      );
+      if (normalizedValue.contains(',')) {
+        formatted += ',$decimalPart';
+      }
+
+      _updateControllerValue(formatted);
       return;
     }
 
-    String formatted = number.toString().replaceAllMapped(
+    String formatted = _formatAmount(number);
+    if (normalizedValue.contains(',')) {
+      formatted += ',$decimalPart';
+    }
+
+    amount.value = number.toString() + (decimalPart.isNotEmpty ? ',$decimalPart' : '');
+    formattedAmount.value = formatted;
+    previousNumber = amount.value;
+
+    _updateControllerValue(formatted);
+  }
+
+  String _formatAmount(int number) {
+    return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]} ',
         );
+  }
 
-    amount.value = digitsOnly;
-    formattedAmount.value = digitsOnly;
-    previousNumber = digitsOnly;
-
+  void _updateControllerValue(String formatted) {
     final oldCursor = amountController.selection.start;
     final oldTextLength = amountController.text.length;
     final distanceFromEnd = oldTextLength - oldCursor;
@@ -202,8 +216,7 @@ class PhoneTransferScreen extends StatelessWidget {
                     child: RefreshIndicator(
                       onRefresh: () async {
                         try {
-                          await Future.delayed(
-                              const Duration(milliseconds: 500));
+                          await Future.delayed(const Duration(milliseconds: 500));
                         } on TimeoutException {
                           print('Refresh operation timed out');
                         } catch (e) {
@@ -226,15 +239,7 @@ class PhoneTransferScreen extends StatelessWidget {
                     ),
                   ),
                   Obx(() {
-                    final amount = controller.amount.value.isEmpty
-                        ? 0
-                        : int.parse(controller.amount.value);
-
-                    final formattedAmount = amount.toString().replaceAllMapped(
-                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                          (Match m) => '${m[1]} ',
-                        );
-
+                    double amount = controller.amount.value.isEmpty ? 0 : double.parse(controller.amount.value.replaceAll(',', '.'));
                     return AnimatedPadding(
                         duration: const Duration(milliseconds: 50),
                         curve: Curves.easeInOut,
@@ -242,52 +247,35 @@ class PhoneTransferScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (controller.selectedAccount.value == null) {
-                              Get.snackbar(
-                                  'Ошибка', 'Пожалуйста, выберите карту');
+                              Get.snackbar('Ошибка', 'Пожалуйста, выберите карту');
                               return;
                             }
 
-                            String phoneNumber = controller.phoneController.text
-                                .replaceAll(RegExp(r'\D'), '');
+                            String phoneNumber = controller.phoneController.text.replaceAll(RegExp(r'\D'), '');
                             if (phoneNumber.isEmpty) {
-                              Get.snackbar('Ошибка',
-                                  'Пожалуйста, введите номер телефона');
+                              Get.snackbar('Ошибка', 'Пожалуйста, введите номер телефона');
                               return;
                             }
 
-                            if (controller.amount.value.isEmpty ||
-                                controller.amount.value == '0') {
-                              Get.snackbar(
-                                  'Ошибка', 'Пожалуйста, введите сумму');
+                            if (controller.amount.value.isEmpty) {
+                              Get.snackbar('Ошибка', 'Пожалуйста, введите сумму');
                               return;
                             }
 
                             // First lookup recipient account by phone
-                            if (controller.accountsController.recipientAccount
-                                    .value ==
-                                null) {
+                            if (controller.accountsController.recipientAccount.value == null) {
                               Get.snackbar('Ошибка', 'Получатель не найден');
                               return;
                             }
-                            print(
-                                'From account: ${controller.selectedAccount.value!.accountNumber}');
-                            print(
-                                'To account: ${controller.accountsController.recipientAccount.value!.accountNumber}');
-                            print('Amount: ${controller.amount.value}');
-                            print(
-                                'Currency: ${controller.selectedAccount.value!.currency}');
 
                             // Proceed with transfer using found account
-                            final success = await controller.accountsController
-                                .createTransaction(
-                                    controller
-                                        .selectedAccount.value!.accountNumber,
-                                    controller.accountsController
-                                        .recipientAccount.value!.accountNumber,
-                                    double.parse(controller.amount.value),
-                                    controller.selectedAccount.value!.currency);
+                            final transaction = await controller.accountsController.createTransaction(
+                                controller.selectedAccount.value!.accountNumber,
+                                controller.accountsController.recipientAccount.value!.accountNumber,
+                                amount,
+                                controller.selectedAccount.value!.currency);
 
-                            if (success) {
+                            if (transaction != null) {
                               Get.snackbar('Успех', 'Перевод успешно выполнен');
                               controller.refreshCards();
                               Navigator.of(Get.context!).pop();
@@ -298,7 +286,7 @@ class PhoneTransferScreen extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
                           ),
-                          child: Text('Перевести $formattedAmount ₸',
+                          child: Text('Перевести ${controller.formattedAmount.value} ₸',
                               style: theme.textTheme.titleLarge?.copyWith(
                                 color: theme.colorScheme.onPrimary,
                                 fontWeight: FontWeight.bold,
@@ -424,15 +412,9 @@ class PhoneTransferScreen extends StatelessWidget {
               onPressed: () async {
                 final permission = await Permission.contacts.request();
                 if (permission.isGranted) {
-                  Contact? contact =
-                      await controller._contactPicker.selectContact();
-                  if (contact != null &&
-                      contact.phoneNumbers != null &&
-                      contact.phoneNumbers!.isNotEmpty) {
-                    String phoneNumber = contact.phoneNumbers!
-                        .toString()
-                        .replaceAll(RegExp(r'\D'), '')
-                        .substring(1);
+                  Contact? contact = await controller._contactPicker.selectContact();
+                  if (contact != null && contact.phoneNumbers != null && contact.phoneNumbers!.isNotEmpty) {
+                    String phoneNumber = contact.phoneNumbers!.toString().replaceAll(RegExp(r'\D'), '').substring(1);
 
                     controller.phoneController.text = phoneNumber;
                     controller.updatePhoneNumber(phoneNumber);
@@ -445,11 +427,8 @@ class PhoneTransferScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 16, top: 12),
           child: Obx(() => Text(
-                controller
-                        .accountsController.recipientAccount.value?.fullName ??
-                    'Получатель не найден',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(color: theme.colorScheme.onSurface),
+                controller.accountsController.recipientAccount.value?.fullName ?? 'Получатель не найден',
+                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurface),
               )),
         )
       ]),
@@ -481,7 +460,7 @@ class PhoneTransferScreen extends StatelessWidget {
                     child: TextField(
                       focusNode: controller.amountFocusNode,
                       controller: controller.amountController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Roboto',
