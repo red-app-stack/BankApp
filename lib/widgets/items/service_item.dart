@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class ServiceItem extends StatelessWidget {
-  final String svgPath;
-  final String label;
+  final String? svgPath;
+  final Widget? icon;
+  final IconData? iconData;
+  final String? label;
+  final double labelSize;
   final double iconSize;
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
@@ -11,8 +14,11 @@ class ServiceItem extends StatelessWidget {
 
   const ServiceItem({
     super.key,
-    required this.svgPath,
-    required this.label,
+    this.label,
+    this.svgPath,
+    this.icon,
+    this.iconData,
+    this.labelSize = 14,
     this.iconSize = 32,
     this.onTap,
     this.onDoubleTap,
@@ -53,26 +59,38 @@ class ServiceItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: SvgPicture.asset(
-                    svgPath,
-                    width: iconSize,
-                    height: iconSize,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary,
-                      BlendMode.srcIn,
-                    ),
-                  )),
+                  child: svgPath != null
+                      ? SvgPicture.asset(
+                          svgPath!,
+                          width: iconSize,
+                          height: iconSize,
+                          colorFilter: ColorFilter.mode(
+                            theme.colorScheme.primary,
+                            BlendMode.srcIn,
+                          ),
+                        )
+                      : icon != null
+                          ? icon!
+                          : iconData != null
+                              ? Icon(
+                                  iconData!,
+                                  size: iconSize,
+                                  color: theme.colorScheme.primary,
+                                )
+                              : Container()),
               SizedBox(height: 8),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                    ) ??
-                    theme.textTheme.bodyMedium,
-              ),
+              label != null
+                  ? Text(
+                      label!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontSize: labelSize) ??
+                          theme.textTheme.bodyMedium,
+                    )
+                  : Container(),
             ],
           ),
         ),

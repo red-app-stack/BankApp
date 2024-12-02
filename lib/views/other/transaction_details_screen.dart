@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:bank_app/widgets/common/custom_card.dart';
+import 'package:bank_app/widgets/items/service_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -27,13 +30,15 @@ class TransactionDetailsController extends GetxController {
     List<Transaction> favorites = await getFavoriteTransfers();
     favorites.add(transaction);
     print(favorites.map((e) => e.toJson()).toList());
-    await secureStore.secureStore(favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+    await secureStore.secureStore(
+        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
   }
 
   Future<void> removeFavoriteTransfer(String reference) async {
     List<Transaction> favorites = await getFavoriteTransfers();
     favorites.removeWhere((t) => t.reference == reference);
-    await secureStore.secureStore(favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
+    await secureStore.secureStore(
+        favoritesKey, jsonEncode(favorites.map((e) => e.toJson()).toList()));
   }
 
   TransactionDetailsController(this.transaction);
@@ -56,7 +61,8 @@ class TransactionDetailsController extends GetxController {
 
 class TransactionDetailsScreen extends StatelessWidget {
   final Transaction transaction = Get.arguments;
-  final TransactionDetailsController controller = Get.put(TransactionDetailsController(Get.arguments as Transaction));
+  final TransactionDetailsController controller =
+      Get.put(TransactionDetailsController(Get.arguments as Transaction));
 
   TransactionDetailsScreen({super.key});
 
@@ -111,34 +117,22 @@ class TransactionDetailsScreen extends StatelessWidget {
           padding: EdgeInsets.all(16),
           child: Column(
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/icons/ic_back.svg',
-                          width: 32,
-                          height: 32,
-                          colorFilter: ColorFilter.mode(
-                            theme.colorScheme.primary,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Информация о переводе',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(width: 32),
-                    ],
+              CustomCard(
+                padding: const EdgeInsets.all(6),
+                startWidget: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/ic_back.svg',
+                    width: 32,
+                    height: 32,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
                   ),
+                  onPressed: () => Navigator.pop(context),
                 ),
+                endWidget: const SizedBox(width: 32),
+                label: 'Информация о переводе',
               ),
 
               Card(
@@ -154,38 +148,57 @@ class TransactionDetailsScreen extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: CircleAvatar(
                                 radius: 20,
-                                backgroundImage: AssetImage('assets/images/play_store_512.png'),
+                                backgroundImage: AssetImage(
+                                    'assets/images/play_store_512.png'),
                               )),
                           SizedBox(height: 16),
                           // Status and Amount
                           Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(transaction.status).withOpacity(0.6),
+                                color: _getStatusColor(transaction.status)
+                                    .withOpacity(0.6),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(
-                                  _getStatusText(transaction.type, transaction.status),
-                                  textAlign: TextAlign.left,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme.brightness == Brightness.light
-                                          ? _getStatusColor(transaction.status).withGreen(120)
-                                          : _getStatusColor(transaction.status).withGreen(220),
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  formatCurrency(transaction.amount, transaction.currency, 'ru_RU'),
-                                  style: theme.textTheme.headlineMedium?.copyWith(
-                                      color: theme.brightness == Brightness.light
-                                          ? _getStatusColor(transaction.status).withGreen(120)
-                                          : _getStatusColor(transaction.status).withGreen(220),
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Roboto'),
-                                ),
-                              ])),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _getStatusText(
+                                          transaction.type, transaction.status),
+                                      textAlign: TextAlign.left,
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                              color: theme.brightness ==
+                                                      Brightness.light
+                                                  ? _getStatusColor(
+                                                          transaction.status)
+                                                      .withGreen(120)
+                                                  : _getStatusColor(
+                                                          transaction.status)
+                                                      .withGreen(220),
+                                              fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      formatCurrency(transaction.amount,
+                                          transaction.currency, 'ru_RU'),
+                                      style: theme.textTheme.headlineMedium
+                                          ?.copyWith(
+                                              color: theme.brightness ==
+                                                      Brightness.light
+                                                  ? _getStatusColor(
+                                                          transaction.status)
+                                                      .withGreen(120)
+                                                  : _getStatusColor(
+                                                          transaction.status)
+                                                      .withGreen(220),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Roboto'),
+                                    ),
+                                  ])),
 
                           const SizedBox(height: 24),
 
@@ -203,7 +216,10 @@ class TransactionDetailsScreen extends StatelessWidget {
                                       style: theme.textTheme.titleMedium,
                                     ),
                                     Text(
-                                      transaction.toUserPhone != null ? '+7 ${transaction.toUserPhone}' : censorCardNumber(transaction.toAccount),
+                                      transaction.toUserPhone != null
+                                          ? '+7 ${transaction.toUserPhone}'
+                                          : censorCardNumber(
+                                              transaction.toAccount),
                                       style: theme.textTheme.bodyMedium,
                                     ),
                                   ],
@@ -212,22 +228,43 @@ class TransactionDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 24),
-                          _buildDetailRow('Тип транзакции', getTypeText(transaction.type)),
+                          _buildDetailRow(
+                              'Тип транзакции', getTypeText(transaction.type)),
                           const SizedBox(height: 4),
-                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('ID транзакции', transaction.reference),
+                          Divider(
+                              height: 1,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow(
+                              'ID транзакции', transaction.reference),
                           const SizedBox(height: 4),
-                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('Дата и время', transaction.formattedCreatedAt),
+                          Divider(
+                              height: 1,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow(
+                              'Дата и время', transaction.formattedCreatedAt),
                           const SizedBox(height: 4),
-                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('Комиссия', '0 ${transaction.currency}'),
+                          Divider(
+                              height: 1,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow(
+                              'Комиссия', '0 ${transaction.currency}'),
                           const SizedBox(height: 4),
-                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('Отправитель', transaction.fromUserName ?? 'Неизвестно'),
+                          Divider(
+                              height: 1,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow('Отправитель',
+                              transaction.fromUserName ?? 'Неизвестно'),
                           const SizedBox(height: 4),
-                          Divider(height: 1, color: theme.colorScheme.onSurface.withOpacity(0.1)),
-                          _buildDetailRow('Счет отправителя', transaction.fromAccount),
+                          Divider(
+                              height: 1,
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                          _buildDetailRow(
+                              'Счет отправителя', transaction.fromAccount),
                           const SizedBox(height: 12),
                         ],
                       ),
@@ -242,42 +279,52 @@ class TransactionDetailsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Card(
                     child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionButton(
-                        context,
-                        'assets/icons/ic_share.svg',
-                        'Поделиться',
-                        () {},
+                      ServiceItem(
+                        iconData: Icons.share,
+                        label: 'Поделиться',
+                        labelSize: 13,
+                        iconSize: 24,
                       ),
-                      _buildActionButton(
-                        context,
-                        'assets/icons/ic_repeat.svg',
-                        'Повторить',
-                        () {
+                      ServiceItem(
+                        iconData: Icons.repeat,
+                        label: 'Повторить',
+                        labelSize: 13,
+                        iconSize: 24,
+                        onTap: () {
+                          Get.offAndToNamed('/main', arguments: '/transfers');
                           Get.toNamed('/phoneTransfer', arguments: transaction);
                         },
                       ),
-                      _buildActionButton(
-                        context,
-                        'assets/icons/ic_cancel.svg',
-                        'Отменить',
-                        () {},
+                      ServiceItem(
+                        iconData: Icons.cancel,
+                        label: 'Отменить',
+                        labelSize: 13,
+                        iconSize: 24,
                       ),
-                      _buildActionButton(context, 'assets/icons/ic_favorite.svg', 'В избранное', () async {
-                        if (controller.isFavorite) {
-                          print('removing from favorite');
-                          await controller.removeFavoriteTransfer(transaction.reference);
-                        } else {
-                          print('adding to favorite');
+                      ServiceItem(
+                          iconData: Icons.favorite,
+                          label: 'В избранное',
+                          labelSize: 13,
+                          iconSize: 24,
+                          onTap: () async {
+                            if (controller.isFavorite) {
+                              print('removing from favorite');
+                              await controller.removeFavoriteTransfer(
+                                  transaction.reference);
+                            } else {
+                              print('adding to favorite');
 
-                          await controller.saveFavoriteTransfer(transaction);
-                        }
-                        controller.isFavorite = !controller.isFavorite;
-                        // setState(() {});
-                      }),
+                              await controller
+                                  .saveFavoriteTransfer(transaction);
+                            }
+                            controller.isFavorite = !controller.isFavorite;
+                            // setState(() {});
+                          }),
                     ],
                   ),
                 )),
@@ -310,6 +357,10 @@ class TransactionDetailsScreen extends StatelessWidget {
   ) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      splashFactory: InkRipple.splashFactory,
+      splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.04),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -326,15 +377,6 @@ class TransactionDetailsScreen extends StatelessWidget {
             size: 24,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          // SvgPicture.asset(
-          //   iconPath,
-          //   width: 24,
-          //   height: 24,
-          //   colorFilter: ColorFilter.mode(
-          //     Theme.of(context).colorScheme.primary,
-          //     BlendMode.srcIn,
-          //   ),
-          // ),
           const SizedBox(height: 4),
           Text(
             label,

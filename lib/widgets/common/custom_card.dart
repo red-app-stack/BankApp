@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomCard extends StatelessWidget {
-  final Widget? icon;
+  final Widget? startWidget;
   final String? label;
   final double? labelSize;
   final Widget? endWidget;
@@ -11,7 +11,7 @@ class CustomCard extends StatelessWidget {
 
   const CustomCard({
     super.key,
-    this.icon,
+    this.startWidget,
     this.label,
     this.labelSize,
     this.endWidget,
@@ -35,8 +35,8 @@ class CustomCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (icon != null) ...[
-                    icon!,
+                  if (startWidget != null) ...[
+                    startWidget!,
                     SizedBox(width: 8),
                   ],
                   if (label != null)
@@ -50,8 +50,7 @@ class CustomCard extends StatelessWidget {
                 ],
               ),
             if (child != null) ...[
-              if (label != null || endWidget != null) 
-                SizedBox(height: 16),
+              if (label != null || endWidget != null) SizedBox(height: 16),
               child!,
             ],
           ],

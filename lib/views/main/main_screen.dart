@@ -108,6 +108,13 @@ class MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = Get.arguments;
+      if (arguments == '/transfers') {
+        _navigateToPage(1);
+      }
+    });
   }
 
   @override

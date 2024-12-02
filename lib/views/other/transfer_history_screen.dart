@@ -11,9 +11,10 @@ import '../../controllers/accounts_controller.dart';
 class TransferHistoryController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
   RxString accountId = ''.obs;
-  RxString selectedPeriod = 'За текущую неделю'.obs;
+  RxString selectedPeriod = 'За неделю'.obs;
   RxString selectedPeriodDetail = ''.obs;
-  RxMap<String, List<Transaction>> categorizedTransactions = <String, List<Transaction>>{'': []}.obs;
+  RxMap<String, List<Transaction>> categorizedTransactions =
+      <String, List<Transaction>>{'': []}.obs;
 
   Rx<DateTimeRange?> selectedDateRange = Rx<DateTimeRange?>(null);
 
@@ -53,8 +54,10 @@ class TransferHistoryController extends GetxController {
                     firstDayOfWeek: 1,
                     showTrailingAndLeadingDates: true,
                   ),
-                  onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-                    if (args.value is PickerDateRange && args.value.startDate != null) {
+                  onSelectionChanged:
+                      (DateRangePickerSelectionChangedArgs args) {
+                    if (args.value is PickerDateRange &&
+                        args.value.startDate != null) {
                       tempRange = DateTimeRange(
                         start: args.value.startDate,
                         end: args.value.endDate ?? args.value.startDate,
@@ -114,39 +117,56 @@ class TransferHistoryController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    updatePeriod('За текущую неделю');
+    updatePeriod('За неделю');
     await loadTransactions();
   }
 
   void updatePeriod(String period) {
     selectedPeriod.value = period;
-
     final now = DateTime.now();
 
     String formatDate(DateTime date) {
-      const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+      const months = [
+        'января',
+        'февраля',
+        'марта',
+        'апреля',
+        'мая',
+        'июня',
+        'июля',
+        'августа',
+        'сентября',
+        'октября',
+        'ноября',
+        'декабря'
+      ];
 
-      String yearSuffix = date.year != now.year ? " '${date.year.toString().substring(2)}" : "";
+      String yearSuffix =
+          date.year != now.year ? " '${date.year.toString().substring(2)}" : "";
       return "${date.day} ${months[date.month - 1]}$yearSuffix";
     }
 
     switch (selectedPeriod.value) {
-      case 'За текущую неделю':
-        final startDate = now.subtract(Duration(days: now.weekday - 1));
-        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+      case 'За неделю':
+        final startDate = now.subtract(const Duration(days: 7));
+        selectedPeriodDetail.value =
+            "${formatDate(startDate)} - ${formatDate(now)}";
         break;
-      case 'За текущий месяц':
-        final startDate = DateTime(now.year, now.month, 1);
-        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+      case 'За месяц':
+        final startDate = now.subtract(const Duration(days: 30));
+        selectedPeriodDetail.value =
+            "${formatDate(startDate)} - ${formatDate(now)}";
         break;
       case 'За 3 месяца':
-        final startDate = DateTime(now.year, now.month - 2, 1);
-        selectedPeriodDetail.value = "${formatDate(startDate)} - ${formatDate(now)}";
+        final startDate = now.subtract(const Duration(days: 90));
+        selectedPeriodDetail.value =
+            "${formatDate(startDate)} - ${formatDate(now)}";
         break;
       case 'Выбранный период':
         if (selectedDateRange.value != null) {
-          print(selectedDateRange.value?.duration.inDays);
-          selectedPeriodDetail.value = selectedDateRange.value?.duration.inDays == 0
+          selectedPeriodDetail.value = selectedDateRange
+                      .value?.duration.inDays ==
+                  0
               ? formatDate(selectedDateRange.value!.start)
               : "${formatDate(selectedDateRange.value!.start)} - ${formatDate(selectedDateRange.value!.end)}";
         }
@@ -170,25 +190,29 @@ class TransferHistoryController extends GetxController {
 
     for (var transaction in allTransactions) {
       switch (selectedPeriod.value) {
-        case 'За текущую неделю':
-          if (transaction.createdAt.isAfter(now.subtract(Duration(days: now.weekday)))) {
+        case 'За неделю':
+          if (transaction.createdAt
+              .isAfter(now.subtract(const Duration(days: 7)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
-        case 'За текущий месяц':
-          if (transaction.createdAt.isAfter(DateTime(now.year, now.month))) {
+        case 'За месяц':
+          if (transaction.createdAt
+              .isAfter(now.subtract(const Duration(days: 30)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
         case 'За 3 месяца':
-          if (transaction.createdAt.isAfter(DateTime(now.year, now.month - 3))) {
+          if (transaction.createdAt
+              .isAfter(now.subtract(const Duration(days: 90)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
         case 'Выбранный период':
           if (selectedDateRange.value != null &&
               transaction.createdAt.isAfter(selectedDateRange.value!.start) &&
-              transaction.createdAt.isBefore(selectedDateRange.value!.end.add(Duration(days: 1)))) {
+              transaction.createdAt.isBefore(
+                  selectedDateRange.value!.end.add(const Duration(days: 1)))) {
             categorized[selectedPeriod.value]?.add(transaction);
           }
           break;
@@ -201,7 +225,8 @@ class TransferHistoryController extends GetxController {
 }
 
 class TransferHistoryScreen extends StatelessWidget {
-  final TransferHistoryController controller = Get.put(TransferHistoryController());
+  final TransferHistoryController controller =
+      Get.put(TransferHistoryController());
 
   TransferHistoryScreen({super.key});
 
@@ -234,14 +259,18 @@ class TransferHistoryScreen extends StatelessWidget {
                       physics: AlwaysScrollableScrollPhysics(),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+                          minHeight: MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.top -
+                              MediaQuery.of(context).padding.bottom,
                         ),
                         child: Column(
                           children: [
                             const SizedBox(height: 16),
                             _buildFilterCard(context),
                             const SizedBox(height: 16),
-                            Obx(() => controller.accountsController.transactionHistory.value?.isNotEmpty ?? false
+                            Obx(() => controller.accountsController
+                                        .transactionHistory.value?.isNotEmpty ??
+                                    false
                                 ? _buildTransactionsList(context)
                                 : _buildEmptyState(theme, size)),
                           ],
@@ -291,7 +320,8 @@ class TransferHistoryScreen extends StatelessWidget {
           SizedBox(height: size.height * 0.15),
           SvgPicture.asset(
             'assets/icons/ic_empty_list.svg',
-            height: size.width > size.height ? size.height * 0.3 : size.width * 0.3,
+            height:
+                size.width > size.height ? size.height * 0.3 : size.width * 0.3,
             colorFilter: ColorFilter.mode(
               theme.colorScheme.secondaryContainer,
               BlendMode.srcIn,
@@ -350,12 +380,14 @@ class TransferHistoryScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     return Obx(() {
       final categories = controller.categorizedTransactions.keys.toList();
-      final transactions = controller.categorizedTransactions[categories[0]] ?? [];
+      final transactions =
+          controller.categorizedTransactions[categories[0]] ?? [];
 
       // Group transactions by date
       Map<String, List<Transaction>> transactionsByDate = {};
       for (var transaction in transactions) {
-        String dateKey = DateFormat('d MMMM', 'ru').format(transaction.createdAt);
+        String dateKey =
+            DateFormat('d MMMM', 'ru').format(transaction.createdAt);
         transactionsByDate.putIfAbsent(dateKey, () => []);
         transactionsByDate[dateKey]!.add(transaction);
       }
@@ -369,7 +401,9 @@ class TransferHistoryScreen extends StatelessWidget {
                   padding: EdgeInsets.all(size.height * 0.03),
                   child: SvgPicture.asset(
                     'assets/icons/ic_empty_list.svg',
-                    height: size.width > size.height ? size.height * 0.3 : size.width * 0.3,
+                    height: size.width > size.height
+                        ? size.height * 0.3
+                        : size.width * 0.3,
                     colorFilter: ColorFilter.mode(
                       Theme.of(context).colorScheme.secondaryContainer,
                       BlendMode.srcIn,
@@ -392,15 +426,21 @@ class TransferHistoryScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 16, left: 16),
                         child: Text(
                           date == today ? 'Сегодня, $date' : date,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ),
                       ...dayTransactions.map((transaction) => Column(
                             children: [
                               dayTransactions.first != transaction
-                                  ? Divider(height: 1, indent: 16, endIndent: 16, color: Theme.of(context).colorScheme.outline)
+                                  ? Divider(
+                                      height: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color:
+                                          Theme.of(context).colorScheme.outline)
                                   : Container(),
                               _buildTransactionContent(context, transaction),
                             ],
@@ -413,7 +453,8 @@ class TransferHistoryScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildTransactionContent(BuildContext context, Transaction transaction) {
+  Widget _buildTransactionContent(
+      BuildContext context, Transaction transaction) {
     return InkWell(
         onTap: () {
           Get.toNamed('/transferDetails', arguments: transaction);
@@ -440,7 +481,8 @@ class TransferHistoryScreen extends StatelessWidget {
                         ),
                   ),
                   Text(
-                    formatCurrency(transaction.amount, transaction.currency, Get.locale.toString()),
+                    formatCurrency(transaction.amount, transaction.currency,
+                        Get.locale.toString()),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: transaction.status != 'completed'
                               ? _getStatusColor(transaction.status)
@@ -452,7 +494,8 @@ class TransferHistoryScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              if (transaction.fromUserName != null && transaction.fromAccount != '')
+              if (transaction.fromUserName != null &&
+                  transaction.fromAccount != '')
                 Text(
                   'От: ${transaction.fromUserName ?? transaction.fromAccount}',
                   style: Theme.of(context).textTheme.bodyMedium,
@@ -467,7 +510,8 @@ class TransferHistoryScreen extends StatelessWidget {
                 children: [
                   Container(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getStatusColor(transaction.status),
                       borderRadius: BorderRadius.circular(12),
@@ -508,12 +552,16 @@ class TransferHistoryScreen extends StatelessWidget {
                   ),
                   Text(
                     '${transaction.amount} ${transaction.currency}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              (transaction.fromUserName == null || transaction.fromAccount == '')
+              (transaction.fromUserName == null ||
+                      transaction.fromAccount == '')
                   ? Container()
                   : Text(
                       'От: ${transaction.fromUserName ?? transaction.fromAccount}',
@@ -532,7 +580,8 @@ class TransferHistoryScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getStatusColor(transaction.status),
                       borderRadius: BorderRadius.circular(12),
@@ -592,7 +641,12 @@ class TransferHistoryScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 16),
-            ...['За текущую неделю', 'За текущий месяц', 'За 3 месяца', 'Выбрать период в календаре'].map((period) => ListTile(
+            ...[
+              'За неделю',
+              'За месяц',
+              'За 3 месяца',
+              'Выбрать период в календаре'
+            ].map((period) => ListTile(
                   leading: Container(
                     height: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
                     width: theme.textTheme.titleMedium!.fontSize! * 2 + 8,
@@ -603,9 +657,9 @@ class TransferHistoryScreen extends StatelessWidget {
                     ),
                     child: Text(
                       textAlign: TextAlign.center,
-                      period == 'За текущую неделю'
+                      period == 'За неделю'
                           ? '7'
-                          : period == 'За текущий месяц'
+                          : period == 'За месяц'
                               ? '30'
                               : period == 'За 3 месяца'
                                   ? '90'
