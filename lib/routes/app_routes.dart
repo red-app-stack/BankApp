@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/create_account_controller.dart';
 import '../views/auth/password_entering_screen.dart';
+import '../views/chat/user_chat_screen.dart';
 import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
 import '../views/other/qr_transfer_screen.dart';
@@ -37,6 +38,7 @@ class Routes {
   static const phoneTransfer = '/phoneTransfer';
   static const qrTransfer = '/qrTransfer';
   static const securitySettings = '/securitySettings';
+  static const userChat = '/userChat';
 }
 
 class AppRoutes {
@@ -137,6 +139,12 @@ class AppRoutes {
     GetPage(
       name: Routes.securitySettings,
       page: () => SecuritySettingsScreen(),
+      customTransition: CustomSlideTransitionLeft(),
+      transitionDuration: Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: Routes.userChat,
+      page: () => UserChatScreen(),
       customTransition: CustomSlideTransitionLeft(),
       transitionDuration: Duration(milliseconds: 300),
     ),

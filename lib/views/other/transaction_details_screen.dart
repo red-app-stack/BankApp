@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:bank_app/widgets/common/custom_card.dart';
 import 'package:bank_app/widgets/items/service_item.dart';
@@ -344,44 +343,6 @@ class TransactionDetailsScreen extends StatelessWidget {
         children: [
           Text(label),
           Text(value),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    BuildContext context,
-    String iconPath,
-    String label,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      splashFactory: InkRipple.splashFactory,
-      splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.08),
-      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.04),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            iconPath == 'assets/icons/ic_share.svg'
-                ? Icons.share
-                : iconPath == 'assets/icons/ic_repeat.svg'
-                    ? Icons.repeat
-                    : iconPath == 'assets/icons/ic_cancel.svg'
-                        ? Icons.cancel
-                        : iconPath == 'assets/icons/ic_favorite.svg'
-                            ? Icons.favorite
-                            : null,
-            size: 24,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
         ],
       ),
     );

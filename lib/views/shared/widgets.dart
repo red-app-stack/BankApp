@@ -91,17 +91,31 @@ Widget buildTextInput(
   );
 }
 
-Widget buildUserAvatar(ThemeData theme, String? userName) {
+Widget buildUserAvatar(ThemeData theme, String? userName,
+    {double? radius = 24}) {
   return CircleAvatar(
-    radius: 24,
+    radius: radius,
     backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-    child: Text(
-      getInitials(userName ?? ''),
-      style: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.colorScheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
+    child: Text(getInitials(userName ?? ''),
+        style: radius == 16
+            ? theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              )
+            : radius == 24
+                ? theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  )
+                : radius == 48
+                    ? theme.textTheme.headlineMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      )
+                    : theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      )),
   );
 }
 

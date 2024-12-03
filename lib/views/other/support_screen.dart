@@ -1,11 +1,16 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:bank_app/controllers/auth_controller.dart';
+import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/accounts_controller.dart';
+import '../../services/user_service.dart';
+import '../shared/animations.dart';
+import '../shared/widgets.dart';
 
 // Add this class to handle response actions
 class BotResponse {
@@ -132,10 +137,24 @@ BotResponse _getBotResponse(String userMessage) {
       'are you sure you want to delete all cards?',
       action: () => _deleteCards(),
     );
+
+    return _lastResponse!;
+  } else if (userMessage.contains('сотрудник') ||
+      userMessage.contains('employee') ||
+      userMessage.contains('staff') ||
+      userMessage.contains('hr') ||
+      userMessage.contains('кадры') ||
+      userMessage.contains('персонал')) {
+    _lastResponse = BotResponse(
+        'Переключаю вас на чат с сотрудником банка. Подождите немного.',
+        action: () async => {
+              await Future.delayed(Duration(seconds: 2)),
+              Get.toNamed('/userChat')
+            },
+        confirmation: true);
     return _lastResponse!;
   }
 
-  // Если запрос не соответствует ни одному из условий
   _lastResponse = BotResponse(
     'Извините, я не совсем понял ваш вопрос. Можете переформулировать?',
   );
@@ -158,6 +177,7 @@ _deleteTransactions() {
 void _showATMMap() {
   // Логика показа карты
 }
+
 void _loginToAccountV() {
   AuthController authController = Get.find();
   authController.email.value.text = 'redapp.stack@gmail.com';
@@ -176,7 +196,6 @@ void _loginToAccountA() {
 void _blockCard() {
   // Логика блокировки карты
 }
-
 // Пример функции для перевыпуска карты
 void _startCardReissueApplication() {
   // Логика перевыпуска карты
@@ -237,37 +256,7 @@ void _initiatePhoneTransfer() {
   Get.toNamed('/phoneTransfer');
 }
 
-void _showContacts() {
-}
-
-class SlideMessageAnimation extends StatelessWidget {
-  final Widget child;
-  final bool isBot;
-  final AnimationController controller;
-
-  SlideMessageAnimation({
-    required this.child,
-    required this.isBot,
-    required this.controller,
-  }) : super(key: ValueKey(controller.value));
-
-  @override
-  Widget build(BuildContext context) {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: Offset(isBot ? -1.0 : 1.0, 0.0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: Curves.easeOutQuart,
-      )),
-      child: FadeTransition(
-        opacity: controller,
-        child: child,
-      ),
-    );
-  }
-}
+void _showContacts() {}
 
 class Message {
   final String text;
@@ -283,8 +272,9 @@ class Message {
 
 class SupportScreen extends StatefulWidget {
   final VoidCallback onBack;
+  final UserService userService = Get.find<UserService>();
 
-  const SupportScreen({
+  SupportScreen({
     super.key,
     required this.onBack,
   });
@@ -363,7 +353,8 @@ class _SupportScreenState extends State<SupportScreen>
     // When first message appears, scroll down to show it
     if (_messages.length == 1) {
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent, // Adjust this value to control how far it scrolls
+        _scrollController.position
+            .maxScrollExtent, // Adjust this value to control how far it scrolls
         duration: const Duration(milliseconds: 1000),
         curve: Curves.easeOut,
       );
@@ -429,7 +420,8 @@ class _SupportScreenState extends State<SupportScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-
+    final UserService userService = Get.find<UserService>();
+    String userName = userService.currentUser?.fullName ?? '';
     return Scaffold(
         body: SafeArea(
       child: Column(
@@ -480,7 +472,7 @@ class _SupportScreenState extends State<SupportScreen>
                   );
                 } else if (index <= _messages.length) {
                   final message = _messages[index - 1];
-                  return _buildMessageBubble(message, theme);
+                  return _buildMessageBubble(message, theme, userName);
                 } else {
                   return ValueListenableBuilder<double>(
                       valueListenable: _keyboardHeight,
@@ -518,36 +510,78 @@ class _SupportScreenState extends State<SupportScreen>
     ));
   }
 
-  Widget _buildMessageBubble(Message message, ThemeData theme) {
+  Widget _buildMessageBubble(
+      Message message, ThemeData theme, String userName) {
     return SlideMessageAnimation(
       controller: _messageAnimations[message]!,
       isBot: message.isBot,
       child: Align(
         alignment: message.isBot ? Alignment.centerLeft : Alignment.centerRight,
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: message.isBot
-                ? theme.colorScheme.surfaceContainer
-                : theme.colorScheme.primary,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+            onTap: () {
+              HapticFeedback.lightImpact();
+            },
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => MessageOptionsSheet(message: message),
+              );
+            },
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.shadowColor.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Text(
-            message.text,
-            style: TextStyle(
-              color: message.isBot
-                  ? theme.colorScheme.onSurface
-                  : theme.colorScheme.onPrimary,
-              fontSize: 14,
-              fontFamily: 'OpenSans',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: message.isBot
+                      ? MainAxisAlignment.start
+                      : MainAxisAlignment.end,
+                  children: [
+                    if (message.isBot) ...[
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor:
+                            theme.colorScheme.primary.withOpacity(0.1),
+                        child: Icon(Icons.smart_toy,
+                            color: theme.colorScheme.primary, size: 20),
+                      ),
+                    ],
+                    Flexible(
+                      child: BubbleSpecialThree(
+                        text: message.text,
+                        color: message.isBot
+                            ? theme.colorScheme.surfaceContainer
+                            : theme.colorScheme.primary,
+                        tail: true,
+                        isSender: !message.isBot,
+                        textStyle: TextStyle(
+                          color: message.isBot
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onPrimary,
+                          fontSize: 14,
+                          fontFamily: 'OpenSans',
+                        ),
+                      ),
+                    ),
+                    if (!message.isBot) ...[
+                      buildUserAvatar(theme, userName, radius: 16),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -612,6 +646,40 @@ class _SupportScreenState extends State<SupportScreen>
           onPressed: () => _handleUserMessage(_textController.text),
         ),
       ],
+    );
+  }
+}
+
+class MessageOptionsSheet extends StatelessWidget {
+  final Message message;
+
+  const MessageOptionsSheet({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.copy),
+            title: const Text('Copy'),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: message.text));
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.share),
+            title: const Text('Share'),
+            onTap: () {
+              // Handle share
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
     );
   }
 }
