@@ -399,10 +399,13 @@ class QRTransferScreen extends StatelessWidget {
                           scannedData['accountNumber'],
                           double.parse(controller.amount.value),
                           controller.selectedAccount.value!.currency);
-                  if (transaction != null && transaction.status == 'success') {
+                  if (transaction != null &&
+                      transaction.status == 'completed') {
+                    Navigator.of(Get.context!).pop();
+                    Get.toNamed('/transferHistory');
+                    Get.toNamed('/transferDetails', arguments: transaction);
                     Get.snackbar('Успех', 'Перевод успешно выполнен');
                     controller.refreshCards();
-                    Navigator.of(Get.context!).pop();
                   } else {
                     Get.snackbar('Ошибка', 'Перевод не выполнен');
                   }

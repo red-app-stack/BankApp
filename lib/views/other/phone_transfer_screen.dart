@@ -298,12 +298,12 @@ class PhoneTransferScreen extends StatelessWidget {
                                     amount,
                                     controller.selectedAccount.value!.currency);
 
-                            if (transaction != null) {
+                            if (transaction != null &&
+                                transaction.status == 'completed') {
                               Get.toNamed('/transferDetails',
                                   arguments: transaction);
                               Get.snackbar('Успех', 'Перевод успешно выполнен');
                               controller.refreshCards();
-                              Navigator.of(Get.context!).pop();
                             } else {
                               Get.snackbar('Ошибка', 'Перевод не выполнен');
                             }
