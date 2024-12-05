@@ -8,12 +8,14 @@ class AnimatedCardDropdown extends StatelessWidget {
   final List<AccountModel> accounts;
   final AccountModel? selectedAccount;
   final bool isExpanded;
+  final String label;
   final Function(AccountModel) onAccountSelected;
   final VoidCallback onToggle;
 
   const AnimatedCardDropdown({
     super.key,
     required this.accounts,
+    required this.label,
     required this.selectedAccount,
     required this.isExpanded,
     required this.onAccountSelected,
@@ -40,7 +42,7 @@ class AnimatedCardDropdown extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'Откуда',
+                    label,
                     style: theme.textTheme.titleMedium,
                   ),
                   const Spacer(),

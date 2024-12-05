@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 
@@ -25,26 +21,20 @@ class CardModel {
   });
 }
 
-class PhoneTransferController extends GetxController {
+class SelfTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
-  final FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
-
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
-  final RxString phoneNumber = ''.obs;
-  final RxString formattedPhoneNumber = ''.obs;
   final RxString amount = ''.obs;
   String previousNumber = '';
   Transaction? transaction;
   final RxString formattedAmount = ''.obs;
   final RxBool isAccountDropdownExpanded = false.obs;
+  final Rx<AccountModel?> selectedDestinationAccount = Rx<AccountModel?>(null);
+  final RxBool isDestinationDropdownExpanded = false.obs;
 
-  final TextEditingController phoneController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final FocusNode amountFocusNode = FocusNode();
-
-  int _previousPhoneValue = 0;
 
   @override
   void onInit() {
@@ -54,7 +44,6 @@ class PhoneTransferController extends GetxController {
     updateAmount('0');
     transaction = Get.arguments;
     if (transaction != null) {
-      updatePhoneNumber(transaction?.toUserPhone ?? '');
       print(transaction?.amount.toString());
       updateAmount(transaction?.amount.toString() ?? '');
       // phoneNumber.value = transaction?.toUserPhone ?? '';
@@ -76,47 +65,6 @@ class PhoneTransferController extends GetxController {
     accountsController
         .fetchAccounts()
         .then((_) => _initializeSelectedAccount());
-  }
-
-  void updatePhoneNumber(String value) {
-    int cursorPosition = phoneController.value.selection.start;
-
-    String oldDigits =
-        _previousPhoneValue.toString().replaceAll(RegExp(r'\D'), '');
-    String newDigits = value.replaceAll(RegExp(r'\D'), '');
-    bool isDeleting = newDigits.length < oldDigits.length;
-
-    String formatted = '';
-    if (newDigits.isNotEmpty) {
-      if (newDigits.length <= 3) {
-        formatted = '($newDigits';
-      } else if (newDigits.length <= 6) {
-        formatted = '(${newDigits.substring(0, 3)}) ${newDigits.substring(3)}';
-      } else {
-        formatted =
-            '(${newDigits.substring(0, 3)}) ${newDigits.substring(3, 6)}-${newDigits.substring(6, min(10, newDigits.length))}';
-      }
-    }
-
-    int newCursorPosition;
-    if (isDeleting) {
-      newCursorPosition = max(0, min(cursorPosition - 1, formatted.length));
-    } else {
-      newCursorPosition = formatted.length;
-    }
-
-    phoneController.value = TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: newCursorPosition),
-    );
-    if (formatted.length == 14) {
-      accountsController.getAccountByPhone(formatted);
-    } else {
-      accountsController.recipientAccount.value = null;
-    }
-    print(formatted.length);
-    print(formatted);
-    _previousPhoneValue = int.tryParse(formatted) ?? 0;
   }
 
   void updateAmount(String value) {
@@ -192,7 +140,6 @@ class PhoneTransferController extends GetxController {
 
   @override
   void onClose() {
-    phoneController.dispose();
     amountController.dispose();
     amountFocusNode.dispose();
     accountsController.recipientAccount.value = null;
@@ -200,10 +147,10 @@ class PhoneTransferController extends GetxController {
   }
 }
 
-class PhoneTransferScreen extends StatelessWidget {
-  final PhoneTransferController controller = Get.put(PhoneTransferController());
+class SelfTransferScreen extends StatelessWidget {
+  final SelfTransferController controller = Get.put(SelfTransferController());
 
-  PhoneTransferScreen({super.key});
+  SelfTransferScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +187,7 @@ class PhoneTransferScreen extends StatelessWidget {
                           children: [
                             buildCardSelector(theme),
                             SizedBox(height: size.height * 0.02),
-                            _buildPhoneInput(theme),
+                            buildDestinationCardSelector(theme),
                             SizedBox(height: size.height * 0.02),
                             _buildAmountInput(theme),
                           ],
@@ -265,14 +212,6 @@ class PhoneTransferScreen extends StatelessWidget {
                               return;
                             }
 
-                            String phoneNumber = controller.phoneController.text
-                                .replaceAll(RegExp(r'\D'), '');
-                            if (phoneNumber.isEmpty) {
-                              Get.snackbar('Ошибка',
-                                  'Пожалуйста, введите номер телефона');
-                              return;
-                            }
-
                             if (controller.amount.value.isEmpty) {
                               Get.snackbar(
                                   'Ошибка', 'Пожалуйста, введите сумму');
@@ -280,8 +219,7 @@ class PhoneTransferScreen extends StatelessWidget {
                             }
 
                             // First lookup recipient account by phone
-                            if (controller.accountsController.recipientAccount
-                                    .value ==
+                            if (controller.selectedDestinationAccount.value ==
                                 null) {
                               Get.snackbar('Ошибка', 'Получатель не найден');
                               return;
@@ -293,8 +231,8 @@ class PhoneTransferScreen extends StatelessWidget {
                                 .createTransaction(
                                     controller
                                         .selectedAccount.value!.accountNumber,
-                                    controller.accountsController
-                                        .recipientAccount.value!.accountNumber,
+                                    controller.selectedDestinationAccount.value!
+                                        .accountNumber,
                                     amount,
                                     controller.selectedAccount.value!.currency);
 
@@ -347,7 +285,7 @@ class PhoneTransferScreen extends StatelessWidget {
             ),
             Expanded(
               child: Text(
-                'По номеру телефона',
+                'Между своими счетами',
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -372,9 +310,13 @@ class PhoneTransferScreen extends StatelessWidget {
           ),
         );
       }
+      final availableAccounts = controller.accountsController.accounts
+          .where((account) =>
+              account != controller.selectedDestinationAccount.value)
+          .toList();
       return AnimatedCardDropdown(
-        accounts: controller.accountsController.accounts,
-        label: 'Куда',
+        accounts: availableAccounts,
+        label: 'Откуда',
         selectedAccount: controller.selectedAccount.value,
         isExpanded: controller.isAccountDropdownExpanded.value,
         onAccountSelected: (account) {
@@ -386,89 +328,37 @@ class PhoneTransferScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildPhoneInput(ThemeData theme) {
-    return Card(
-        child: Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '🇰🇿',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    '+7',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ],
-              ),
+  Widget buildDestinationCardSelector(ThemeData theme) {
+    return Obx(() {
+      if (controller.accountsController.accounts.isEmpty) {
+        return Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'У вас нет доступных счетов',
+              style: theme.textTheme.titleMedium,
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: controller.phoneController,
-                keyboardType: TextInputType.number,
-                style: theme.textTheme.titleMedium,
-                decoration: InputDecoration(
-                  hintText: '(000) 000-0000',
-                  border: InputBorder.none,
-                ),
-                onChanged: controller.updatePhoneNumber,
-              ),
-            ),
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/user.svg',
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  theme.colorScheme.primary,
-                  BlendMode.srcIn,
-                ),
-              ),
-              onPressed: () async {
-                final permission = await Permission.contacts.request();
-                if (permission.isGranted) {
-                  Contact? contact =
-                      await controller._contactPicker.selectContact();
-                  if (contact != null &&
-                      contact.phoneNumbers != null &&
-                      contact.phoneNumbers!.isNotEmpty) {
-                    String phoneNumber = contact.phoneNumbers!
-                        .toString()
-                        .replaceAll(RegExp(r'\D'), '')
-                        .substring(1);
+          ),
+        );
+      }
 
-                    controller.phoneController.text = phoneNumber;
-                    controller.updatePhoneNumber(phoneNumber);
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16, top: 12),
-          child: Obx(() => Text(
-                controller
-                        .accountsController.recipientAccount.value?.fullName ??
-                    'Получатель не найден',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(color: theme.colorScheme.onSurface),
-              )),
-        )
-      ]),
-    ));
+      // Filter out the selected source account
+      final availableAccounts = controller.accountsController.accounts
+          .where((account) => account != controller.selectedAccount.value)
+          .toList();
+
+      return AnimatedCardDropdown(
+        accounts: availableAccounts,
+        label: 'Куда',
+        selectedAccount: controller.selectedDestinationAccount.value,
+        isExpanded: controller.isDestinationDropdownExpanded.value,
+        onAccountSelected: (account) {
+          controller.selectedDestinationAccount.value = account;
+          controller.isDestinationDropdownExpanded.value = false;
+        },
+        onToggle: () => controller.isDestinationDropdownExpanded.toggle(),
+      );
+    });
   }
 
   Widget _buildAmountInput(ThemeData theme) {

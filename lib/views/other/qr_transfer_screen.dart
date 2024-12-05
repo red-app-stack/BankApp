@@ -332,7 +332,7 @@ class QRTransferScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  buildCardSelector(context),
+                  buildCardSelector(context, 'Откуда'),
                   const SizedBox(height: 16),
                   _buildAmountInput(
                     context,
@@ -519,7 +519,7 @@ class QRTransferScreen extends StatelessWidget {
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            buildCardSelector(context),
+            buildCardSelector(context, 'Куда'),
             const SizedBox(height: 16),
             _buildAmountInput(context, readOnly: false),
             const SizedBox(height: 16),
@@ -699,7 +699,7 @@ class QRTransferScreen extends StatelessWidget {
     );
   }
 
-  Widget buildCardSelector(BuildContext context) {
+  Widget buildCardSelector(BuildContext context, String label) {
     return Obx(() {
       if (controller.accountsController.accounts.isEmpty) {
         return Card(
@@ -714,6 +714,7 @@ class QRTransferScreen extends StatelessWidget {
       }
       return AnimatedCardDropdown(
         accounts: controller.accountsController.accounts,
+        label: label,
         selectedAccount: controller.selectedAccount.value,
         isExpanded: controller.isAccountDropdownExpanded.value,
         onAccountSelected: (account) {

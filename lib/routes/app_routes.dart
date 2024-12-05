@@ -13,6 +13,7 @@ import '../views/main/transfers_screen.dart';
 import '../views/auth/phone_login_screen.dart';
 import '../views/other/qr_transfer_screen.dart';
 import '../views/other/security_settings_screen.dart';
+import '../views/other/self_transfer_screen.dart';
 import '../views/other/testing_screen.dart';
 import '../views/other/transaction_details_screen.dart';
 import '/views/auth/register_screen.dart';
@@ -36,6 +37,7 @@ class Routes {
 
   static const createAccount = '/createAccount';
   static const phoneTransfer = '/phoneTransfer';
+  static const selfTransfer = '/selfTransfer';
   static const qrTransfer = '/qrTransfer';
   static const securitySettings = '/securitySettings';
   static const userChat = '/userChat';
@@ -100,6 +102,12 @@ class AppRoutes {
     GetPage(
       name: Routes.phoneTransfer,
       page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.selfTransfer,
+      page: () => SelfTransferScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),
