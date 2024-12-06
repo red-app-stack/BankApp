@@ -5,22 +5,6 @@ import 'package:get/get.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 
-class CardModel {
-  final String icon;
-  final String title;
-  final String balance;
-  final String cardNumber;
-  final List<String> altBalances;
-
-  CardModel({
-    required this.icon,
-    required this.title,
-    required this.balance,
-    required this.cardNumber,
-    required this.altBalances,
-  });
-}
-
 class SelfTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
@@ -58,6 +42,7 @@ class SelfTransferController extends GetxController {
         ..sort((a, b) => b.balance.compareTo(a.balance));
 
       selectedAccount.value = cards.isNotEmpty ? cards.first : null;
+      selectedDestinationAccount.value = cards.isNotEmpty ? cards[1] : null;
     }
   }
 
@@ -234,7 +219,8 @@ class SelfTransferScreen extends StatelessWidget {
                                     controller.selectedDestinationAccount.value!
                                         .accountNumber,
                                     amount,
-                                    controller.selectedAccount.value!.currency);
+                                    controller.selectedAccount.value!.currency,
+                                    'internal_transfer');
 
                             if (transaction != null &&
                                 transaction.status == 'completed') {

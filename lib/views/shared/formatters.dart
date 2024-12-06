@@ -16,15 +16,24 @@ String formatCurrency(double amount, String currencyCode, String locale) {
   return formatter.format(amount);
 }
 
-
 String getTypeText(String type) {
   switch (type) {
-    case 'transfer':
-      return 'Перевод';
     case 'deposit':
       return 'Вклад';
     case 'withdrawal':
       return 'Вывод';
+    case 'phone_transfer':
+      return 'Перевод по номеру';
+    case 'qr_transfer':
+      return 'QR перевод';
+    case 'currency_conversion':
+      return 'Обмен валюты';
+    case 'internal_transfer':
+      return 'Внутренний перевод';
+    case 'card_transfer':
+      return 'Перевод на карту';
+    case 'swift_transfer':
+      return 'SWIFT перевод';
     default:
       return 'Перевод';
   }

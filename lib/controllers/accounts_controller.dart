@@ -200,6 +200,29 @@ class AccountsController extends GetxController {
         final List<AccountModel> fetchedAccounts = (response.data as List)
             .map((account) => AccountModel.fromJson(account))
             .toList();
+
+        // Sort accounts by type priority and balance
+        fetchedAccounts.sort((a, b) {
+          // Define type priority
+          final typePriority = {
+            'card': 0,
+            'credit': 1,
+            'deposit': 2,
+          };
+
+          // Compare by type first
+          final typeComparison =
+              (typePriority[a.accountType.toLowerCase()] ?? 3)
+                  .compareTo(typePriority[b.accountType.toLowerCase()] ?? 3);
+
+          // If same type, sort by balance (descending)
+          if (typeComparison == 0) {
+            return b.balance.compareTo(a.balance);
+          }
+
+          return typeComparison;
+        });
+
         accounts.value = fetchedAccounts;
       }
     } catch (e) {
@@ -298,7 +321,8 @@ class AccountsController extends GetxController {
     }
   }
 
-Future<Transaction?> createTransaction(String fromAccountId, String toAccountId, double amount, String currency) async {
+  Future<Transaction?> createTransaction(String fromAccountId,
+      String toAccountId, double amount, String currency, String type) async {
     try {
       isLoading.value = true;
       final token = await secureStore.secureStorage.read(key: 'auth_token');
@@ -312,7 +336,7 @@ Future<Transaction?> createTransaction(String fromAccountId, String toAccountId,
           'to_account_id': toAccountId,
           'amount': amount,
           'currency': currency,
-          'transaction_type': 'transfer'
+          'transaction_type': type
         },
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
@@ -321,7 +345,7 @@ Future<Transaction?> createTransaction(String fromAccountId, String toAccountId,
 
       if (response.statusCode == 201) {
         await fetchAccounts();
-     return Transaction.fromJson(response.data);
+        return Transaction.fromJson(response.data);
       }
       return null;
     } catch (e) {

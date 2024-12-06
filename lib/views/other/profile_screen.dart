@@ -159,7 +159,7 @@ class ProfileScreen extends StatelessWidget {
                                     title: item.title,
                                     showNotification:
                                         showNotification(item.icon),
-                                    showDivider: section.items.last == item,
+                                    showDivider: section.items.last != item,
                                   ))
                             ],
                           ),

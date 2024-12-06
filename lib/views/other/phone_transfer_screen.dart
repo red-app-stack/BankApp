@@ -9,22 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 
-class CardModel {
-  final String icon;
-  final String title;
-  final String balance;
-  final String cardNumber;
-  final List<String> altBalances;
-
-  CardModel({
-    required this.icon,
-    required this.title,
-    required this.balance,
-    required this.cardNumber,
-    required this.altBalances,
-  });
-}
-
 class PhoneTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
@@ -296,7 +280,8 @@ class PhoneTransferScreen extends StatelessWidget {
                                     controller.accountsController
                                         .recipientAccount.value!.accountNumber,
                                     amount,
-                                    controller.selectedAccount.value!.currency);
+                                    controller.selectedAccount.value!.currency,
+                                    'phone_transfer');
 
                             if (transaction != null &&
                                 transaction.status == 'completed') {
@@ -374,7 +359,7 @@ class PhoneTransferScreen extends StatelessWidget {
       }
       return AnimatedCardDropdown(
         accounts: controller.accountsController.accounts,
-        label: 'Куда',
+        label: 'Откуда',
         selectedAccount: controller.selectedAccount.value,
         isExpanded: controller.isAccountDropdownExpanded.value,
         onAccountSelected: (account) {

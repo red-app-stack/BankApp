@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -9,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../shared/qr_widgets.dart';
 
 class QRTtransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
@@ -398,7 +396,8 @@ class QRTransferScreen extends StatelessWidget {
                           controller.selectedAccount.value!.accountNumber,
                           scannedData['accountNumber'],
                           double.parse(controller.amount.value),
-                          controller.selectedAccount.value!.currency);
+                          controller.selectedAccount.value!.currency,
+                          'qr_transfer');
                   if (transaction != null &&
                       transaction.status == 'completed') {
                     Navigator.of(Get.context!).pop();
@@ -788,5 +787,97 @@ class ScannerOverlay extends CustomPainter {
   bool shouldRepaint(ScannerOverlay oldDelegate) {
     return scanWindow != oldDelegate.scanWindow ||
         borderRadius != oldDelegate.borderRadius;
+  }
+}
+
+class AnalyzeImageFromGalleryButton extends StatelessWidget {
+  const AnalyzeImageFromGalleryButton({required this.controller, super.key});
+
+  final MobileScannerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      color: Colors.white,
+      icon: const Icon(Icons.image),
+      iconSize: 32.0,
+      onPressed: () async {
+        final ImagePicker picker = ImagePicker();
+
+        final XFile? image = await picker.pickImage(
+          source: ImageSource.gallery,
+        );
+
+        if (image == null) {
+          return;
+        }
+
+        final BarcodeCapture? barcodes = await controller.analyzeImage(
+          image.path,
+        );
+
+        if (!context.mounted) {
+          return;
+        }
+
+        final SnackBar snackbar = barcodes != null
+            ? const SnackBar(
+                content: Text('Barcode found!'),
+                backgroundColor: Colors.green,
+              )
+            : const SnackBar(
+                content: Text('No barcode found!'),
+                backgroundColor: Colors.red,
+              );
+
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      },
+    );
+  }
+}
+
+class ScannerErrorWidget extends StatelessWidget {
+  const ScannerErrorWidget({super.key, required this.error});
+
+  final MobileScannerException error;
+
+  @override
+  Widget build(BuildContext context) {
+    String errorMessage;
+
+    switch (error.errorCode) {
+      case MobileScannerErrorCode.controllerUninitialized:
+        errorMessage = 'Controller not ready.';
+      case MobileScannerErrorCode.permissionDenied:
+        errorMessage = 'Permission denied';
+      case MobileScannerErrorCode.unsupported:
+        errorMessage = 'Scanning is unsupported on this device';
+      default:
+        errorMessage = 'Generic Error';
+        break;
+    }
+
+    return ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 16),
+              child: Icon(Icons.error, color: Colors.white),
+            ),
+            Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              error.errorDetails?.message ?? '',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
