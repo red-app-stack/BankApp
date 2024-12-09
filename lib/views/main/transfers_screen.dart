@@ -75,6 +75,9 @@ class TransfersScreen extends StatelessWidget {
         accountsController.addTestMoney(
             accountsController.accounts.first.accountNumber, 1000);
         break;
+      case 'convert':
+        Get.toNamed('/convertation');
+        break;
       case 'qr':
         Get.toNamed('/qrTransfer');
         break;
