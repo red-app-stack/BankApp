@@ -10,8 +10,13 @@ import '../../controllers/accounts_controller.dart';
 
 class TransferHistoryController extends GetxController {
   void refreshData(GlobalKey<RefreshIndicatorState> refreshKey) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      refreshKey.currentState?.show();
+    print('Starting refresh delay...');
+    Future.delayed(const Duration(seconds: 5), () {
+      print('Delay complete, showing refresh indicator');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        refreshKey.currentState?.show();
+        print('Refresh indicator shown');
+      });
     });
   }
 

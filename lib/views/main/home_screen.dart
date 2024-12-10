@@ -90,6 +90,8 @@ class HomeScreen extends StatelessWidget {
                         svgPath: controller.homeIconPaths[3],
                         label: 'Рассрочка',
                         iconSize: 32,
+                        onTap: () =>
+                            Get.offAllNamed('/main', arguments: '/transfers'),
                         onDoubleTap: () => {Get.toNamed('/testing')},
                       ),
                     ],

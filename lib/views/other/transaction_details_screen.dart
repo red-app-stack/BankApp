@@ -296,7 +296,10 @@ class TransactionDetailsScreen extends StatelessWidget {
                         iconSize: 24,
                         onTap: () {
                           // ('deposit', 'withdrawal', 'phone_transfer', 'qr_transfer', 'currency_conversion',  'internal_transfer', 'card_transfer',  'swift_transfer'
-                          Get.offAndToNamed('/main', arguments: '/transfers');
+                          // await Get.offAndToNamed('/main',
+                          //     arguments: '/transfers');
+                          Navigator.of(Get.context!).pop();
+                          Navigator.of(Get.context!).pop();
                           switch (transaction.type) {
                             case 'phone_transfer':
                               Get.toNamed('/phoneTransfer',
