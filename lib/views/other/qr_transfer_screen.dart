@@ -7,6 +7,7 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../controllers/accounts_controller.dart';
 import '../../models/account_model.dart';
+import '../../models/transaction_model.dart';
 import '../shared/animated_dropdown.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -16,6 +17,8 @@ class QRTtransferController extends GetxController {
   final MobileScannerController controller = MobileScannerController(
     formats: const [BarcodeFormat.qrCode],
   );
+  final Rx<Transaction?> transaction = Rx<Transaction?>(null);
+
   final RxBool isScanning = true.obs;
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
   final RxBool isAccountDropdownExpanded = false.obs;
@@ -89,8 +92,45 @@ class QRTtransferController extends GetxController {
     super.onInit();
     _initializeSelectedAccount();
     initializeScannerController();
+
+    // Initialize with default values
     amountController.text = '0';
     updateAmount('0');
+
+    // Handle arguments
+    _handleArguments();
+  }
+
+// Add this new method to handle arguments separately
+  void _handleArguments() {
+    final args = Get.arguments;
+
+    if (args is Transaction) {
+      transaction.value = args;
+
+      // Create QR data format
+      final data = {
+        'fullName': args.toUserName ?? '',
+        'accountNumber': args.toAccount,
+        'currency': args.currency,
+        'amount': args.amount.toString(),
+        'message': args.message
+      };
+
+      // Update UI fields
+      if (args.amount > 0) {
+        updateAmount(args.amount.toString());
+        amountController.text = args.amount.toString();
+      }
+
+      if (args.message.isNotEmpty) {
+        messageController.text = args.message;
+      }
+
+      // Update scan data and show payment view
+      scannedData.value = data;
+      showPaymentView.value = true;
+    }
   }
 
   void initializeScannerController() {
@@ -119,12 +159,22 @@ class QRTtransferController extends GetxController {
   }
 
   void updateAmount(String value) {
-    String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
     const int maxTransferAmount = 2000000;
+    String normalizedValue = value.replaceAll('.', ',');
 
-    if (digitsOnly.isEmpty) {
+    List<String> parts = normalizedValue.split(',');
+    String integerPart = parts[0].replaceAll(RegExp(r'\D'), '');
+    String decimalPart =
+        parts.length > 1 ? parts[1].replaceAll(RegExp(r'\D'), '') : '';
+
+    // Limit decimal places to 2
+    if (decimalPart.length > 2) {
+      decimalPart = decimalPart.substring(0, 2);
+    }
+
+    if (integerPart.isEmpty) {
       amount.value = '';
-      formattedAmount.value = '';
+      formattedAmount.value = '0';
       amountController.value = TextEditingValue(
         text: '0',
         selection: TextSelection.collapsed(offset: 1),
@@ -132,36 +182,41 @@ class QRTtransferController extends GetxController {
       return;
     }
 
-    int number = int.tryParse(digitsOnly) ?? 0;
+    int number = int.tryParse(integerPart) ?? 0;
 
     if (number > maxTransferAmount) {
-      number = int.parse(previousNumber);
-      String formatted = previousNumber.replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (Match m) => '${m[1]} ',
-      );
-      final oldCursor = amountController.selection.start;
-      final oldTextLength = amountController.text.length;
-      final distanceFromEnd = oldTextLength - oldCursor;
+      number = int.parse(previousNumber.split(',')[0]);
+      String formatted = _formatAmount(number);
 
-      amountController.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(
-          offset: formatted.length - distanceFromEnd,
-        ),
-      );
+      if (normalizedValue.contains(',')) {
+        formatted += ',$decimalPart';
+      }
+
+      _updateControllerValue(formatted);
       return;
     }
 
-    String formatted = number.toString().replaceAllMapped(
+    String formatted = _formatAmount(number);
+    if (normalizedValue.contains(',')) {
+      formatted += ',$decimalPart';
+    }
+
+    amount.value =
+        number.toString() + (decimalPart.isNotEmpty ? ',$decimalPart' : '');
+    formattedAmount.value = formatted;
+    previousNumber = amount.value;
+
+    _updateControllerValue(formatted);
+  }
+
+  String _formatAmount(int number) {
+    return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]} ',
         );
+  }
 
-    amount.value = digitsOnly;
-    formattedAmount.value = digitsOnly;
-    previousNumber = digitsOnly;
-
+  void _updateControllerValue(String formatted) {
     final oldCursor = amountController.selection.start;
     final oldTextLength = amountController.text.length;
     final distanceFromEnd = oldTextLength - oldCursor;
@@ -322,7 +377,10 @@ class QRTransferScreen extends StatelessWidget {
 
   Widget _buildPaymentView(BuildContext context) {
     final scannedData = controller.scannedData.value!;
-
+    double amount = controller.amount.value.isEmpty
+        ? 0.0
+        : double.parse(
+            controller.amount.value.replaceAll(' ', '').replaceAll(',', '.'));
     return Column(
       children: [
         Expanded(
@@ -335,8 +393,7 @@ class QRTransferScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildAmountInput(
                     context,
-                    readOnly: (scannedData['amount']?.isNotEmpty ?? false) &&
-                        (int.tryParse(scannedData['amount'] ?? '') ?? 0) > 0,
+                    readOnly: (amount != 0 && amount != 0.0),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -363,9 +420,11 @@ class QRTransferScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16),
           child: Obx(() {
-            final amount = controller.amount.value.isEmpty
-                ? 0
-                : int.parse(controller.amount.value);
+            double amount = controller.amount.value.isEmpty
+                ? 0.0
+                : double.parse(controller.amount.value
+                    .replaceAll(' ', '')
+                    .replaceAll(',', '.'));
 
             final formattedAmount = amount.toString().replaceAllMapped(
                   RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -413,13 +472,14 @@ class QRTransferScreen extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
-                child: Text('Перевести $formattedAmount ₸',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          fontFamily: 'Roboto',
-                        )),
+                child:
+                    Text('Перевести ${formattedAmount.replaceAll('.', ',')} ₸',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              fontFamily: 'Roboto',
+                            )),
               ),
             );
           }),
@@ -615,7 +675,8 @@ class QRTransferScreen extends StatelessWidget {
                     child: TextField(
                       focusNode: controller.amountFocusNode,
                       controller: controller.amountController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.numberWithOptions(
+                          decimal: true), // Changed this
                       enabled: !readOnly,
                       textInputAction: TextInputAction.next,
                       onEditingComplete: controller.focusNextInput,
