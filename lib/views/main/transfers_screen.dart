@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/accounts_controller.dart';
+import '../../models/transaction_model.dart';
 import '../../utils/themes/theme_extension.dart';
 import '../shared/secure_store.dart';
 import '../shared/widgets.dart';
@@ -70,6 +71,9 @@ class TransfersScreen extends StatelessWidget {
         break;
       case 'self':
         Get.toNamed('/selfTransfer');
+        break;
+      case 'kz':
+        Get.toNamed('/cardTransfer');
         break;
       case 'world':
         accountsController.addTestMoney(

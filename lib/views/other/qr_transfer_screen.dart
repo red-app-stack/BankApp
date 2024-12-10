@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../controllers/accounts_controller.dart';
+import '../../models/account_model.dart';
 import '../shared/animated_dropdown.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 

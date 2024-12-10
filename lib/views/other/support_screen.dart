@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/accounts_controller.dart';
+import '../../models/account_model.dart';
 import '../../services/user_service.dart';
 import '../shared/animations.dart';
 import '../shared/widgets.dart';

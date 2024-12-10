@@ -1,5 +1,6 @@
 import 'package:bank_app/views/auth/code_entering_screen.dart';
 import 'package:bank_app/views/auth/email_login_screen.dart';
+import 'package:bank_app/views/other/card_transfer_screen.dart';
 import 'package:bank_app/views/other/create_account_screen.dart';
 import 'package:bank_app/views/other/payment_history_screen.dart';
 import 'package:bank_app/views/other/transfer_history_screen.dart';
@@ -39,8 +40,12 @@ class Routes {
   static const createAccount = '/createAccount';
   static const phoneTransfer = '/phoneTransfer';
   static const selfTransfer = '/selfTransfer';
+  static const cardTransfer = '/cardTransfer';
+
   static const convertation = '/convertation';
+
   static const qrTransfer = '/qrTransfer';
+
   static const securitySettings = '/securitySettings';
   static const userChat = '/userChat';
 }
@@ -104,6 +109,12 @@ class AppRoutes {
     GetPage(
       name: Routes.phoneTransfer,
       page: () => PhoneTransferScreen(),
+      customTransition: ZoomFadeTransition(),
+      transitionDuration: Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.cardTransfer,
+      page: () => CardTransferScreen(),
       customTransition: ZoomFadeTransition(),
       transitionDuration: Duration(milliseconds: 400),
     ),

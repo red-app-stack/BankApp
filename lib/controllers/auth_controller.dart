@@ -8,6 +8,7 @@ import '../services/user_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../views/shared/secure_store.dart';
+import '../models/user_model.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../controllers/accounts_controller.dart';
+import '../../models/account_model.dart';
+import '../../models/transaction_model.dart';
 import '../shared/animated_dropdown.dart';
 import '../shared/formatters.dart';
 
@@ -225,6 +227,8 @@ class ConvertScreen extends StatelessWidget {
 
                             if (transaction != null &&
                                 transaction.status == 'completed') {
+                              Navigator.of(Get.context!).pop();
+                              Get.toNamed('/transferHistory');
                               Get.toNamed('/transferDetails',
                                   arguments: transaction);
                               Get.snackbar('Успех', 'Перевод успешно выполнен');

@@ -5,9 +5,9 @@ import 'package:bank_app/widgets/items/service_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../controllers/accounts_controller.dart';
 import '../shared/formatters.dart';
 import '../shared/secure_store.dart';
+import '../../models/transaction_model.dart';
 
 class TransactionDetailsController extends GetxController {
   Transaction transaction;
@@ -295,8 +295,34 @@ class TransactionDetailsScreen extends StatelessWidget {
                         labelSize: 13,
                         iconSize: 24,
                         onTap: () {
+                          // ('deposit', 'withdrawal', 'phone_transfer', 'qr_transfer', 'currency_conversion',  'internal_transfer', 'card_transfer',  'swift_transfer'
                           Get.offAndToNamed('/main', arguments: '/transfers');
-                          Get.toNamed('/phoneTransfer', arguments: transaction);
+                          switch (transaction.type) {
+                            case 'phone_transfer':
+                              Get.toNamed('/phoneTransfer',
+                                  arguments: transaction);
+                              break;
+                            case 'internal_transfer':
+                              Get.toNamed('/selfTransfer',
+                                  arguments: transaction);
+                              break;
+                            case 'card_transfer':
+                              Get.toNamed('/cardTransfer',
+                                  arguments: transaction);
+                              break;
+                            case 'swift_transfer':
+                              Get.toNamed('/swiftTransfer',
+                                  arguments: transaction);
+                              break;
+                            case 'currency_conversion':
+                              Get.toNamed('/convertation',
+                                  arguments: transaction);
+                              break;
+                            case 'qr_transfer':
+                              Get.toNamed('/qrTransfer',
+                                  arguments: transaction);
+                              break;
+                          }
                         },
                       ),
                       ServiceItem(

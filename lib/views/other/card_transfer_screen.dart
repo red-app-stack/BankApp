@@ -2,23 +2,24 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../controllers/accounts_controller.dart';
 import '../../models/account_model.dart';
 import '../../models/transaction_model.dart';
+import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 
-class SelfTransferController extends GetxController {
+class CardTransferController extends GetxController {
   final AccountsController accountsController = Get.find<AccountsController>();
 
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
+  final RxString accountNumber = ''.obs;
+  final RxString formattedAccountNumber = ''.obs;
   final RxString amount = ''.obs;
   String previousNumber = '';
   Transaction? transaction;
   final RxString formattedAmount = ''.obs;
   final RxBool isAccountDropdownExpanded = false.obs;
-  final Rx<AccountModel?> selectedDestinationAccount = Rx<AccountModel?>(null);
-  final RxBool isDestinationDropdownExpanded = false.obs;
 
+  final TextEditingController accountController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final FocusNode amountFocusNode = FocusNode();
 
@@ -30,9 +31,8 @@ class SelfTransferController extends GetxController {
     updateAmount('0');
     transaction = Get.arguments;
     if (transaction != null) {
-      print(transaction?.amount.toString());
+      updateAccountNumber(transaction?.toAccount ?? '');
       updateAmount(transaction?.amount.toString() ?? '');
-      // phoneNumber.value = transaction?.toUserPhone ?? '';
     }
   }
 
@@ -44,7 +44,6 @@ class SelfTransferController extends GetxController {
         ..sort((a, b) => b.balance.compareTo(a.balance));
 
       selectedAccount.value = cards.isNotEmpty ? cards.first : null;
-      selectedDestinationAccount.value = cards.isNotEmpty ? cards[1] : null;
     }
   }
 
@@ -52,6 +51,31 @@ class SelfTransferController extends GetxController {
     accountsController
         .fetchAccounts()
         .then((_) => _initializeSelectedAccount());
+  }
+
+  void updateAccountNumber(String value) {
+    String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    String formatted = '';
+
+    for (int i = 0; i < digitsOnly.length; i++) {
+      if (i > 0 && i % 4 == 0) {
+        formatted += ' ';
+      }
+      formatted += digitsOnly[i];
+    }
+
+    accountController.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+
+    if (formatted.replaceAll(' ', '').length == 16) {
+      // Assuming 16 digit account numbers
+      accountsController.lookupAccount(
+          accountNumber: formatted.replaceAll(' ', ''));
+    } else {
+      accountsController.recipientAccount.value = null;
+    }
   }
 
   void updateAmount(String value) {
@@ -127,6 +151,7 @@ class SelfTransferController extends GetxController {
 
   @override
   void onClose() {
+    accountController.dispose();
     amountController.dispose();
     amountFocusNode.dispose();
     accountsController.recipientAccount.value = null;
@@ -134,10 +159,10 @@ class SelfTransferController extends GetxController {
   }
 }
 
-class SelfTransferScreen extends StatelessWidget {
-  final SelfTransferController controller = Get.put(SelfTransferController());
+class CardTransferScreen extends StatelessWidget {
+  final CardTransferController controller = Get.put(CardTransferController());
 
-  SelfTransferScreen({super.key});
+  CardTransferScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +199,7 @@ class SelfTransferScreen extends StatelessWidget {
                           children: [
                             buildCardSelector(theme),
                             SizedBox(height: size.height * 0.02),
-                            buildDestinationCardSelector(theme),
+                            _buildAccountInput(theme),
                             SizedBox(height: size.height * 0.02),
                             _buildAmountInput(theme),
                           ],
@@ -199,30 +224,38 @@ class SelfTransferScreen extends StatelessWidget {
                               return;
                             }
 
+                            String accountNumber = controller
+                                .accountController.text
+                                .replaceAll(' ', '');
+                            if (accountNumber.length != 16) {
+                              Get.snackbar('Ошибка',
+                                  'Пожалуйста, введите корректный номер счета');
+                              return;
+                            }
+
                             if (controller.amount.value.isEmpty) {
                               Get.snackbar(
                                   'Ошибка', 'Пожалуйста, введите сумму');
                               return;
                             }
 
-                            // First lookup recipient account by phone
-                            if (controller.selectedDestinationAccount.value ==
+                            if (controller.accountsController.recipientAccount
+                                    .value ==
                                 null) {
                               Get.snackbar('Ошибка', 'Получатель не найден');
                               return;
                             }
 
-                            // Proceed with transfer using found account
                             final transaction = await controller
                                 .accountsController
                                 .createTransaction(
                                     controller
                                         .selectedAccount.value!.accountNumber,
-                                    controller.selectedDestinationAccount.value!
-                                        .accountNumber,
+                                    controller.accountsController
+                                        .recipientAccount.value!.accountNumber,
                                     amount,
                                     controller.selectedAccount.value!.currency,
-                                    'internal_transfer');
+                                    'card_transfer');
 
                             if (transaction != null &&
                                 transaction.status == 'completed') {
@@ -275,7 +308,7 @@ class SelfTransferScreen extends StatelessWidget {
             ),
             Expanded(
               child: Text(
-                'Между своими счетами',
+                'По номеру счета',
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
@@ -300,12 +333,8 @@ class SelfTransferScreen extends StatelessWidget {
           ),
         );
       }
-      final availableAccounts = controller.accountsController.accounts
-          .where((account) =>
-              account != controller.selectedDestinationAccount.value)
-          .toList();
       return AnimatedCardDropdown(
-        accounts: availableAccounts,
+        accounts: controller.accountsController.accounts,
         label: 'Откуда',
         selectedAccount: controller.selectedAccount.value,
         isExpanded: controller.isAccountDropdownExpanded.value,
@@ -318,37 +347,42 @@ class SelfTransferScreen extends StatelessWidget {
     });
   }
 
-  Widget buildDestinationCardSelector(ThemeData theme) {
-    return Obx(() {
-      if (controller.accountsController.accounts.isEmpty) {
-        return Card(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'У вас нет доступных счетов',
+  Widget _buildAccountInput(ThemeData theme) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Номер счета получателя',
               style: theme.textTheme.titleMedium,
             ),
-          ),
-        );
-      }
-
-      // Filter out the selected source account
-      final availableAccounts = controller.accountsController.accounts
-          .where((account) => account != controller.selectedAccount.value)
-          .toList();
-
-      return AnimatedCardDropdown(
-        accounts: availableAccounts,
-        label: 'Куда',
-        selectedAccount: controller.selectedDestinationAccount.value,
-        isExpanded: controller.isDestinationDropdownExpanded.value,
-        onAccountSelected: (account) {
-          controller.selectedDestinationAccount.value = account;
-          controller.isDestinationDropdownExpanded.value = false;
-        },
-        onToggle: () => controller.isDestinationDropdownExpanded.toggle(),
-      );
-    });
+            SizedBox(height: 8),
+            TextField(
+              controller: controller.accountController,
+              keyboardType: TextInputType.number,
+              style: theme.textTheme.titleMedium,
+              decoration: InputDecoration(
+                hintText: '0000 0000 0000 0000',
+                border: InputBorder.none,
+              ),
+              onChanged: controller.updateAccountNumber,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 12),
+              child: Obx(() => Text(
+                    controller.accountsController.recipientAccount.value
+                            ?.fullName ??
+                        'Получатель не найден',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(color: theme.colorScheme.onSurface),
+                  )),
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildAmountInput(ThemeData theme) {

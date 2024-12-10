@@ -4,25 +4,25 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../views/shared/secure_store.dart';
 import 'dio_manager.dart';
-import 'user_service.dart';
+import '../models/user_model.dart';
 
 class AuthService extends GetxService {
   late final DioManager _dio;
   late final SecureStore _secureStore;
-  
+
   // Observable states
   final _isAuthenticated = false.obs;
   final _isLoading = false.obs;
   final _currentUser = Rx<UserModel?>(null);
-  
+
   // Getters
   bool get isAuthenticated => _isAuthenticated.value;
   bool get isLoading => _isLoading.value;
   UserModel? get currentUser => _currentUser.value;
-  
+
   // Cached token
   String? _cachedToken;
-  
+
   final _authStateController = StreamController<bool>.broadcast();
   Stream<bool> get authStateStream => _authStateController.stream;
 
@@ -39,16 +39,16 @@ class AuthService extends GetxService {
 
   Future<String?> getToken() async {
     if (_cachedToken != null) return _cachedToken;
-    
+
     _cachedToken = await _secureStore.secureStorage.read(key: 'auth_token');
     return _cachedToken;
   }
 
   Future<bool> checkAuthStatus() async {
     if (_isLoading.value) return _isAuthenticated.value;
-    
+
     _isLoading.value = true;
-    
+
     try {
       final token = await getToken();
       if (token == null) {

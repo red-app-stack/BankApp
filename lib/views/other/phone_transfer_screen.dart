@@ -6,6 +6,8 @@ import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../models/account_model.dart';
+import '../../models/transaction_model.dart';
 import '../../controllers/accounts_controller.dart';
 import '../shared/animated_dropdown.dart';
 
@@ -94,7 +96,7 @@ class PhoneTransferController extends GetxController {
       selection: TextSelection.collapsed(offset: newCursorPosition),
     );
     if (formatted.length == 14) {
-      accountsController.getAccountByPhone(formatted);
+      accountsController.lookupAccount(phoneNumber: formatted);
     } else {
       accountsController.recipientAccount.value = null;
     }
@@ -285,6 +287,8 @@ class PhoneTransferScreen extends StatelessWidget {
 
                             if (transaction != null &&
                                 transaction.status == 'completed') {
+                              Navigator.of(Get.context!).pop();
+                              Get.toNamed('/transferHistory');
                               Get.toNamed('/transferDetails',
                                   arguments: transaction);
                               Get.snackbar('Успех', 'Перевод успешно выполнен');

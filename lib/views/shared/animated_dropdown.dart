@@ -2,7 +2,7 @@ import 'package:bank_app/views/shared/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../controllers/accounts_controller.dart';
+import '../../models/account_model.dart';
 
 class AnimatedCardDropdown extends StatelessWidget {
   final List<AccountModel> accounts;

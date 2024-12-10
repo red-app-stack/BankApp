@@ -11,6 +11,7 @@ import 'package:card_swiper/card_swiper.dart';
 
 import '../../controllers/accounts_controller.dart';
 import '../../controllers/auth_controller.dart';
+import '../../models/account_model.dart';
 import '../../services/user_service.dart';
 import '../../widgets/common/custom_card.dart';
 import '../shared/formatters.dart';

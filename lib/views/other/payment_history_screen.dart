@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-
+import '../../models/transaction_model.dart';
 import '../../controllers/accounts_controller.dart';
 
 class PaymentHistoryController extends GetxController {
@@ -24,9 +24,7 @@ class PaymentHistoryController extends GetxController {
   Future<void> loadTransactions() async {
     List<Transaction> allTransactions = [];
     if (accountsController.transactionHistory.value == null) {
-      for (var account in accountsController.accounts) {
-        await accountsController.fetchTransactionHistory(account.accountNumber);
-      }
+      accountsController.fetchTransactionHistory();
     }
     if (accountsController.transactionHistory.value != null) {
       allTransactions.addAll(accountsController.transactionHistory.value!);
