@@ -211,14 +211,28 @@ class TransferHistoryController extends GetxController {
           .toList();
 
       // Add only new transactions that don't exist
+      List<Transaction> updatedTransactions = [];
       for (var newTx in newTransactions) {
-        if (!existingTransactions
-            .any((existingTx) => existingTx.id == newTx.id)) {
-          existingTransactions.add(newTx);
+        var existingTxIndex = existingTransactions
+            .indexWhere((existingTx) => existingTx.id == newTx.id);
+        if (existingTxIndex != -1) {
+          // Update if status or any other field changed
+          if (existingTransactions[existingTxIndex].status != newTx.status ||
+              existingTransactions[existingTxIndex].amount != newTx.amount ||
+              existingTransactions[existingTxIndex].currency !=
+                  newTx.currency) {
+            updatedTransactions.add(newTx);
+          } else {
+            updatedTransactions.add(existingTransactions[existingTxIndex]);
+          }
+        } else {
+          // Add new transaction
+          updatedTransactions.add(newTx);
         }
       }
 
       // Sort and update UI
+      existingTransactions = updatedTransactions;
       existingTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _updateCategorizedTransactions(existingTransactions);
 
