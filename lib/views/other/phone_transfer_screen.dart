@@ -286,7 +286,8 @@ class PhoneTransferScreen extends StatelessWidget {
                                     'phone_transfer');
 
                             if (transaction != null &&
-                                transaction.status == 'completed') {
+                                (transaction.status == 'pending' ||
+                                    transaction.status == 'completed')) {
                               Navigator.of(Get.context!).pop();
                               Get.toNamed('/transferHistory');
                               Get.toNamed('/transferDetails',

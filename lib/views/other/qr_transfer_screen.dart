@@ -122,6 +122,7 @@ class QRTtransferController extends GetxController {
         updateAmount(args.amount.toString());
         amountController.text = args.amount.toString();
       }
+      print('message ${args.message}');
 
       if (args.message.isNotEmpty) {
         messageController.text = args.message;
@@ -457,7 +458,8 @@ class QRTransferScreen extends StatelessWidget {
                           scannedData['accountNumber'],
                           double.parse(controller.amount.value),
                           controller.selectedAccount.value!.currency,
-                          'qr_transfer');
+                          'qr_transfer',
+                          message: controller.messageController.text);
                   if (transaction != null &&
                       (transaction.status == 'pending' ||
                           transaction.status == 'completed')) {

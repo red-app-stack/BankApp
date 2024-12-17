@@ -156,7 +156,8 @@ class AccountsController extends GetxController {
   }
 
   Future<Transaction?> createTransaction(String fromAccountId,
-      String toAccountId, double amount, String currency, String type) async {
+      String toAccountId, double amount, String currency, String type,
+      {String? message}) async {
     try {
       isLoading.value = true;
       final token = await secureStore.secureStorage.read(key: 'auth_token');
@@ -170,7 +171,8 @@ class AccountsController extends GetxController {
           'to_account_id': toAccountId,
           'amount': amount,
           'currency': currency,
-          'transaction_type': type
+          'transaction_type': type,
+          'message': message
         },
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
