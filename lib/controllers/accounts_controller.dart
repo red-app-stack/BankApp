@@ -170,7 +170,6 @@ class AccountsController extends GetxController {
           'from_account_id': fromAccountId,
           'to_account_id': toAccountId,
           'amount': amount,
-          'currency': currency,
           'transaction_type': type,
           'message': message
         },

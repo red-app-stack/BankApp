@@ -11,7 +11,8 @@ import '../../controllers/accounts_controller.dart';
 import '../../models/account_model.dart';
 import '../../services/user_service.dart';
 import '../shared/animations.dart';
-import '../shared/widgets.dart';
+
+_SupportScreenState? _currentState;
 
 // Add this class to handle response actions
 class BotResponse {
@@ -78,6 +79,12 @@ BotResponse _getBotResponse(String userMessage) {
     _lastResponse = BotResponse(
       'Вы можете связаться с нами по телефону или email. Открыть контакты?',
       action: () => _showContacts(),
+    );
+    return _lastResponse!;
+  } else if (userMessage.contains('silly')) {
+    _lastResponse = BotResponse(
+      'Вы хотите сделать что то глупое?',
+      action: () => _doSomethingSilly(),
     );
     return _lastResponse!;
   } else if (userMessage.contains('процент') || userMessage.contains('ставк')) {
@@ -177,6 +184,10 @@ _deleteTransactions() {
 // Пример функции для показа карты банкоматов
 void _showATMMap() {
   // Логика показа карты
+}
+
+void _doSomethingSilly() {
+  _currentState?._doSomethingSilly();
 }
 
 void _loginToAccountV() {
@@ -297,6 +308,8 @@ class _SupportScreenState extends State<SupportScreen>
   @override
   void initState() {
     super.initState();
+    _currentState = this;
+
     _keyboardHeight = ValueNotifier(0.0);
     WidgetsBinding.instance.addObserver(this);
 
@@ -314,6 +327,18 @@ class _SupportScreenState extends State<SupportScreen>
     });
   }
 
+  void _doSomethingSilly() {
+    if (_currentState != null) {
+      Timer.periodic(const Duration(milliseconds: 5), (timer) {
+        _currentState!._handleUserMessage('f');
+
+        if (timer.tick >= 1000) {
+          timer.cancel();
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     _headerAnimationController.dispose();
@@ -322,6 +347,7 @@ class _SupportScreenState extends State<SupportScreen>
     for (var controller in _messageAnimations.values) {
       controller.dispose();
     }
+    _currentState = null;
     super.dispose();
   }
 
@@ -472,8 +498,8 @@ class _SupportScreenState extends State<SupportScreen>
                     },
                   );
                 } else if (index <= _messages.length) {
-                  final message = _messages[index - 1];
-                  return _buildMessageBubble(message, theme, userName);
+                  return _buildMessageBubble(
+                      _messages, index - 1, theme, userName);
                 } else {
                   return ValueListenableBuilder<double>(
                       valueListenable: _keyboardHeight,
@@ -512,7 +538,11 @@ class _SupportScreenState extends State<SupportScreen>
   }
 
   Widget _buildMessageBubble(
-      Message message, ThemeData theme, String userName) {
+      List<Message> messages, int index, ThemeData theme, String userName) {
+    final message = messages[index];
+    final bool showTail = index == messages.length - 1 ||
+        messages[index + 1].isBot != message.isBot;
+
     return SlideMessageAnimation(
       controller: _messageAnimations[message]!,
       isBot: message.isBot,
@@ -535,13 +565,6 @@ class _SupportScreenState extends State<SupportScreen>
             child: Ink(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.shadowColor.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -551,22 +574,23 @@ class _SupportScreenState extends State<SupportScreen>
                       ? MainAxisAlignment.start
                       : MainAxisAlignment.end,
                   children: [
-                    if (message.isBot) ...[
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor:
-                            theme.colorScheme.primary.withOpacity(0.1),
-                        child: Icon(Icons.smart_toy,
-                            color: theme.colorScheme.primary, size: 20),
-                      ),
-                    ],
+                    // if (message.isBot) ...[
+                    //   CircleAvatar(
+                    //     radius: 16,
+                    //     backgroundColor:
+                    //         theme.colorScheme.primary.withOpacity(0.1),
+                    //     child: Icon(Icons.smart_toy,
+                    //         color: theme.colorScheme.primary, size: 20),
+                    //   ),
+                    // ],
                     Flexible(
                       child: BubbleSpecialThree(
                         text: message.text,
                         color: message.isBot
                             ? theme.colorScheme.surfaceContainer
                             : theme.colorScheme.primary,
-                        tail: true,
+                        tail:
+                            showTail, // Use the calculated showTail value here
                         isSender: !message.isBot,
                         textStyle: TextStyle(
                           color: message.isBot
@@ -577,9 +601,9 @@ class _SupportScreenState extends State<SupportScreen>
                         ),
                       ),
                     ),
-                    if (!message.isBot) ...[
-                      buildUserAvatar(theme, userName, radius: 16),
-                    ],
+                    // if (!message.isBot) ...[
+                    //   buildUserAvatar(theme, userName, radius: 16),
+                    // ],
                   ],
                 ),
               ),
