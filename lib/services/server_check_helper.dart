@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ServerHealthService {
+  final int workingCode = 999;
   final List<String> urls = [
     dotenv.env['API_URL_1'] ?? '',
     dotenv.env['API_URL_2'] ?? '',
@@ -71,7 +72,7 @@ class ServerHealthService {
 
     try {
       final response = await dio.get(
-        '$url/',
+        '$url/server-check',
         options: Options(
           validateStatus: (status) => true,
           sendTimeout: const Duration(seconds: 5),
@@ -100,14 +101,14 @@ class ServerHealthService {
   }
 
   bool _isHealthy(ServerHealth health) {
-    return health.statusCode == 999 &&
+    return health.statusCode == workingCode &&
         health.responseTime != null &&
         health.responseTime! < 1000 && // Less than 1 second
         DateTime.now().difference(health.lastChecked) < _serverHealthExpiration;
   }
 
   bool _isExcellentHealth(ServerHealth health) {
-    return health.statusCode == 999 &&
+    return health.statusCode == workingCode &&
         health.responseTime != null &&
         health.responseTime! < 300;
   }
@@ -126,8 +127,8 @@ class ServerHealthService {
     if (servers.isEmpty) return null;
 
     final healthyServers = servers
-        .where(
-            (server) => server.statusCode == 999 && server.responseTime != null)
+        .where((server) =>
+            server.statusCode == workingCode && server.responseTime != null)
         .toList();
 
     if (healthyServers.isEmpty) return null;
