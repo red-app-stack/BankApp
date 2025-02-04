@@ -1,4 +1,4 @@
-<img src="assets/images/play_store_512_2.png" alt="Logo" style="display: block; margin-left: auto; margin-right: auto; width: 200;" />
+<img src="assets/images/play_store_512_2.png" alt="Logo" style="display: block; margin-left: auto; margin-right: auto; width: 200px;" />
 
 <h2 align="center"><b>Суперприложение для Банка</b></h2>
 
