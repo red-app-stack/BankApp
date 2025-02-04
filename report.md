@@ -42,4 +42,22 @@
 - **Github Repo**: За установочными файлами и исходным кодом перейдите в [**GitHub Репозиторий**](https://red-app-stack.github.io/BankApp/).
 - **Github Pages**: Дополнительная информация имеется на сайте [**GitHub Pages**](https://red-app-stack.github.io/BankApp/).
 
+### Server Setup
+
+```javascript
+// Install dependencies
+npm install express dotenv
+
+// Start the server
+const express = require('express');
+require('dotenv').config();
+
+const app = express();
+
+app.get('/', (req, res) => res.send('Server is running'));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+```
+
 Этот проект распространяется по лицензии Apache License 2.0. Подробности можно найти в файле [LICENSE](LICENSE).
