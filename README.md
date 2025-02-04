@@ -1,4 +1,4 @@
-<img src="assets/images/play_store_512_2.png" alt="Logo" style="display: block; margin-left: auto; margin-right: auto; width: 200px;" />
+<img src="assets/images/play_store_512_2.png" alt="Logo" style="display: block; margin-left: auto; margin-right: auto; width: 200;" />
 
 <p align="center">
   <a href="https://github.com/red-app-stack/BankApp"><img src="https://github.com/red-app-stack/BankApp/blob/main/assets/images/play_store_512_2.png" alt="Логотип Банка" width="200"/></a>
