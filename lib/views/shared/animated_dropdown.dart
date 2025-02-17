@@ -35,8 +35,8 @@ class AnimatedCardDropdown extends StatelessWidget {
             onTap: onToggle,
             borderRadius: BorderRadius.circular(12),
             splashFactory: InkRipple.splashFactory,
-            splashColor: theme.colorScheme.primary.withOpacity(0.08),
-            highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+            splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+            highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -109,7 +109,7 @@ class _AccountItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.1)
+              ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.1)
               : null,
           borderRadius: BorderRadius.circular(8),
           border: Border(
@@ -126,8 +126,9 @@ class _AccountItem extends StatelessWidget {
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(12),
                 splashFactory: InkRipple.splashFactory,
-                splashColor: theme.colorScheme.primary.withOpacity(0.08),
-                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+                highlightColor:
+                    theme.colorScheme.primary.withValues(alpha: 0.04),
                 child: Padding(
                     padding: EdgeInsets.only(
                       left: 12,

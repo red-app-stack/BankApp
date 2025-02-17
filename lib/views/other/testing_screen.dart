@@ -212,8 +212,8 @@ class TestingScreen extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(12),
           splashFactory: InkRipple.splashFactory,
-          splashColor: theme.colorScheme.primary.withOpacity(0.08),
-          highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+          splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
@@ -287,8 +287,8 @@ class _TestingItemViewState extends State<TestingItemView> {
                 : null,
             borderRadius: BorderRadius.circular(12),
             splashFactory: InkRipple.splashFactory,
-            splashColor: theme.colorScheme.primary.withOpacity(0.08),
-            highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+            splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+            highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Row(

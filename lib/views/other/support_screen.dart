@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:bank_app/controllers/auth_controller.dart';
+import 'package:bank_app/services/server_check_helper.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -145,7 +146,10 @@ BotResponse _getBotResponse(String userMessage) {
       'are you sure you want to delete all cards?',
       action: () => _deleteCards(),
     );
-
+    return _lastResponse!;
+  } else if (userMessage.contains('ping')) {
+    _lastResponse = BotResponse('Pinging...',
+        action: () => _pingServer(), confirmation: true);
     return _lastResponse!;
   } else if (userMessage.contains('сотрудник') ||
       userMessage.contains('employee') ||
@@ -167,6 +171,21 @@ BotResponse _getBotResponse(String userMessage) {
     'Извините, я не совсем понял ваш вопрос. Можете переформулировать?',
   );
   return _lastResponse!;
+}
+
+_pingServer() async {
+  final ServerHealthService serverHealth = Get.find<ServerHealthService>();
+
+  for (final url in serverHealth.urls) {
+    if (url.isEmpty) {
+      continue;
+    }
+
+    final ServerHealth health = await serverHealth.checkServerHealth(url);
+
+    _currentState?.addBotMessage(
+        "Server ${health.url} responded with status ${health.statusCode} in ${health.responseTime}ms");
+  }
 }
 
 _deleteCards() {
@@ -323,7 +342,7 @@ class _SupportScreenState extends State<SupportScreen>
 
     // Send welcome message after 500ms
     Future.delayed(const Duration(milliseconds: 700), () {
-      _addBotMessage("Здравствуйте! Как я могу вам помочь?");
+      addBotMessage("Здравствуйте! Как я могу вам помочь?");
     });
   }
 
@@ -392,7 +411,7 @@ class _SupportScreenState extends State<SupportScreen>
     }
   }
 
-  void _addBotMessage(String text) {
+  void addBotMessage(String text) {
     final message = Message(
       text: text,
       isBot: true,
@@ -424,7 +443,7 @@ class _SupportScreenState extends State<SupportScreen>
 // Update _addBotResponse to handle the new response type
   void _addBotResponse(String userMessage) {
     final response = _getBotResponse(userMessage);
-    _addBotMessage(response.message);
+    addBotMessage(response.message);
 
     // Execute action if available and confirmation is not awaited
     if (response.action != null && response.confirmation == true) {

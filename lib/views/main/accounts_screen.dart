@@ -265,7 +265,7 @@ class AccountsScreen extends StatelessWidget {
                     ? BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                         ),
                       )
                     : const SizedBox.shrink(),
@@ -562,7 +562,7 @@ class AccountsScreen extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withOpacity(0.2),
+                        color: theme.colorScheme.surface.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -592,7 +592,8 @@ class AccountsScreen extends StatelessWidget {
                           child: Container(
                             padding: EdgeInsets.only(left: 12),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.surface.withOpacity(0.2),
+                              color: theme.colorScheme.surface
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -627,7 +628,7 @@ class AccountsScreen extends StatelessWidget {
                                     horizontal: 4, vertical: 12),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.surface
-                                      .withOpacity(0.2),
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
@@ -712,7 +713,7 @@ class AccountsScreen extends StatelessWidget {
                                       color: _getCurrentPage(type, index)
                                           ? theme.colorScheme.primary
                                           : theme.colorScheme.primary
-                                              .withOpacity(0.2),
+                                              .withValues(alpha: 0.2),
                                     ),
                                   ),
                                 ),
@@ -835,8 +836,8 @@ class AccountsScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       splashFactory: InkRipple.splashFactory,
-      splashColor: theme.colorScheme.primary.withOpacity(0.08),
-      highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+      splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+      highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

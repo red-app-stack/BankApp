@@ -42,8 +42,6 @@ class RouteTransitions {
         return Transition.downToUp;
       case TransitionType.slideDown:
         return Transition.upToDown;
-      default:
-        return Transition.fade;
     }
   }
 }

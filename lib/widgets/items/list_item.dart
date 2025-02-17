@@ -51,10 +51,12 @@ class ListItem extends StatelessWidget {
               onDoubleTap: onDoubleTap,
               borderRadius: BorderRadius.circular(12),
               splashFactory: InkRipple.splashFactory,
-              splashColor: theme.colorScheme.primary.withOpacity(0.08),
-              highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+              splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+              highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
               child: Padding(
-                padding: onMorePressed == null ? EdgeInsets.all(16) : EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: onMorePressed == null
+                    ? EdgeInsets.all(16)
+                    : EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     if (leadingWidget != null)
@@ -68,10 +70,12 @@ class ListItem extends StatelessWidget {
                             svgPath!,
                             width: iconSize,
                             height: iconSize,
-                            colorFilter: svgColor != null ? ColorFilter.mode(
-                              theme.colorScheme.primary,
-                              BlendMode.srcIn,
-                            ) : null,
+                            colorFilter: svgColor != null
+                                ? ColorFilter.mode(
+                                    theme.colorScheme.primary,
+                                    BlendMode.srcIn,
+                                  )
+                                : null,
                           ),
                           if (showNotification)
                             Positioned(
@@ -81,7 +85,9 @@ class ListItem extends StatelessWidget {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: theme.extension<CustomColors>()!.notifications,
+                                  color: theme
+                                      .extension<CustomColors>()!
+                                      .notifications,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -115,8 +121,11 @@ class ListItem extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       subtitle!,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: theme.extension<CustomColors>()!.primaryVariant,
+                                      style:
+                                          theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme
+                                            .extension<CustomColors>()!
+                                            .primaryVariant,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

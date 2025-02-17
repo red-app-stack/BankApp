@@ -48,8 +48,8 @@ class ServiceItem extends StatelessWidget {
             },
         borderRadius: BorderRadius.circular(12),
         splashFactory: InkRipple.splashFactory,
-        splashColor: theme.colorScheme.primary.withOpacity(0.08),
-        highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+        splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Column(

@@ -132,7 +132,7 @@ class AppTheme {
               return AppColorsLight.outline;
             }
             if (states.contains(WidgetState.pressed)) {
-              return AppColorsLight.primary.withOpacity(0.8);
+              return AppColorsLight.primary.withValues(alpha: 0.5);
             }
             return AppColorsLight.primary;
           },
@@ -148,10 +148,10 @@ class AppTheme {
         overlayColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {
             if (states.contains(WidgetState.pressed)) {
-              return AppColorsLight.onPrimary.withOpacity(0.3);
+              return AppColorsLight.onPrimary.withValues(alpha: 0.3);
             }
             if (states.contains(WidgetState.hovered)) {
-              return AppColorsLight.onPrimary.withOpacity(0.1);
+              return AppColorsLight.onPrimary.withValues(alpha: 0.1);
             }
             return null;
           },
@@ -333,7 +333,7 @@ class AppTheme {
               return AppColorsDark.outline;
             }
             if (states.contains(WidgetState.pressed)) {
-              return AppColorsDark.primary.withOpacity(0.8);
+              return AppColorsDark.primary.withValues(alpha: 0.8);
             }
             return AppColorsDark.primary;
           },
@@ -349,10 +349,10 @@ class AppTheme {
         overlayColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {
             if (states.contains(WidgetState.pressed)) {
-              return AppColorsDark.onPrimary.withOpacity(0.3);
+              return AppColorsDark.onPrimary.withValues(alpha: 0.3);
             }
             if (states.contains(WidgetState.hovered)) {
-              return AppColorsDark.onPrimary.withOpacity(0.1);
+              return AppColorsDark.onPrimary.withValues(alpha: 0.1);
             }
             return null;
           },

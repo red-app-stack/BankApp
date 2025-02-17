@@ -325,9 +325,10 @@ class CreateAccountScreenState extends State<CreateAccountScreen> {
                     !controller.isNotUsCitizen.value;
               });
             },
-            splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            splashColor:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             highlightColor:
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             customBorder: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

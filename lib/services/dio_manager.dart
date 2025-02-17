@@ -11,7 +11,10 @@ class DioManager {
     _dio = Dio()
       ..options.baseUrl = serverHealthService.currentBaseUrl
       ..options.sendTimeout = const Duration(seconds: 10)
-      ..options.receiveTimeout = const Duration(seconds: 10);
+      ..options.receiveTimeout = const Duration(seconds: 10)
+      ..options.headers = {
+        'bypass-tunnel-reminder': '1',
+      };
   }
 
   Future<Response<T>> get<T>(

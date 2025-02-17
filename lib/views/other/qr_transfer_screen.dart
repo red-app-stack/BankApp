@@ -300,8 +300,10 @@ class QRTransferScreen extends StatelessWidget {
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color:
-                Theme.of(context).colorScheme.inverseSurface.withOpacity(0.1),
+            color: Theme.of(context)
+                .colorScheme
+                .inverseSurface
+                .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Stack(
@@ -818,7 +820,7 @@ class ScannerOverlay extends CustomPainter {
       );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = Colors.black.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill
       ..blendMode = BlendMode.dstOver;
 

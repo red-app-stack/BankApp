@@ -400,8 +400,8 @@ class TransferHistoryScreen extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(12),
       splashFactory: InkRipple.splashFactory,
-      splashColor: theme.colorScheme.primary.withOpacity(0.08),
-      highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+      splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+      highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -505,8 +505,10 @@ class TransferHistoryScreen extends StatelessWidget {
         onTap: () {
           Get.toNamed('/transferDetails', arguments: transaction);
         },
-        splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-        highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        splashColor:
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+        highlightColor:
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         customBorder: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

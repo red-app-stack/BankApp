@@ -268,8 +268,8 @@ class TransfersScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       splashFactory: InkRipple.splashFactory,
-      splashColor: theme.colorScheme.primary.withOpacity(0.08),
-      highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+      splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+      highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -326,8 +326,9 @@ class TransfersScreen extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(12),
                 splashFactory: InkRipple.splashFactory,
-                splashColor: theme.colorScheme.primary.withOpacity(0.08),
-                highlightColor: theme.colorScheme.primary.withOpacity(0.04),
+                splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+                highlightColor:
+                    theme.colorScheme.primary.withValues(alpha: 0.04),
                 child: Padding(
                   padding: EdgeInsets.all(8),
                   child: Row(

@@ -68,7 +68,7 @@ class TransactionDetailsScreen extends StatelessWidget {
   Widget _buildUserAvatar(ThemeData theme, String? userName) {
     return CircleAvatar(
       radius: 24,
-      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
       child: Text(
         getInitials(userName ?? ''),
         style: theme.textTheme.bodyMedium?.copyWith(
@@ -158,7 +158,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                                   horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
                                 color: _getStatusColor(transaction.status)
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
@@ -232,36 +232,36 @@ class TransactionDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           Divider(
                               height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.1)),
                           _buildDetailRow(
                               'ID транзакции', transaction.reference),
                           const SizedBox(height: 4),
                           Divider(
                               height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.1)),
                           _buildDetailRow(
                               'Дата и время', transaction.formattedCreatedAt),
                           const SizedBox(height: 4),
                           Divider(
                               height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.1)),
                           _buildDetailRow(
                               'Комиссия', '0 ${transaction.currency}'),
                           const SizedBox(height: 4),
                           Divider(
                               height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.1)),
                           _buildDetailRow('Отправитель',
                               transaction.fromUserName ?? 'Неизвестно'),
                           const SizedBox(height: 4),
                           Divider(
                               height: 1,
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1)),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.1)),
                           _buildDetailRow(
                               'Счет отправителя', transaction.fromAccount),
                           const SizedBox(height: 12),

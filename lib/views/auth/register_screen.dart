@@ -150,7 +150,7 @@ class RegisterPage extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .inverseSurface
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Stack(

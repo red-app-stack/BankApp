@@ -95,7 +95,7 @@ Widget buildUserAvatar(ThemeData theme, String? userName,
     {double? radius = 24}) {
   return CircleAvatar(
     radius: radius,
-    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
     child: Text(getInitials(userName ?? ''),
         style: radius == 16
             ? theme.textTheme.bodySmall?.copyWith(
@@ -322,7 +322,7 @@ Widget buildUserCard(UserService userService, ThemeData theme, Size size) {
           children: [
             CircleAvatar(
               radius: 48,
-              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
               child: Text(
                 getInitials(userService.currentUser?.fullName ?? ''),
                 style: theme.textTheme.headlineMedium?.copyWith(

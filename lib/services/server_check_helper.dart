@@ -24,7 +24,8 @@ class ServerHealthService {
   Future<String> findWorkingServer() async {
     final cachedServer = _getCachedServerHealth();
     if (cachedServer != null && _isHealthy(cachedServer)) {
-      print('Using cached server: ${cachedServer.url}');
+      print(
+          'Using cached server: ${cachedServer.url}, Response Time: ${cachedServer.responseTime}ms)');
       _currentBaseUrl = cachedServer.url;
       return cachedServer.url;
     }
@@ -49,8 +50,11 @@ class ServerHealthService {
 
     // Check servers sequentially to avoid overwhelming the network
     for (final url in urls) {
+      if (url.isEmpty) {
+        continue;
+      }
       try {
-        final health = await _checkServerHealth(url);
+        final health = await checkServerHealth(url);
         results.add(health);
 
         // If we find a server with excellent health, use it immediately
@@ -66,17 +70,19 @@ class ServerHealthService {
     return results;
   }
 
-  Future<ServerHealth> _checkServerHealth(String url) async {
+  Future<ServerHealth> checkServerHealth(String url) async {
     _stopwatch.reset();
     _stopwatch.start();
-
+    final time = url.contains('serveo')
+        ? const Duration(seconds: 1)
+        : const Duration(seconds: 5);
     try {
       final response = await dio.get(
         '$url/server-check',
         options: Options(
           validateStatus: (status) => true,
-          sendTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          sendTimeout: time,
+          receiveTimeout: time,
         ),
       );
 
